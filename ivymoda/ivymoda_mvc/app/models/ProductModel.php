@@ -140,7 +140,7 @@ class ProductModel extends Model {
      */
     public function getProductColors(int $productId) {
         $this->ensureProductColorPivot();
-        $query = "SELECT c.color_id, c.color_ten, c.color_anh
+        $query = "SELECT c.color_id, c.color_ten, c.color_anh, c.color_ma
                   FROM tbl_sanpham_color spc
                   INNER JOIN tbl_color c ON spc.color_id = c.color_id
                   WHERE spc.sanpham_id = ?
@@ -673,5 +673,348 @@ class ProductModel extends Model {
         }
         
         return 0;
+    }
+    
+    // ============================================
+    // METHODS MỚI CHO VARIANT SYSTEM (DATABASE v2.0)
+    // ============================================
+    
+    /**
+     * Lấy tất cả size
+     */
+    public function getAllSizes() {
+        $query = "SELECT * FROM tbl_size ORDER BY size_order ASC";
+        return $this->getAll($query);
+    }
+    
+    /**
+     * Lấy thông tin size theo ID
+     */
+    public function getSizeById($sizeId) {
+        $sizeId = (int)$sizeId;
+        $query = "SELECT * FROM tbl_size WHERE size_id = $sizeId";
+        return $this->getOne($query);
+    }
+    
+    /**
+     * Lấy thông tin màu theo ID
+     */
+    public function getColorById($colorId) {
+        $colorId = (int)$colorId;
+        $query = "SELECT * FROM tbl_color WHERE color_id = $colorId";
+        return $this->getOne($query);
+    }
+    
+    /**
+     * Thêm product variant
+     */
+    public function addProductVariant($data) {
+        $sanphamId = (int)$data['sanpham_id'];
+        $colorId = (int)$data['color_id'];
+        $sizeId = (int)$data['size_id'];
+        $sku = $this->escape($data['sku'] ?? '');
+        $tonKho = (int)($data['ton_kho'] ?? 0);
+        $giaBan = isset($data['gia_ban']) ? $this->escape($data['gia_ban']) : 'NULL';
+        $trangThai = (int)($data['trang_thai'] ?? 1);
+        
+        $query = "INSERT INTO tbl_product_variant 
+                  (sanpham_id, color_id, size_id, sku, ton_kho, gia_ban, trang_thai) 
+                  VALUES ($sanphamId, $colorId, $sizeId, '$sku', $tonKho, $giaBan, $trangThai)";
+        
+        return $this->execute($query);
+    }
+    
+    /**
+     * Lấy tất cả variants của sản phẩm
+     */
+    public function getProductVariants($sanphamId) {
+        $sanphamId = (int)$sanphamId;
+        
+        $query = "SELECT v.*, 
+                         s.size_ten, s.size_order,
+                         c.color_ten, c.color_ma
+                  FROM tbl_product_variant v
+                  JOIN tbl_size s ON v.size_id = s.size_id
+                  JOIN tbl_color c ON v.color_id = c.color_id
+                  WHERE v.sanpham_id = $sanphamId
+                  ORDER BY c.color_ten, s.size_order";
+        
+        return $this->getAll($query);
+    }
+    
+    /**
+     * Lấy variant theo ID
+     */
+    public function getVariantById($variantId) {
+        $variantId = (int)$variantId;
+        
+        $query = "SELECT v.*, 
+                         s.size_ten,
+                         c.color_ten, c.color_ma,
+                         p.sanpham_tieude, p.sanpham_gia, p.sanpham_anh
+                  FROM tbl_product_variant v
+                  JOIN tbl_size s ON v.size_id = s.size_id
+                  JOIN tbl_color c ON v.color_id = c.color_id
+                  JOIN tbl_sanpham p ON v.sanpham_id = p.sanpham_id
+                  WHERE v.variant_id = $variantId";
+        
+        return $this->getOne($query);
+    }
+    
+    /**
+     * Lấy variants theo sản phẩm và màu
+     */
+    public function getVariantsByProductAndColor($sanphamId, $colorId) {
+        $sanphamId = (int)$sanphamId;
+        $colorId = (int)$colorId;
+        
+        $query = "SELECT v.*, 
+                         s.size_ten, s.size_order,
+                         c.color_ten, c.color_ma
+                  FROM tbl_product_variant v
+                  JOIN tbl_size s ON v.size_id = s.size_id
+                  JOIN tbl_color c ON v.color_id = c.color_id
+                  WHERE v.sanpham_id = $sanphamId AND v.color_id = $colorId
+                  ORDER BY s.size_order";
+        
+        return $this->getAll($query);
+    }
+    
+    /**
+     * Cập nhật tồn kho variant (tăng/giảm)
+     */
+    public function updateVariantStock($variantId, $quantity) {
+        $variantId = (int)$variantId;
+        $quantity = (int)$quantity;
+        
+        $query = "UPDATE tbl_product_variant 
+                  SET ton_kho = ton_kho + $quantity, 
+                      trang_thai = CASE WHEN ton_kho + $quantity > 0 THEN 1 ELSE 0 END,
+                      updated_at = NOW()
+                  WHERE variant_id = $variantId";
+        
+        return $this->execute($query);
+    }
+    
+    /**
+     * Giảm tồn kho khi bán hàng
+     */
+    public function decreaseVariantStock($variantId, $quantity) {
+        $variantId = (int)$variantId;
+        $quantity = (int)$quantity;
+        
+        $query = "UPDATE tbl_product_variant 
+                  SET ton_kho = ton_kho - $quantity, 
+                      trang_thai = CASE WHEN ton_kho - $quantity <= 0 THEN 0 ELSE 1 END,
+                      updated_at = NOW()
+                  WHERE variant_id = $variantId AND ton_kho >= $quantity";
+        
+        return $this->execute($query);
+    }
+    
+    /**
+     * Kiểm tra tồn kho variant
+     */
+    public function checkVariantStock($variantId) {
+        $variantId = (int)$variantId;
+        
+        $query = "SELECT ton_kho, trang_thai FROM tbl_product_variant WHERE variant_id = $variantId";
+        return $this->getOne($query);
+    }
+    
+    /**
+     * Cập nhật variant
+     */
+    public function updateVariant($variantId, $data) {
+        $variantId = (int)$variantId;
+        $tonKho = (int)($data['ton_kho'] ?? 0);
+        $giaBan = isset($data['gia_ban']) && $data['gia_ban'] !== '' ? $this->escape($data['gia_ban']) : 'NULL';
+        $trangThai = (int)($data['trang_thai'] ?? 1);
+        
+        $query = "UPDATE tbl_product_variant 
+                  SET ton_kho = $tonKho,
+                      gia_ban = $giaBan,
+                      trang_thai = $trangThai,
+                      updated_at = NOW()
+                  WHERE variant_id = $variantId";
+        
+        return $this->execute($query);
+    }
+    
+    /**
+     * Xóa variant
+     */
+    public function deleteVariant($variantId) {
+        $variantId = (int)$variantId;
+        $query = "DELETE FROM tbl_product_variant WHERE variant_id = $variantId";
+        return $this->execute($query);
+    }
+    
+    /**
+     * Xóa tất cả variants của sản phẩm
+     */
+    public function deleteProductVariants($sanphamId) {
+        $sanphamId = (int)$sanphamId;
+        $query = "DELETE FROM tbl_product_variant WHERE sanpham_id = $sanphamId";
+        return $this->execute($query);
+    }
+    
+    /**
+     * Kiểm tra variant có tồn tại không
+     */
+    public function variantExists($sanphamId, $colorId, $sizeId) {
+        $sanphamId = (int)$sanphamId;
+        $colorId = (int)$colorId;
+        $sizeId = (int)$sizeId;
+        
+        $query = "SELECT variant_id FROM tbl_product_variant 
+                  WHERE sanpham_id = $sanphamId AND color_id = $colorId AND size_id = $sizeId";
+        $result = $this->getOne($query);
+        
+        return $result ? true : false;
+    }
+    
+    /**
+     * Lấy tổng tồn kho của sản phẩm (tất cả variants)
+     */
+    public function getTotalStock($sanphamId) {
+        $sanphamId = (int)$sanphamId;
+        
+        $query = "SELECT SUM(ton_kho) as total_stock 
+                  FROM tbl_product_variant 
+                  WHERE sanpham_id = $sanphamId";
+        $result = $this->getOne($query);
+        
+        if ($result) {
+            return is_object($result) ? (int)$result->total_stock : (int)$result['total_stock'];
+        }
+        
+        return 0;
+    }
+    
+    // ============================================
+    // SIZE MANAGEMENT METHODS
+    // ============================================
+    
+    /**
+     * Lấy size theo tên
+     */
+    public function getSizeByName($sizeName) {
+        $sizeName = $this->escape($sizeName);
+        $query = "SELECT * FROM tbl_size WHERE size_ten = '$sizeName'";
+        return $this->getOne($query);
+    }
+    
+    /**
+     * Thêm size mới
+     */
+    public function addSize($data) {
+        $sizeTen = $this->escape($data['size_ten']);
+        $sizeOrder = (int)($data['size_order'] ?? 0);
+        
+        $query = "INSERT INTO tbl_size (size_ten, size_order) 
+                  VALUES ('$sizeTen', $sizeOrder)";
+        
+        return $this->execute($query);
+    }
+    
+    /**
+     * Cập nhật size
+     */
+    public function updateSize($data) {
+        $sizeId = (int)$data['size_id'];
+        $sizeTen = $this->escape($data['size_ten']);
+        $sizeOrder = (int)($data['size_order'] ?? 0);
+        
+        $query = "UPDATE tbl_size 
+                  SET size_ten = '$sizeTen', 
+                      size_order = $sizeOrder 
+                  WHERE size_id = $sizeId";
+        
+        return $this->execute($query);
+    }
+    
+    /**
+     * Xóa size
+     */
+    public function deleteSize($sizeId) {
+        $sizeId = (int)$sizeId;
+        $query = "DELETE FROM tbl_size WHERE size_id = $sizeId";
+        return $this->execute($query);
+    }
+    
+    /**
+     * Đếm số variant sử dụng size này
+     */
+    public function countVariantsBySize($sizeId) {
+        $sizeId = (int)$sizeId;
+        $query = "SELECT COUNT(*) as total FROM tbl_product_variant WHERE size_id = $sizeId";
+        $result = $this->getOne($query);
+        
+        if ($result) {
+            return is_object($result) ? (int)$result->total : (int)$result['total'];
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * Lấy variant theo product_id, color_id, size_id
+     */
+    public function getVariantByProductColorSize($productId, $colorId, $sizeId) {
+        $productId = (int)$productId;
+        $colorId = (int)$colorId;
+        $sizeId = (int)$sizeId;
+        
+        $query = "SELECT * FROM tbl_product_variant 
+                  WHERE sanpham_id = $productId AND color_id = $colorId AND size_id = $sizeId";
+        
+        return $this->getOne($query);
+    }
+    
+    /**
+     * Cập nhật sản phẩm với mảng dữ liệu
+     */
+    public function updateProductArray($data) {
+        $id = (int)$data['sanpham_id'];
+        
+        $sets = [];
+        if(isset($data['sanpham_tieude'])) $sets[] = "sanpham_tieude = '" . addslashes($data['sanpham_tieude']) . "'";
+        if(isset($data['sanpham_ma'])) $sets[] = "sanpham_ma = '" . addslashes($data['sanpham_ma']) . "'";
+        if(isset($data['danhmuc_id'])) $sets[] = "danhmuc_id = " . (int)$data['danhmuc_id'];
+        if(isset($data['loaisanpham_id'])) $sets[] = "loaisanpham_id = " . (int)$data['loaisanpham_id'];
+        if(isset($data['sanpham_gia'])) $sets[] = "sanpham_gia = " . floatval($data['sanpham_gia']);
+        if(isset($data['sanpham_chitiet'])) $sets[] = "sanpham_chitiet = '" . addslashes($data['sanpham_chitiet']) . "'";
+        if(isset($data['sanpham_baoquan'])) $sets[] = "sanpham_baoquan = '" . addslashes($data['sanpham_baoquan']) . "'";
+        if(isset($data['sanpham_anh'])) $sets[] = "sanpham_anh = '" . addslashes($data['sanpham_anh']) . "'";
+        if(isset($data['sanpham_status'])) $sets[] = "sanpham_status = " . (int)$data['sanpham_status'];
+        
+        if(empty($sets)) return false;
+        
+        $query = "UPDATE tbl_sanpham SET " . implode(', ', $sets) . " WHERE sanpham_id = $id";
+        return $this->execute($query);
+    }
+    
+    /**
+     * Xóa tất cả màu của sản phẩm
+     */
+    public function deleteProductColors($productId) {
+        $productId = (int)$productId;
+        $query = "DELETE FROM tbl_sanpham_color WHERE sanpham_id = $productId";
+        return $this->execute($query);
+    }
+    
+    /**
+     * Thêm màu cho sản phẩm
+     */
+    public function addProductColor($productId, $colorId, $isDefault = 0) {
+        $productId = (int)$productId;
+        $colorId = (int)$colorId;
+        $isDefault = (int)$isDefault;
+        
+        $query = "INSERT INTO tbl_sanpham_color (sanpham_id, color_id, is_default) 
+                  VALUES ($productId, $colorId, $isDefault)";
+        
+        return $this->execute($query);
     }
 }

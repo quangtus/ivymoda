@@ -58,6 +58,7 @@ class ProductController extends \Controller {
     public function add() {
         $categories = $this->categoryModel->getAllCategories();
         $colors = $this->productModel->getAllColors();
+        $sizes = $this->productModel->getAllSizes(); // *** THÊM MỚI ***
         
         $subcategories = [];
         if (!empty($categories)) {
@@ -71,6 +72,7 @@ class ProductController extends \Controller {
             'categories' => $categories,
             'subcategories' => $subcategories,
             'colors' => $colors,
+            'sizes' => $sizes, // *** THÊM MỚI ***
             'sanpham_tieude' => '',
             'sanpham_ma' => '',
             'danhmuc_id' => '',
@@ -213,9 +215,45 @@ class ProductController extends \Controller {
                                     }
                                 }
                             }
+                            
+                            // *** THÊM MỚI: Xử lý variants (size + màu + tồn kho) ***
+                            $variantCount = 0;
+                            if (isset($_POST['variants']) && is_array($_POST['variants'])) {
+                                foreach ($_POST['variants'] as $colorId => $sizeData) {
+                                    foreach ($sizeData as $sizeId => $variantData) {
+                                        $tonKho = (int)($variantData['ton_kho'] ?? 0);
+                                        
+                                        // Chỉ tạo variant nếu được nhập thông tin
+                                        if ($tonKho >= 0) {
+                                            // Lấy thông tin màu và size để tạo SKU
+                                            $colorInfo = $this->productModel->getColorById($colorId);
+                                            $sizeInfo = $this->productModel->getSizeById($sizeId);
+                                            
+                                            if ($colorInfo && $sizeInfo) {
+                                                // Tạo SKU tự động: ASM-001-M-WHITE
+                                                $colorName = strtoupper(str_replace(' ', '', $colorInfo->color_ten));
+                                                $sizeName = strtoupper($sizeInfo->size_ten);
+                                                $sku = strtoupper($data['sanpham_ma']) . '-' . $sizeName . '-' . $colorName;
+                                                
+                                                // Insert variant
+                                                $this->productModel->addProductVariant([
+                                                    'sanpham_id' => $newProductId,
+                                                    'color_id' => $colorId,
+                                                    'size_id' => $sizeId,
+                                                    'sku' => $sku,
+                                                    'ton_kho' => $tonKho,
+                                                    'trang_thai' => $tonKho > 0 ? 1 : 0
+                                                ]);
+                                                
+                                                $variantCount++;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
 
-                        $_SESSION['success'] = 'Thêm sản phẩm thành công!';
+                        $_SESSION['success'] = "Thêm sản phẩm thành công với $variantCount variants!";
                         $this->redirect('admin/product');
                         exit;
                     } else {
@@ -248,7 +286,8 @@ class ProductController extends \Controller {
         }
         
         $categories = $this->categoryModel->getAllCategories();
-        $colors = $this->productModel->getAllColors();
+        $allColors = $this->productModel->getAllColors();
+        $sizes = $this->productModel->getAllSizes(); // *** THÊM MỚI ***
         
         // Lấy tất cả loại sản phẩm
         $subcategories = [];
@@ -258,92 +297,181 @@ class ProductController extends \Controller {
             }
         }
         
+        // Lấy thông tin hiện tại
         $productImages = $this->productModel->getProductImages((int)$id);
-        $linkedColors = $this->productModel->getProductColors((int)$id);
+        $productColors = $this->productModel->getProductColors((int)$id);
+        $variants = $this->productModel->getProductVariants($id); // *** THÊM MỚI ***
+
+        // *** EXTRACT BIẾN TỪ PRODUCT OBJECT ***
+        $sanpham_tieude = $product->sanpham_tieude ?? '';
+        $sanpham_ma = $product->sanpham_ma ?? '';
+        $sanpham_chitiet = $product->sanpham_chitiet ?? '';
+        $sanpham_baoquan = $product->sanpham_baoquan ?? '';
+        $danhmuc_id = $product->danhmuc_id ?? 0;
+        $loaisanpham_id = $product->loaisanpham_id ?? 0;
+        $sanpham_gia = $product->sanpham_gia ?? 0;
+        $sanpham_gia_goc = $product->sanpham_gia_goc ?? 0;
+        $sanpham_giam_gia = $product->sanpham_giam_gia ?? 0;
+        $sanpham_anh = $product->sanpham_anh ?? '';
+        $sanpham_status = $product->sanpham_status ?? 1;
 
         $data = [
-            'title' => 'Sửa sản phẩm - IVY moda',
+            'title' => 'Sửa sản phẩm - ' . $product->sanpham_tieude,
             'product' => $product,
+            'sanpham_tieude' => $sanpham_tieude,
+            'sanpham_ma' => $sanpham_ma,
+            'sanpham_chitiet' => $sanpham_chitiet,
+            'sanpham_baoquan' => $sanpham_baoquan,
+            'danhmuc_id' => $danhmuc_id,
+            'loaisanpham_id' => $loaisanpham_id,
+            'sanpham_gia' => $sanpham_gia,
+            'sanpham_gia_goc' => $sanpham_gia_goc,
+            'sanpham_giam_gia' => $sanpham_giam_gia,
+            'sanpham_anh' => $sanpham_anh,
+            'sanpham_status' => $sanpham_status,
             'categories' => $categories,
             'subcategories' => $subcategories,
-            'colors' => $colors,
+            'colors' => $allColors,
+            'productColors' => $productColors,
             'productColorIds' => $this->productModel->getProductColorIds((int)$id),
             'productImages' => $productImages,
-            'linkedColors' => $linkedColors,
-            'sanpham_tieude' => $product->sanpham_tieude,
-            'sanpham_ma' => $product->sanpham_ma,
-            'danhmuc_id' => $product->danhmuc_id,
-            'loaisanpham_id' => $product->loaisanpham_id,
-            'sanpham_gia' => $product->sanpham_gia,
-            'sanpham_chitiet' => $product->sanpham_chitiet,
-            'sanpham_baoquan' => $product->sanpham_baoquan,
-            'sanpham_anh' => $product->sanpham_anh,
+            'sizes' => $sizes, // *** THÊM MỚI ***
+            'variants' => $variants, // *** THÊM MỚI ***
             'error' => '',
             'success' => ''
         ];
         
         // Xử lý cập nhật sản phẩm
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $data['sanpham_tieude'] = trim($_POST['sanpham_tieude'] ?? '');
-            $data['sanpham_ma'] = trim($_POST['sanpham_ma'] ?? '');
-            $data['danhmuc_id'] = (int)($_POST['danhmuc_id'] ?? 0);
-            $data['loaisanpham_id'] = (int)($_POST['loaisanpham_id'] ?? 0);
-            $data['sanpham_gia'] = trim($_POST['sanpham_gia'] ?? '');
-            $data['sanpham_chitiet'] = trim($_POST['sanpham_chitiet'] ?? '');
-            $data['sanpham_baoquan'] = trim($_POST['sanpham_baoquan'] ?? '');
+            $updateData = [
+                'sanpham_id' => $id,
+                'sanpham_tieude' => trim($_POST['sanpham_tieude'] ?? ''),
+                'sanpham_ma' => trim($_POST['sanpham_ma'] ?? ''),
+                'danhmuc_id' => (int)($_POST['danhmuc_id'] ?? 0),
+                'loaisanpham_id' => (int)($_POST['loaisanpham_id'] ?? 0),
+                'sanpham_gia' => trim($_POST['sanpham_gia'] ?? ''),
+                'sanpham_chitiet' => trim($_POST['sanpham_chitiet'] ?? ''),
+                'sanpham_baoquan' => trim($_POST['sanpham_baoquan'] ?? ''),
+                'sanpham_status' => isset($_POST['sanpham_status']) ? 1 : 0
+            ];
             
             // Validation
-            if(empty($data['sanpham_tieude']) || empty($data['sanpham_ma']) || 
-               empty($data['danhmuc_id']) || empty($data['loaisanpham_id']) || 
-               empty($data['sanpham_gia'])) {
+            if(empty($updateData['sanpham_tieude']) || empty($updateData['sanpham_ma']) || 
+               empty($updateData['danhmuc_id']) || empty($updateData['loaisanpham_id']) || 
+               empty($updateData['sanpham_gia'])) {
                 $data['error'] = 'Vui lòng điền đầy đủ thông tin bắt buộc';
-            } elseif(!is_numeric($data['sanpham_gia']) || $data['sanpham_gia'] <= 0) {
-                $data['error'] = 'Giá sản phẩm phải là số dương';
-            } else {
-                // Xử lý upload ảnh mới (nếu có)
-                $newImage = $product->sanpham_anh; // Giữ ảnh cũ
-                if(isset($_FILES['sanpham_anh']) && $_FILES['sanpham_anh']['error'] == 0) {
-                    $uploadResult = $this->handleImageUpload();
-                    if($uploadResult['success']) {
-                        $newImage = $uploadResult['filename'];
-                        // Xóa ảnh cũ
-                        $this->deleteOldImage($product->sanpham_anh);
-                    } else {
-                        $data['error'] = $uploadResult['error'];
+                $this->view('admin/product/edit', $data);
+                return;
+            }
+            
+            // Xử lý upload ảnh mới (nếu có)
+            if(isset($_FILES['sanpham_anh']) && $_FILES['sanpham_anh']['error'] == 0) {
+                $uploadResult = $this->handleImageUpload();
+                if($uploadResult['success']) {
+                    $this->deleteOldImage($product->sanpham_anh);
+                    $updateData['sanpham_anh'] = $uploadResult['filename'];
+                } else {
+                    $data['error'] = $uploadResult['error'];
+                    $this->view('admin/product/edit', $data);
+                    return;
+                }
+            }
+            
+            // Cập nhật thông tin cơ bản
+            $result = $this->productModel->updateProductArray($updateData);
+            
+            if($result) {
+                // Xử lý cập nhật màu sắc
+                if(isset($_POST['colors']) && is_array($_POST['colors'])) {
+                    $this->productModel->deleteProductColors($id);
+                    foreach($_POST['colors'] as $colorId) {
+                        $this->productModel->addProductColor($id, $colorId);
                     }
                 }
                 
-                if(empty($data['error'])) {
-                    $result = $this->productModel->updateProduct(
-                        $id,
-                        $data['sanpham_tieude'],
-                        $data['sanpham_ma'],
-                        $data['danhmuc_id'],
-                        $data['loaisanpham_id'],
-                        $data['sanpham_gia'],
-                        $data['sanpham_chitiet'],
-                        $data['sanpham_baoquan'],
-                        $newImage
-                    );
-                    
-                    if($result === true) {
-                        // Cập nhật danh sách màu bổ sung nếu có
-                        $selectedColors = [];
-                        if (isset($_POST['color_ids']) && is_array($_POST['color_ids'])) {
-                            $selectedColors = array_map('intval', $_POST['color_ids']);
+                // Xử lý upload ảnh nhiều màu (nếu có) - TODO: Implement nếu cần
+                // if(isset($_FILES['product_images']) && !empty($_FILES['product_images']['name'])) {
+                //     // Xử lý tương tự như trong add()
+                // }
+                
+                // Xử lý cập nhật variants
+                if(isset($_POST['variants']) && is_array($_POST['variants'])) {
+                    foreach($_POST['variants'] as $colorId => $sizes) {
+                        foreach($sizes as $sizeId => $variantData) {
+                            $tonKho = (int)($variantData['ton_kho'] ?? 0);
+                            
+                            // Kiểm tra xem variant đã tồn tại chưa
+                            $existingVariant = $this->productModel->getVariantByProductColorSize($id, $colorId, $sizeId);
+                            
+                            if($existingVariant) {
+                                // Cập nhật tồn kho
+                                $this->productModel->updateVariantStock($existingVariant->variant_id, $tonKho);
+                            } else {
+                                // Tạo variant mới
+                                $color = $this->productModel->getColorById($colorId);
+                                $size = $this->productModel->getSizeById($sizeId);
+                                
+                                if($color && $size) {
+                                    $sku = strtoupper($updateData['sanpham_ma']) . '-' . $size->size_ten . '-' . $color->color_ten;
+                                    
+                                    $this->productModel->addProductVariant([
+                                        'sanpham_id' => $id,
+                                        'color_id' => $colorId,
+                                        'size_id' => $sizeId,
+                                        'sku' => $sku,
+                                        'ton_kho' => $tonKho,
+                                        'gia_ban' => null,
+                                        'trang_thai' => $tonKho > 0 ? 1 : 0
+                                    ]);
+                                }
+                            }
                         }
-                        // Đảm bảo có ít nhất 1 màu cho sản phẩm
-                        if (empty($selectedColors)) {
-                            $selectedColors = [1]; // Màu mặc định
-                        }
-                        $this->productModel->setProductColors((int)$id, $selectedColors);
-                        $_SESSION['success'] = 'Cập nhật sản phẩm thành công!';
-                        $this->redirect('admin/product');
-                        exit;
-                    } else {
-                        $data['error'] = $result;
                     }
                 }
+                
+                // Xử lý thêm variants mới từ form (new_variants)
+                // Format: $_POST['new_variants'][$colorId][$sizeId]['ton_kho']
+                if(isset($_POST['new_variants']) && is_array($_POST['new_variants'])) {
+                    foreach($_POST['new_variants'] as $colorId => $sizes) {
+                        foreach($sizes as $sizeId => $variantData) {
+                            $tonKho = (int)($variantData['ton_kho'] ?? 0);
+                            
+                            // Chỉ tạo variant nếu tồn kho > 0 (tránh tạo variant rỗng)
+                            if($tonKho > 0) {
+                                // Kiểm tra xem variant đã tồn tại chưa (tránh trùng lặp)
+                                $existingVariant = $this->productModel->getVariantByProductColorSize($id, $colorId, $sizeId);
+                                
+                                if(!$existingVariant) {
+                                    // Lấy thông tin color và size
+                                    $color = $this->productModel->getColorById($colorId);
+                                    $size = $this->productModel->getSizeById($sizeId);
+                                    
+                                    if($color && $size) {
+                                        // Tạo SKU
+                                        $sku = strtoupper($updateData['sanpham_ma']) . '-' . $size->size_ten . '-' . $color->color_ten;
+                                        
+                                        // Thêm variant mới
+                                        $this->productModel->addProductVariant([
+                                            'sanpham_id' => $id,
+                                            'color_id' => $colorId,
+                                            'size_id' => $sizeId,
+                                            'sku' => $sku,
+                                            'ton_kho' => $tonKho,
+                                            'gia_ban' => null, // Có thể để null hoặc dùng giá sản phẩm
+                                            'trang_thai' => 1 // Kích hoạt vì ton_kho > 0
+                                        ]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                $_SESSION['success'] = 'Cập nhật sản phẩm thành công!';
+                $this->redirect('admin/product');
+                return;
+            } else {
+                $data['error'] = 'Lỗi khi cập nhật sản phẩm';
             }
         }
         
@@ -369,14 +497,24 @@ class ProductController extends \Controller {
             exit;
         }
         
+        // Xóa ảnh đại diện
+        $this->deleteOldImage($product->sanpham_anh);
+        
+        // Xóa tất cả ảnh liên quan
+        $images = $this->productModel->getProductImages($id);
+        if($images && is_array($images)) {
+            foreach($images as $image) {
+                $this->deleteOldImage($image->anh_path);
+            }
+        }
+        
+        // Xóa sản phẩm (variants sẽ tự động xóa do CASCADE trong database)
         $result = $this->productModel->deleteProduct($id);
         
-        if($result === true) {
-            // Xóa ảnh sản phẩm
-            $this->deleteOldImage($product->sanpham_anh);
+        if($result === true || $result) {
             $_SESSION['success'] = 'Xóa sản phẩm thành công';
         } else {
-            $_SESSION['error'] = $result;
+            $_SESSION['error'] = 'Lỗi khi xóa sản phẩm';
         }
         
         $this->redirect('admin/product');
@@ -384,29 +522,123 @@ class ProductController extends \Controller {
     
     /**
      * Xem chi tiết sản phẩm
-     * @param int $id ID của sản phẩm
      */
-    public function viewDetail($id) {
+    public function viewDetail($id = null) {
         if(!$id) {
             $_SESSION['error'] = 'Không tìm thấy sản phẩm';
             $this->redirect('admin/product');
-            exit;
+            return;
         }
         
         $product = $this->productModel->getProductById($id);
         
         if(!$product) {
-            $_SESSION['error'] = 'Không tìm thấy sản phẩm';
+            $_SESSION['error'] = 'Sản phẩm không tồn tại';
             $this->redirect('admin/product');
+            return;
+        }
+        
+        // Lấy thông tin bổ sung
+        $colors = $this->productModel->getProductColors($id);
+        $variants = $this->productModel->getProductVariants($id);
+        $images = $this->productModel->getProductImages($id);
+        $category = $this->categoryModel->getCategoryById($product->danhmuc_id);
+        $subcategory = $this->categoryModel->getSubcategoryById($product->loaisanpham_id);
+        
+        // Tính tổng tồn kho
+        $totalStock = $this->productModel->getTotalStock($id);
+        
+        $this->view('admin/product/view', [
+            'title' => 'Chi tiết sản phẩm - ' . $product->sanpham_tieude,
+            'product' => $product,
+            'colors' => $colors,
+            'variants' => $variants,
+            'images' => $images,
+            'category' => $category,
+            'subcategory' => $subcategory,
+            'totalStock' => $totalStock
+        ]);
+    }
+    
+    /**
+     * AJAX: Xóa variant
+     */
+    public function deleteVariant() {
+        header('Content-Type: application/json');
+        
+        if($_SERVER['REQUEST_METHOD'] != 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             exit;
         }
         
-        $data = [
-            'title' => 'Chi tiết sản phẩm - ' . $product->sanpham_tieude,
-            'product' => $product
-        ];
+        $variantId = (int)($_POST['variant_id'] ?? 0);
         
-        $this->view('admin/product/view', $data);
+        if(!$variantId) {
+            echo json_encode(['success' => false, 'message' => 'Variant ID is required']);
+            exit;
+        }
+        
+        $result = $this->productModel->deleteVariant($variantId);
+        
+        if($result) {
+            echo json_encode(['success' => true, 'message' => 'Xóa variant thành công']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Lỗi khi xóa variant']);
+        }
+        exit;
+    }
+    
+    /**
+     * AJAX: Cập nhật tồn kho variant
+     */
+    public function updateVariantStockAjax() {
+        header('Content-Type: application/json');
+        
+        if($_SERVER['REQUEST_METHOD'] != 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            exit;
+        }
+        
+        $variantId = (int)($_POST['variant_id'] ?? 0);
+        $tonKho = (int)($_POST['ton_kho'] ?? 0);
+        
+        if(!$variantId) {
+            echo json_encode(['success' => false, 'message' => 'Variant ID is required']);
+            exit;
+        }
+        
+        $result = $this->productModel->updateVariantStock($variantId, $tonKho);
+        
+        if($result) {
+            echo json_encode(['success' => true, 'message' => 'Cập nhật tồn kho thành công', 'new_stock' => $tonKho]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Lỗi khi cập nhật tồn kho']);
+        }
+        exit;
+    }
+    
+    /**
+     * AJAX: Lấy danh sách variants của sản phẩm
+     */
+    public function getVariantsByProduct() {
+        header('Content-Type: application/json');
+        
+        if($_SERVER['REQUEST_METHOD'] != 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            exit;
+        }
+        
+        $productId = (int)($_POST['product_id'] ?? 0);
+        
+        if(!$productId) {
+            echo json_encode(['success' => false, 'message' => 'Product ID is required']);
+            exit;
+        }
+        
+        $variants = $this->productModel->getProductVariants($productId);
+        
+        echo json_encode(['success' => true, 'variants' => $variants]);
+        exit;
     }
     
     /**

@@ -42,6 +42,14 @@
                 </ul>
             </li>
             
+            <!-- Size -->
+            <li><a href="#"><img style="width:20px" src="<?php echo BASE_URL; ?>assets/images/icon/options.png" alt="">Size</a>
+                <ul>
+                    <li><a href="<?php echo ADMIN_URL; ?>size">📏 Danh sách size</a></li>
+                    <li><a href="<?php echo ADMIN_URL; ?>size/add">➕ Thêm size mới</a></li>
+                </ul>
+            </li>
+            
             <!-- Khuyến mãi -->
             <li><a href="#"><img style="width:20px" src="<?php echo BASE_URL; ?>assets/images/icon/picture.png" alt="">Khuyến mãi</a>
                 <ul>

@@ -18,6 +18,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/blue-theme.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/image-fix.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/product-detail.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/custom-product-detail.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/cart.css">
     
     <!-- Font Awesome -->

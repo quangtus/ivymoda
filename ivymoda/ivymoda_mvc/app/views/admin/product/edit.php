@@ -185,11 +185,118 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                                               placeholder="Nhập hướng dẫn bảo quản sản phẩm"><?= htmlspecialchars($sanpham_baoquan) ?></textarea>
                                 </div>
 
+                                <!-- *** THÊM MỚI: QUẢN LÝ VARIANTS *** -->
+                                <div class="card border-info mb-4">
+                                    <div class="card-header bg-gradient-info text-white">
+                                        <h6 class="m-0 font-weight-bold">
+                                            <i class="fas fa-warehouse"></i> Quản lý tồn kho theo Size & Màu
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i> 
+                                            <strong>Hướng dẫn:</strong> Cập nhật tồn kho cho từng size+màu. Click "Lưu" sau mỗi thay đổi hoặc "Xóa" để ngừng bán variant đó.
+                                        </div>
+
+                                        <!-- Bảng variants hiện có -->
+                                        <?php if(!empty($variants) && is_array($variants) && count($variants) > 0): ?>
+                                        <h6 class="font-weight-bold mb-3">📦 Tồn kho hiện tại:</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th width="60">STT</th>
+                                                        <th>SKU</th>
+                                                        <th>Màu</th>
+                                                        <th>Size</th>
+                                                        <th width="120">Tồn kho</th>
+                                                        <th width="100">Trạng thái</th>
+                                                        <th width="180">Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach($variants as $index => $variant): ?>
+                                                    <tr data-variant-id="<?= $variant->variant_id ?>" id="variant-row-<?= $variant->variant_id ?>">
+                                                        <td class="text-center"><?= $index + 1 ?></td>
+                                                        <td><code><?= htmlspecialchars($variant->sku) ?></code></td>
+                                                        <td>
+                                                            <span class="badge badge-primary">
+                                                                <?= htmlspecialchars($variant->color_ten) ?>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge badge-secondary">
+                                                                <?= htmlspecialchars($variant->size_ten) ?>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" 
+                                                                   class="form-control form-control-sm text-center variant-stock-input" 
+                                                                   value="<?= $variant->ton_kho ?>" 
+                                                                   data-variant-id="<?= $variant->variant_id ?>"
+                                                                   data-original-value="<?= $variant->ton_kho ?>"
+                                                                   min="0"
+                                                                   style="width: 100px; font-weight: bold;">
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <?php if($variant->trang_thai == 1 && $variant->ton_kho > 0): ?>
+                                                                <span class="badge badge-success">Còn hàng</span>
+                                                            <?php else: ?>
+                                                                <span class="badge badge-danger">Hết hàng</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-primary update-variant-btn" 
+                                                                    data-variant-id="<?= $variant->variant_id ?>"
+                                                                    title="Cập nhật tồn kho">
+                                                                <i class="fas fa-save"></i> Lưu
+                                                            </button>
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-danger delete-variant-btn" 
+                                                                    data-variant-id="<?= $variant->variant_id ?>"
+                                                                    title="Xóa variant">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr class="table-info">
+                                                        <td colspan="4" class="text-right"><strong>Tổng tồn kho:</strong></td>
+                                                        <td class="text-center">
+                                                            <strong class="text-success" style="font-size: 1.1em;">
+                                                                <?= array_sum(array_column($variants, 'ton_kho')) ?>
+                                                            </strong>
+                                                        </td>
+                                                        <td colspan="2"></td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                        <?php else: ?>
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle"></i> 
+                                            <strong>Chưa có variant:</strong> Sản phẩm này chưa có tồn kho chi tiết. Thêm màu và nhập tồn kho bên dưới.
+                                        </div>
+                                        <?php endif; ?>
+
+                                        <hr class="my-4">
+
+                                        <!-- Form thêm variant mới -->
+                                        <h6 class="font-weight-bold mb-3">➕ Thêm variant mới:</h6>
+                                        <div id="variant-form-container">
+                                            <p class="text-muted">Chọn màu ở phần "Màu sắc bổ sung" phía trên để hiển thị form thêm variant...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary btn-lg">
                                         <i class="fas fa-save"></i> Cập nhật sản phẩm
                                     </button>
-                                    <a href="<?= ADMIN_URL ?>product" class="btn btn-secondary">
+                                    <a href="<?= ADMIN_URL ?>product" class="btn btn-secondary btn-lg">
                                         <i class="fas fa-times"></i> Hủy
                                     </a>
                                 </div>
@@ -341,6 +448,234 @@ document.querySelector('form').addEventListener('submit', function(e) {
         document.getElementById('sanpham_gia').focus();
         return false;
     }
+});
+
+// ============================================
+// QUẢN LÝ VARIANTS - AJAX OPERATIONS
+// ============================================
+
+// Cập nhật tồn kho variant
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('update-variant-btn') || e.target.closest('.update-variant-btn')) {
+        const btn = e.target.classList.contains('update-variant-btn') ? e.target : e.target.closest('.update-variant-btn');
+        const variantId = btn.getAttribute('data-variant-id');
+        const row = document.querySelector(`tr[data-variant-id="${variantId}"]`);
+        const stockInput = row.querySelector('.variant-stock-input');
+        const newStock = parseInt(stockInput.value);
+        
+        if (isNaN(newStock) || newStock < 0) {
+            alert('Tồn kho phải là số không âm');
+            return;
+        }
+        
+        // Disable button during request
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+        
+        fetch('<?= ADMIN_URL ?>product/updateVariantStockAjax', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `variant_id=${variantId}&ton_kho=${newStock}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update original value
+                stockInput.setAttribute('data-original-value', newStock);
+                
+                // Update status badge
+                const statusCell = row.querySelector('td:nth-child(6)');
+                if (newStock > 0) {
+                    statusCell.innerHTML = '<span class="badge badge-success">Còn hàng</span>';
+                } else {
+                    statusCell.innerHTML = '<span class="badge badge-danger">Hết hàng</span>';
+                }
+                
+                // Update total stock in footer
+                updateTotalStock();
+                
+                // Show success message
+                alert('✅ Cập nhật tồn kho thành công!');
+            } else {
+                alert('❌ Lỗi: ' + (data.message || 'Không thể cập nhật'));
+                // Restore original value
+                stockInput.value = stockInput.getAttribute('data-original-value');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Lỗi kết nối: ' + error.message);
+            stockInput.value = stockInput.getAttribute('data-original-value');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Lưu';
+        });
+    }
+});
+
+// Xóa variant
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('delete-variant-btn') || e.target.closest('.delete-variant-btn')) {
+        const btn = e.target.classList.contains('delete-variant-btn') ? e.target : e.target.closest('.delete-variant-btn');
+        const variantId = btn.getAttribute('data-variant-id');
+        const row = document.querySelector(`tr[data-variant-id="${variantId}"]`);
+        const sku = row.querySelector('code').textContent;
+        
+        if (!confirm(`⚠️ Xác nhận xóa variant "${sku}"?\n\nLưu ý: Hành động này không thể hoàn tác!`)) {
+            return;
+        }
+        
+        // Disable button during request
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        fetch('<?= ADMIN_URL ?>product/deleteVariant', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `variant_id=${variantId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove row with animation
+                row.style.transition = 'opacity 0.3s';
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    row.remove();
+                    updateTotalStock();
+                    
+                    // Check if table is empty
+                    const tbody = document.querySelector('tbody');
+                    if (tbody.children.length === 0) {
+                        location.reload();
+                    }
+                }, 300);
+                
+                alert('✅ Xóa variant thành công!');
+            } else {
+                alert('❌ Lỗi: ' + (data.message || 'Không thể xóa'));
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Lỗi kết nối: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-trash"></i>';
+        });
+    }
+});
+
+// Cập nhật tổng tồn kho
+function updateTotalStock() {
+    const stockInputs = document.querySelectorAll('.variant-stock-input');
+    let total = 0;
+    stockInputs.forEach(input => {
+        total += parseInt(input.value) || 0;
+    });
+    
+    const totalCell = document.querySelector('tfoot td:nth-child(5) strong');
+    if (totalCell) {
+        totalCell.textContent = total;
+    }
+}
+
+// Render form thêm variant mới dựa trên màu đã chọn
+function renderVariantForm() {
+    const colorCheckboxes = document.querySelectorAll('input[name="colors[]"]:checked');
+    const container = document.getElementById('variant-form-container');
+    
+    if (colorCheckboxes.length === 0) {
+        container.innerHTML = '<p class="text-muted">Chọn màu ở phần "Màu sắc bổ sung" phía trên để hiển thị form thêm variant...</p>';
+        return;
+    }
+    
+    // Get existing variants to avoid duplicates
+    const existingVariants = new Set();
+    document.querySelectorAll('tbody tr[data-variant-id]').forEach(row => {
+        const colorBadge = row.querySelector('td:nth-child(3) .badge').textContent.trim();
+        const sizeBadge = row.querySelector('td:nth-child(4) .badge').textContent.trim();
+        existingVariants.add(`${colorBadge}_${sizeBadge}`);
+    });
+    
+    // Get sizes from PHP
+    const sizes = <?= json_encode(array_map(function($size) {
+        return ['size_id' => $size->size_id, 'size_ten' => $size->size_ten];
+    }, $sizes ?? [])) ?>;
+    
+    // Get colors info
+    const colorsData = <?= json_encode(array_map(function($color) {
+        return ['color_id' => $color->color_id, 'color_ten' => $color->color_ten];
+    }, $colors ?? [])) ?>;
+    
+    let html = '<div class="alert alert-success"><i class="fas fa-plus-circle"></i> Chọn size để thêm vào tồn kho:</div>';
+    
+    colorCheckboxes.forEach(checkbox => {
+        const colorId = checkbox.value;
+        const colorData = colorsData.find(c => c.color_id == colorId);
+        if (!colorData) return;
+        
+        const colorName = colorData.color_ten;
+        
+        html += `
+            <div class="card mb-3 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0">Màu: ${colorName}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+        `;
+        
+        sizes.forEach(size => {
+            const key = `${colorName}_${size.size_ten}`;
+            const exists = existingVariants.has(key);
+            
+            if (!exists) {
+                html += `
+                    <div class="col-md-3 mb-3">
+                        <div class="card border-secondary">
+                            <div class="card-body text-center p-2">
+                                <h6 class="mb-2">${size.size_ten}</h6>
+                                <label class="small text-muted">Tồn kho:</label>
+                                <input type="number" 
+                                       name="new_variants[${colorId}][${size.size_id}][ton_kho]" 
+                                       class="form-control form-control-sm text-center" 
+                                       value="0" 
+                                       min="0"
+                                       placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        
+        html += `
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Lắng nghe thay đổi color checkboxes
+document.addEventListener('change', function(e) {
+    if (e.target.matches('input[name="colors[]"]')) {
+        renderVariantForm();
+    }
+});
+
+// Render form on page load
+document.addEventListener('DOMContentLoaded', function() {
+    renderVariantForm();
 });
 </script>
 

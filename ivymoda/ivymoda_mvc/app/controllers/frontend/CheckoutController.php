@@ -1,16 +1,29 @@
 <?php
-// filepath: C:\xampp\htdocs\ivymoda\ivymoda_mvc\app\controllers\frontend\CheckoutController.php
+/**
+ * CheckoutController - MIGRATED TO VARIANT SYSTEM
+ * 
+ * Version 2.0 - Sử dụng CartModel với variant_id
+ * 
+ * Workflow:
+ * 1. Validate cart với CartModel::validateCartForCheckout()
+ * 2. Create order
+ * 3. Add order items với variant_id + snapshot
+ * 4. Decrease stock với ProductModel::decreaseVariantStock()
+ * 5. Clear cart
+ */
 
 class CheckoutController extends Controller {
     private $productModel;
     private $userModel;
     private $orderModel;
+    private $cartModel;
     
     public function __construct() {
-        // Khởi tạo model
+        // Khởi tạo models
         $this->productModel = $this->model('ProductModel');
         $this->userModel = $this->model('UserModel');
         $this->orderModel = $this->model('OrderModel');
+        $this->cartModel = $this->model('CartModel');
         
         // Kiểm tra đăng nhập
         if (!isset($_SESSION['user_id'])) {
@@ -19,8 +32,12 @@ class CheckoutController extends Controller {
             return;
         }
         
-        // Kiểm tra giỏ hàng
-        if (empty($_SESSION['cart'])) {
+        // Kiểm tra giỏ hàng (dùng CartModel)
+        $sessionId = session_id();
+        $userId = $_SESSION['user_id'] ?? null;
+        $cartCount = $this->cartModel->getCartCount($sessionId, $userId);
+        
+        if ($cartCount == 0) {
             $_SESSION['error'] = 'Giỏ hàng của bạn đang trống';
             $this->redirect('cart');
             return;
@@ -31,23 +48,27 @@ class CheckoutController extends Controller {
      * Hiển thị trang thanh toán
      */
     public function index() {
-        $cartItems = $this->getCartItems();
-        $totalAmount = $this->calculateTotalAmount($cartItems);
-        $user = $this->userModel->getUserById($_SESSION['user_id']);
+        $sessionId = session_id();
+        $userId = $_SESSION['user_id'];
+        
+        // Lấy giỏ hàng từ CartModel
+        $cartItems = $this->cartModel->getCartItems($sessionId, $userId);
+        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId);
+        $user = $this->userModel->getUserById($userId);
         
         $data = [
             'title' => 'Thanh toán - IVY moda',
             'cartItems' => $cartItems,
             'totalAmount' => $totalAmount,
             'user' => $user,
-            'cartCount' => $this->getCartCount()
+            'cartCount' => $this->cartModel->getCartCount($sessionId, $userId)
         ];
         
         $this->view('frontend/checkout/index', $data);
     }
     
     /**
-     * Xử lý thanh toán
+     * Xử lý thanh toán (MIGRATED TO VARIANT SYSTEM)
      */
     public function process() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -55,7 +76,7 @@ class CheckoutController extends Controller {
             return;
         }
         
-        // Validate dữ liệu
+        // Validate dữ liệu form
         $errors = $this->validateCheckoutData($_POST);
         
         if (!empty($errors)) {
@@ -64,20 +85,33 @@ class CheckoutController extends Controller {
             return;
         }
         
-        // Lấy thông tin giỏ hàng
-        $cartItems = $this->getCartItems();
-        $totalAmount = $this->calculateTotalAmount($cartItems);
+        // Lấy session và user info
+        $sessionId = session_id();
+        $userId = $_SESSION['user_id'];
+        
+        // *** BƯỚC QUAN TRỌNG: Validate giỏ hàng trước khi checkout ***
+        $cartValidation = $this->cartModel->validateCartForCheckout($sessionId, $userId);
+        
+        if (!$cartValidation['valid']) {
+            $_SESSION['checkout_errors'] = $cartValidation['errors'];
+            $_SESSION['error'] = "Không thể thanh toán:\n" . implode("\n", $cartValidation['errors']);
+            $this->redirect('checkout');
+            return;
+        }
+        
+        $cartItems = $cartValidation['items'];
+        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId);
         
         // Lấy thông tin user
-        $user = $this->userModel->getUserById($_SESSION['user_id']);
+        $user = $this->userModel->getUserById($userId);
         
         // Tạo đơn hàng
         $orderData = [
-            'user_id' => $_SESSION['user_id'],
-            'session_id' => session_id(),
-            'customer_name' => $user['fullname'] ?? $_POST['customer_name'],
-            'customer_phone' => $user['phone'] ?? $_POST['customer_phone'],
-            'customer_email' => $user['email'],
+            'user_id' => $userId,
+            'session_id' => $sessionId,
+            'customer_name' => $user->fullname ?? $_POST['customer_name'],
+            'customer_phone' => $user->phone ?? $_POST['customer_phone'],
+            'customer_email' => $user->email,
             'customer_address' => $_POST['customer_address'],
             'order_total' => $totalAmount,
             'order_status' => 0,
@@ -86,33 +120,61 @@ class CheckoutController extends Controller {
             'order_note' => $_POST['notes'] ?? ''
         ];
         
-        // Lưu đơn hàng vào database
-        $result = $this->orderModel->createOrder($orderData);
-        
-        if ($result['success']) {
-            // Lưu chi tiết đơn hàng
+        // BEGIN TRANSACTION (quan trọng để đảm bảo data consistency)
+        try {
+            // Lưu đơn hàng vào database
+            $result = $this->orderModel->createOrder($orderData);
+            
+            if (!$result['success']) {
+                throw new Exception('Không thể tạo đơn hàng');
+            }
+            
+            $orderId = $result['order_id'];
+            
+            // Lưu chi tiết đơn hàng + Trừ tồn kho
             foreach ($cartItems as $item) {
-                $this->orderModel->addOrderItem([
-                    'order_id' => $result['order_id'],
-                    'sanpham_id' => $item['product_id'],
-                    'sanpham_ten' => $item['name'],
-                    'sanpham_gia' => $item['price'],
-                    'sanpham_soluong' => $item['quantity'],
-                    'sanpham_size' => $item['size'] ?? null,
-                    'sanpham_color' => $item['color'] ?? null,
-                    'sanpham_anh' => $item['image']
+                // Kiểm tra lại tồn kho (double-check)
+                if (!$this->productModel->checkVariantStock($item->variant_id)) {
+                    throw new Exception("Sản phẩm '{$item->sanpham_tieude}' ({$item->color_ten}, {$item->size_ten}) đã hết hàng");
+                }
+                
+                // Thêm order item với variant_id + snapshot
+                $addItemResult = $this->orderModel->addOrderItem([
+                    'order_id' => $orderId,
+                    'variant_id' => $item->variant_id,
+                    'sanpham_ten' => $item->sanpham_tieude,
+                    'sanpham_gia' => $item->gia_hien_tai,
+                    'sanpham_soluong' => $item->quantity,
+                    'sanpham_size' => $item->size_ten,
+                    'sanpham_color' => $item->color_ten,
+                    'sanpham_anh' => $item->sanpham_anh
                 ]);
+                
+                if (!$addItemResult) {
+                    throw new Exception("Không thể thêm sản phẩm vào đơn hàng");
+                }
+                
+                // Trừ tồn kho
+                $decreaseResult = $this->productModel->decreaseVariantStock($item->variant_id, $item->quantity);
+                
+                if (!$decreaseResult) {
+                    throw new Exception("Không thể cập nhật tồn kho cho '{$item->sanpham_tieude}'");
+                }
             }
             
             // Xóa giỏ hàng sau khi thanh toán thành công
-            $_SESSION['cart'] = [];
-            $this->updateCartCount();
+            $this->cartModel->clearCart($sessionId, $userId);
             
+            // Lưu thông báo thành công
             $_SESSION['success'] = 'Đặt hàng thành công! Mã đơn hàng: ' . $result['order_code'];
             $_SESSION['order_code'] = $result['order_code'];
+            
             $this->redirect('checkout/success');
-        } else {
-            $_SESSION['error'] = 'Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.';
+            
+        } catch (Exception $e) {
+            // Rollback nếu có lỗi (TODO: implement transaction trong Database class)
+            error_log("Checkout error: " . $e->getMessage());
+            $_SESSION['error'] = 'Có lỗi xảy ra: ' . $e->getMessage();
             $this->redirect('checkout');
         }
     }

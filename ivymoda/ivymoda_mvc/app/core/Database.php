@@ -116,7 +116,7 @@ class Database {
     
     /**
      * Lấy tất cả kết quả dưới dạng mảng đối tượng
-     * @return array Mảng các đối tượng
+     * @return object[] Mảng các đối tượng
      */
     public function resultSet() {
         $this->execute();
@@ -125,7 +125,7 @@ class Database {
     
     /**
      * Lấy một kết quả duy nhất dưới dạng đối tượng
-     * @return object Đối tượng kết quả
+     * @return object|false Đối tượng kết quả hoặc false nếu không tìm thấy
      */
     public function single() {
         $this->execute();

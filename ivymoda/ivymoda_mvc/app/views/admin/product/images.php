@@ -81,7 +81,7 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
                             <div class="form-row align-items-end">
                                 <div class="col-md-4">
                                     <label for="filter_color_id">Lọc theo màu:</label>
-                                    <select class="form-control" id="filter_color_id" name="color_id" onchange="this.form.submit()">
+                                    <select class="form-control" id="filter_color_id" name="color_id" onchange="submitFilterForm()">
                                         <option value="">Tất cả màu</option>
                                         <?php if(isset($availableColors) && !empty($availableColors)): ?>
                                             <?php foreach($availableColors as $color): ?>
@@ -318,6 +318,14 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
 </style>
 
 <script>
+// Submit filter form
+function submitFilterForm() {
+    const form = document.querySelector('form[method="GET"]');
+    if (form) {
+        form.submit();
+    }
+}
+
 // Xem ảnh lớn
 function showImagePreview(imageSrc, productName) {
     $('#previewImage').attr('src', imageSrc);

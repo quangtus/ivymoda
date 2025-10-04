@@ -6,6 +6,33 @@ if (!$product) {
     require_once ROOT_PATH . 'app/views/shared/frontend/footer.php';
     exit;
 }
+
+// Function để tính màu chữ tương phản
+function getContrastColor($hexColor) {
+    // Kiểm tra null hoặc empty
+    if (empty($hexColor) || $hexColor === null) {
+        return '#333';
+    }
+    
+    // Loại bỏ # nếu có
+    $hexColor = ltrim($hexColor, '#');
+    
+    // Nếu không phải hex color hợp lệ, trả về màu mặc định
+    if (!preg_match('/^[0-9A-Fa-f]{6}$/', $hexColor)) {
+        return '#333';
+    }
+    
+    // Chuyển đổi hex sang RGB
+    $r = hexdec(substr($hexColor, 0, 2));
+    $g = hexdec(substr($hexColor, 2, 2));
+    $b = hexdec(substr($hexColor, 4, 2));
+    
+    // Tính độ sáng (luminance)
+    $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+    
+    // Trả về màu trắng nếu nền tối, màu đen nếu nền sáng
+    return $luminance > 0.5 ? '#333' : '#fff';
+}
 ?>
 
 <div class="container product-detail-container mt-4">
@@ -95,6 +122,9 @@ if (!$product) {
                             // Kiểm tra màu có ảnh không
                             $colorImages = isset($product->imagesByColor[$color->color_id]) ? $product->imagesByColor[$color->color_id] : [];
                             $hasImages = !empty($colorImages);
+                            
+                            // Debug: Kiểm tra dữ liệu màu
+                            // echo "<!-- Debug: color_id=" . $color->color_id . ", color_ten=" . $color->color_ten . ", color_ma=" . ($color->color_ma ?? 'NULL') . " -->";
                         ?>
                             <button type="button" 
                                     class="color-option <?= $isFirst ? 'active' : '' ?>" 
@@ -102,9 +132,8 @@ if (!$product) {
                                     data-color-name="<?= htmlspecialchars($color->color_ten) ?>"
                                     <?= !$hasImages ? 'disabled title="Không có ảnh"' : '' ?>
                                     onclick="selectColor(this, <?= $color->color_id ?>)"
-                                    style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 2px solid #ddd; border-radius: 5px; background: white; cursor: pointer; margin: 5px; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px;">
-                                <span class="color-swatch" style="background: <?= htmlspecialchars($color->color_ma ?? '#ccc') ?>; width: 30px; height: 30px; display: inline-block; border-radius: 50%; border: 2px solid #ddd;"></span>
-                                <span class="color-name"><?= htmlspecialchars($color->color_ten) ?></span>
+                                    style="background-color: <?= htmlspecialchars($color->color_ma ?? '#ccc') ?>; color: <?= getContrastColor($color->color_ma ?? '#ccc') ?>;">
+                                <?= htmlspecialchars($color->color_ten) ?>
                             </button>
                         <?php 
                             if ($isFirst) $isFirst = false;
@@ -113,6 +142,14 @@ if (!$product) {
                     </div>
                 </div>
                 <?php endif; ?>
+
+                <!-- *** THÊM MỚI: Chọn size *** -->
+                <div class="product-options mb-4" id="size-selection-container" style="display: none;">
+                    <label class="font-weight-bold d-block mb-3" style="font-size: 16px;">Chọn size:</label>
+                    <div id="size-selection" class="size-selection">
+                        <p class="text-muted">Vui lòng chọn màu trước...</p>
+                    </div>
+                </div>
 
                 <!-- Thêm vào giỏ hàng -->
                 <div class="product-actions mb-4">
@@ -134,6 +171,11 @@ if (!$product) {
 </div>
 
 <script>
+// Global variables
+let selectedVariantId = null;
+let currentProductId = <?= $product->sanpham_id ?>;
+let currentColorId = null;
+
 function changeMainImage(thumbnail) {
     const mainImg = document.getElementById('mainProductImage');
     mainImg.src = thumbnail.src;
@@ -147,6 +189,9 @@ function selectColor(button, colorId) {
     // Remove active class from all color buttons
     document.querySelectorAll('.color-option').forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
+    
+    // Store current color
+    currentColorId = colorId;
     
     // Filter thumbnails by color
     const thumbnails = document.querySelectorAll('.product-thumbnail');
@@ -164,6 +209,83 @@ function selectColor(button, colorId) {
     if (firstVisible) {
         changeMainImage(firstVisible);
     }
+    
+    // Load sizes for selected color
+    loadSizesByColor(currentProductId, colorId);
+}
+
+// Load sizes available for selected color
+function loadSizesByColor(productId, colorId) {
+    const sizeContainer = document.getElementById('size-selection');
+    const sizeContainerWrapper = document.getElementById('size-selection-container');
+    
+    // Show loading
+    sizeContainer.innerHTML = '<p class="text-muted"><i class="fas fa-spinner fa-spin"></i> Đang tải...</p>';
+    sizeContainerWrapper.style.display = 'block';
+    
+    // Reset selected variant
+    selectedVariantId = null;
+    
+    fetch(`<?= BASE_URL ?>ajax/get-sizes-by-color.php?product_id=${productId}&color_id=${colorId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                renderSizeButtons(data.data);
+            } else {
+                sizeContainer.innerHTML = '<p class="text-danger">❌ Không có size nào cho màu này</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading sizes:', error);
+            sizeContainer.innerHTML = '<p class="text-danger">❌ Lỗi khi tải sizes</p>';
+        });
+}
+
+// Render size buttons with stock info
+function renderSizeButtons(sizes) {
+    const sizeContainer = document.getElementById('size-selection');
+    
+    let html = '<div class="size-buttons-grid" style="display: flex; gap: 10px; flex-wrap: wrap;">';
+    
+    sizes.forEach(size => {
+        const isAvailable = size.trang_thai === 1 && size.ton_kho > 0;
+        const btnClass = isAvailable ? 'size-btn-available' : 'size-btn-disabled';
+        const disabled = !isAvailable ? 'disabled' : '';
+        const stockText = isAvailable ? `Còn ${size.ton_kho}` : 'Hết hàng';
+        
+        html += `
+            <button type="button" 
+                    class="size-option ${btnClass}" 
+                    data-variant-id="${size.variant_id}"
+                    data-size-name="${size.size_ten}"
+                    data-stock="${size.ton_kho}"
+                    ${disabled}
+                    onclick="selectSize(this, ${size.variant_id})"
+                    style="padding: 12px 20px; border: 2px solid ${isAvailable ? '#ddd' : '#ccc'}; 
+                           border-radius: 5px; background: ${isAvailable ? 'white' : '#f5f5f5'}; 
+                           cursor: ${isAvailable ? 'pointer' : 'not-allowed'}; 
+                           font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; min-width: 80px;
+                           transition: all 0.3s ease;">
+                <div style="font-weight: 600; font-size: 16px;">${size.size_ten}</div>
+                <div style="font-size: 11px; color: ${isAvailable ? '#28a745' : '#999'}; margin-top: 2px;">${stockText}</div>
+            </button>
+        `;
+    });
+    
+    html += '</div>';
+    sizeContainer.innerHTML = html;
+}
+
+// Select size and store variant_id
+function selectSize(button, variantId) {
+    // Remove active class from all size buttons
+    document.querySelectorAll('.size-option').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    
+    // Store selected variant
+    selectedVariantId = variantId;
+    
+    console.log('Selected variant ID:', selectedVariantId);
 }
 
 // Initialize: show first color's images
@@ -171,6 +293,7 @@ window.addEventListener('DOMContentLoaded', function() {
     const firstColorBtn = document.querySelector('.color-option.active');
     if (firstColorBtn) {
         const colorId = parseInt(firstColorBtn.getAttribute('data-color-id'));
+        currentColorId = colorId;
         selectColor(firstColorBtn, colorId);
     }
 });
@@ -178,12 +301,56 @@ window.addEventListener('DOMContentLoaded', function() {
 function addToCart(productId) {
     const selectedColor = document.querySelector('.color-option.active');
     if (!selectedColor) {
-        alert('Vui lòng chọn màu sắc');
+        alert('⚠️ Vui lòng chọn màu sắc');
         return;
     }
     
-    // TODO: Implement add to cart logic
-    alert('Thêm vào giỏ hàng thành công!');
+    const selectedSize = document.querySelector('.size-option.active');
+    if (!selectedSize) {
+        alert('⚠️ Vui lòng chọn size');
+        return;
+    }
+    
+    if (!selectedVariantId) {
+        alert('❌ Lỗi: Không xác định được variant');
+        return;
+    }
+    
+    // Disable button để tránh double-click
+    const btn = document.querySelector('.btn-add-to-cart');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang thêm...';
+    
+    // Call AJAX với variant_id
+    fetch('<?= BASE_URL ?>ajax/cart_ajax.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=add&variant_id=${selectedVariantId}&quantity=1`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ ${data.message}\n\n${data.item.product_name}\nMàu: ${data.item.color} - Size: ${data.item.size}\nSố lượng: ${data.item.quantity}\n\nTổng giỏ hàng: ${data.cart_count} sản phẩm`);
+            
+            // Update cart count in header (nếu có)
+            const cartCountElements = document.querySelectorAll('.cart-count');
+            cartCountElements.forEach(el => {
+                el.textContent = data.cart_count;
+            });
+        } else {
+            alert(`❌ ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Lỗi kết nối. Vui lòng thử lại.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng';
+    });
 }
 </script>
 
@@ -223,19 +390,25 @@ function addToCart(productId) {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+    align-items: flex-start;
 }
 
 .color-option {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 18px;
+    justify-content: center;
+    padding: 12px 20px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    background: white;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 14px;
+    font-weight: 500;
+    margin: 5px;
+    vertical-align: top;
+    min-width: 80px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .color-option:hover:not(:disabled) {
@@ -246,8 +419,9 @@ function addToCart(productId) {
 
 .color-option.active {
     border-color: #007bff;
-    background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
-    box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    border-width: 3px;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.4);
 }
 
 .color-option:disabled {
@@ -256,8 +430,54 @@ function addToCart(productId) {
     background: #f5f5f5;
 }
 
-.color-swatch {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+/* Color swatch styles removed - now using background color directly on button */
+
+/* *** THÊM MỚI: Size selection styles *** */
+.size-selection {
+    margin-top: 10px;
+}
+
+.size-option {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    padding: 12px 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.size-option:hover:not(:disabled) {
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+}
+
+.size-option.active {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    font-weight: bold;
+}
+
+.size-option:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+.size-btn-available:hover {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
+}
+
+.size-btn-disabled {
+    text-decoration: line-through;
 }
 
 .product-price {

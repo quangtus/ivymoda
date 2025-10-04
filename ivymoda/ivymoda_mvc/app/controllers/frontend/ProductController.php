@@ -125,6 +125,7 @@ class ProductController extends Controller {
         }
         
         $product = $this->productModel->getProductById($product_id);
+        $categories = [];
         
         if ($product) {
             // Lấy các màu được gán cho sản phẩm
@@ -152,9 +153,15 @@ class ProductController extends Controller {
             $this->productModel->incrementViewCount($product_id);
         }
         
+        // Lấy categories cho header menu
+        if ($this->categoryModel) {
+            $categories = $this->categoryModel->getAllCategories();
+        }
+        
         $this->view('frontend/product/detail', [
             'title' => $product ? $product->sanpham_tieude . ' - IVY moda' : 'Sản phẩm không tồn tại',
-            'product' => $product
+            'product' => $product,
+            'categories' => $categories
         ]);
     }
     

@@ -56,9 +56,38 @@ class OrderModel extends Model {
         return ['success' => false];
     }
     
+    /**
+     * Thêm order item (MIGRATED TO VARIANT SYSTEM)
+     * 
+     * @param array $itemData Dữ liệu item từ cart
+     * Format:
+     * - order_id: ID đơn hàng
+     * - variant_id: ID variant
+     * - sanpham_ten: Tên sản phẩm (snapshot)
+     * - sanpham_gia: Giá (snapshot)
+     * - sanpham_soluong: Số lượng
+     * - sanpham_size: Tên size (snapshot)
+     * - sanpham_color: Tên màu (snapshot)
+     * - sanpham_anh: Ảnh (snapshot)
+     * 
+     * @return bool Success or failure
+     */
     public function addOrderItem($itemData) {
-        $sql = "INSERT INTO tbl_order_items (order_id, sanpham_id, sanpham_ten, sanpham_gia, sanpham_soluong, sanpham_size, sanpham_color, sanpham_anh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        return $this->db->execute($sql, [$itemData['order_id'], $itemData['sanpham_id'], $itemData['sanpham_ten'], $itemData['sanpham_gia'], $itemData['sanpham_soluong'], $itemData['sanpham_size'] ?? null, $itemData['sanpham_color'] ?? null, $itemData['sanpham_anh'] ?? null]);
+        $sql = "INSERT INTO tbl_order_items 
+                (order_id, variant_id, sanpham_ten, sanpham_gia, sanpham_soluong, 
+                 sanpham_size, sanpham_color, sanpham_anh) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        return $this->db->execute($sql, [
+            $itemData['order_id'],
+            $itemData['variant_id'],
+            $itemData['sanpham_ten'],
+            $itemData['sanpham_gia'],
+            $itemData['sanpham_soluong'],
+            $itemData['sanpham_size'],
+            $itemData['sanpham_color'],
+            $itemData['sanpham_anh'] ?? null
+        ]);
     }
     
     public function updateOrderStatus($orderId, $status) {

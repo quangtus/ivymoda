@@ -1,19 +1,35 @@
 <?php
-// filepath: C:\xampp\htdocs\ivymoda\ivymoda_mvc\public\ajax\cart_ajax.php
+/**
+ * Cart AJAX Endpoint - MIGRATED TO VARIANT SYSTEM
+ * 
+ * Version 2.0 - Sử dụng variant_id thay vì product_id + size + color
+ * 
+ * Actions:
+ * - add: Thêm variant vào giỏ
+ * - remove: Xóa item khỏi giỏ
+ * - update: Cập nhật số lượng
+ * - count: Đếm số items
+ * - list: Lấy danh sách giỏ hàng
+ * - clear: Xóa toàn bộ giỏ
+ */
 
 // Định nghĩa đường dẫn gốc
 if (!defined('ROOT_PATH')) {
     define('ROOT_PATH', dirname(__DIR__, 2) . '/');
 }
 
-// Load cấu hình
+// Load dependencies
 require_once ROOT_PATH . 'config/config.php';
+require_once ROOT_PATH . 'app/core/Database.php';
+require_once ROOT_PATH . 'app/core/Model.php';
+require_once ROOT_PATH . 'app/models/CartModel.php';
+require_once ROOT_PATH . 'app/models/ProductModel.php';
 
 // Khởi động session
 session_start();
 
 // Set header JSON
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 // Kiểm tra method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'GET') {
@@ -21,157 +37,208 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'GET
     exit;
 }
 
+// Initialize models
+$db = new Database();
+$cartModel = new CartModel($db);
+$productModel = new ProductModel($db);
+
+// Lấy session_id và user_id
+$sessionId = session_id();
+$userId = $_SESSION['user_id'] ?? null;
+
 // Lấy action
 $action = $_REQUEST['action'] ?? '';
 
 try {
     switch ($action) {
         case 'add':
-            addToCart();
+            addToCart($cartModel, $productModel, $sessionId, $userId);
             break;
         case 'remove':
-            removeFromCart();
+            removeFromCart($cartModel);
             break;
         case 'update':
-            updateCart();
+            updateCart($cartModel);
             break;
         case 'count':
-            getCartCount();
+            getCartCount($cartModel, $sessionId, $userId);
             break;
         case 'list':
-            getCartList();
+            getCartList($cartModel, $sessionId, $userId);
             break;
         case 'clear':
-            clearCart();
+            clearCart($cartModel, $sessionId, $userId);
             break;
         default:
             echo json_encode(['success' => false, 'message' => 'Invalid action']);
     }
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
 
-function addToCart() {
-    $product_id = (int)($_POST['product_id'] ?? 0);
+// ============================================
+// FUNCTIONS - MIGRATED TO VARIANT SYSTEM
+// ============================================
+
+/**
+ * Thêm variant vào giỏ hàng
+ * 
+ * POST params:
+ * - variant_id (required): ID của variant
+ * - quantity (optional): Số lượng (default: 1)
+ */
+function addToCart($cartModel, $productModel, $sessionId, $userId) {
+    $variantId = (int)($_POST['variant_id'] ?? 0);
     $quantity = (int)($_POST['quantity'] ?? 1);
     
-    if (!$product_id || $quantity <= 0) {
-        echo json_encode(['success' => false, 'message' => 'Invalid product ID or quantity']);
+    if (!$variantId || $quantity <= 0) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Thiếu variant_id hoặc quantity không hợp lệ'
+        ]);
         return;
     }
     
-    // Khởi tạo giỏ hàng nếu chưa có
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
+    // Thêm vào giỏ (validate tồn kho trong CartModel)
+    $result = $cartModel->addToCart($sessionId, $userId, $variantId, $quantity);
     
-    // Kiểm tra sản phẩm đã có trong giỏ chưa
-    if (isset($_SESSION['cart'][$product_id])) {
-        $_SESSION['cart'][$product_id] += $quantity;
+    if ($result) {
+        // Lấy thông tin variant vừa thêm
+        $cartItems = $cartModel->getCartItems($sessionId, $userId);
+        $addedItem = null;
+        foreach ($cartItems as $item) {
+            if ($item->variant_id == $variantId) {
+                $addedItem = $item;
+                break;
+            }
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Đã thêm vào giỏ hàng',
+            'cart_count' => $cartModel->getCartCount($sessionId, $userId),
+            'cart_total' => number_format($cartModel->getCartTotal($sessionId, $userId), 0, ',', '.'),
+            'item' => $addedItem ? [
+                'product_name' => $addedItem->sanpham_tieude,
+                'color' => $addedItem->color_ten,
+                'size' => $addedItem->size_ten,
+                'quantity' => $addedItem->quantity,
+                'price' => number_format($addedItem->gia_hien_tai, 0, ',', '.')
+            ] : null
+        ]);
     } else {
-        $_SESSION['cart'][$product_id] = $quantity;
+        echo json_encode([
+            'success' => false,
+            'message' => 'Không thể thêm vào giỏ hàng. Vui lòng kiểm tra tồn kho.'
+        ]);
+    }
+}
+
+/**
+ * Xóa item khỏi giỏ hàng
+ * 
+ * POST params:
+ * - cart_id (required): ID của cart item
+ */
+function removeFromCart($cartModel) {
+    $cartId = (int)($_POST['cart_id'] ?? 0);
+    
+    if (!$cartId) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Thiếu cart_id'
+        ]);
+        return;
     }
     
-    // Cập nhật số lượng giỏ hàng
-    updateCartCount();
+    $result = $cartModel->removeItem($cartId);
     
     echo json_encode([
-        'success' => true, 
-        'message' => 'Đã thêm sản phẩm vào giỏ hàng',
-        'cart_count' => array_sum($_SESSION['cart'])
+        'success' => $result,
+        'message' => $result ? 'Đã xóa sản phẩm khỏi giỏ hàng' : 'Không thể xóa sản phẩm'
     ]);
 }
 
-function removeFromCart() {
-    $product_id = (int)($_POST['product_id'] ?? 0);
-    
-    if (!$product_id) {
-        echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
-        return;
-    }
-    
-    if (isset($_SESSION['cart'][$product_id])) {
-        unset($_SESSION['cart'][$product_id]);
-        updateCartCount();
-        echo json_encode(['success' => true, 'message' => 'Đã xóa sản phẩm khỏi giỏ hàng']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Sản phẩm không có trong giỏ hàng']);
-    }
-}
-
-function updateCart() {
-    $product_id = (int)($_POST['product_id'] ?? 0);
+/**
+ * Cập nhật số lượng item trong giỏ
+ * 
+ * POST params:
+ * - cart_id (required): ID của cart item
+ * - quantity (required): Số lượng mới
+ */
+function updateCart($cartModel) {
+    $cartId = (int)($_POST['cart_id'] ?? 0);
     $quantity = (int)($_POST['quantity'] ?? 0);
     
-    if (!$product_id) {
-        echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
+    if (!$cartId) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Thiếu cart_id'
+        ]);
         return;
     }
     
-    if ($quantity <= 0) {
-        // Xóa sản phẩm nếu quantity = 0
-        if (isset($_SESSION['cart'][$product_id])) {
-            unset($_SESSION['cart'][$product_id]);
-        }
-    } else {
-        // Cập nhật số lượng
-        if (!isset($_SESSION['cart'])) {
-            $_SESSION['cart'] = [];
-        }
-        $_SESSION['cart'][$product_id] = $quantity;
-    }
-    
-    updateCartCount();
+    $result = $cartModel->updateQuantity($cartId, $quantity);
     
     echo json_encode([
-        'success' => true, 
-        'message' => 'Đã cập nhật giỏ hàng',
-        'cart_count' => array_sum($_SESSION['cart'])
+        'success' => $result,
+        'message' => $result ? 'Đã cập nhật giỏ hàng' : 'Không thể cập nhật. Vui lòng kiểm tra tồn kho.'
     ]);
 }
 
-function getCartCount() {
-    $count = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
-    echo json_encode(['success' => true, 'count' => $count]);
+/**
+ * Lấy số lượng items trong giỏ
+ */
+function getCartCount($cartModel, $sessionId, $userId) {
+    $count = $cartModel->getCartCount($sessionId, $userId);
+    echo json_encode([
+        'success' => true,
+        'count' => $count
+    ]);
 }
 
-function getCartList() {
-    if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
-        echo json_encode(['success' => true, 'items' => []]);
-        return;
-    }
+/**
+ * Lấy danh sách items trong giỏ hàng (đầy đủ thông tin)
+ */
+function getCartList($cartModel, $sessionId, $userId) {
+    $cartItems = $cartModel->getCartItems($sessionId, $userId);
     
-    // Load model để lấy thông tin sản phẩm
-    require_once ROOT_PATH . 'app/core/Model.php';
-    require_once ROOT_PATH . 'app/models/ProductModel.php';
-    
-    $productModel = new ProductModel();
     $items = [];
-    
-    foreach ($_SESSION['cart'] as $product_id => $quantity) {
-        $product = $productModel->getProductById($product_id);
-        if ($product) {
-            $items[] = [
-                'product_id' => $product->sanpham_id,
-                'name' => $product->sanpham_tieude,
-                'price' => $product->sanpham_gia,
-                'image' => $product->sanpham_anh,
-                'quantity' => $quantity,
-                'total' => $product->sanpham_gia * $quantity
-            ];
-        }
+    foreach ($cartItems as $item) {
+        $items[] = [
+            'cart_id' => $item->cart_id,
+            'variant_id' => $item->variant_id,
+            'sku' => $item->sku,
+            'product_id' => $item->sanpham_id,
+            'product_name' => $item->sanpham_tieude,
+            'product_image' => $item->sanpham_anh,
+            'color_name' => $item->color_ten,
+            'color_code' => $item->color_ma,
+            'size_name' => $item->size_ten,
+            'price' => (float)$item->gia_hien_tai,
+            'quantity' => (int)$item->quantity,
+            'stock' => (int)$item->ton_kho,
+            'is_valid' => (bool)$item->is_valid,
+            'subtotal' => (float)($item->gia_hien_tai * $item->quantity)
+        ];
     }
     
-    echo json_encode(['success' => true, 'items' => $items]);
+    echo json_encode([
+        'success' => true,
+        'items' => $items,
+        'total' => $cartModel->getCartTotal($sessionId, $userId),
+        'count' => $cartModel->getCartCount($sessionId, $userId)
+    ]);
 }
 
-function clearCart() {
-    $_SESSION['cart'] = [];
-    updateCartCount();
-    echo json_encode(['success' => true, 'message' => 'Đã xóa tất cả sản phẩm khỏi giỏ hàng']);
+/**
+ * Xóa toàn bộ giỏ hàng
+ */
+function clearCart($cartModel, $sessionId, $userId) {
+    $result = $cartModel->clearCart($sessionId, $userId);
+    echo json_encode([
+        'success' => $result,
+        'message' => $result ? 'Đã xóa giỏ hàng' : 'Không thể xóa giỏ hàng'
+    ]);
 }
 
-function updateCartCount() {
-    $_SESSION['cart_count'] = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
-}
-?>

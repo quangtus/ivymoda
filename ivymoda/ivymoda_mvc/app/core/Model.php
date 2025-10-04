@@ -126,7 +126,7 @@ class Model {
      * Thực thi câu truy vấn và trả về một bản ghi
      * @param string $query Câu truy vấn SQL
      * @param array $params Mảng tham số để bind (tùy chọn)
-     * @return array|false Mảng chứa một bản ghi hoặc false nếu lỗi
+     * @return object|false Đối tượng kết quả hoặc false nếu không tìm thấy
      */
     public function getOne($query, $params = []) {
         $this->db->query($query);
@@ -146,7 +146,7 @@ class Model {
      * Thực thi câu truy vấn và trả về tất cả kết quả
      * @param string $query Câu truy vấn SQL
      * @param array $params Mảng tham số để bind (tùy chọn)
-     * @return array Mảng kết quả
+     * @return object[] Mảng kết quả (mỗi phần tử là một đối tượng)
      */
     public function getAll($query, $params = []) {
         $this->db->query($query);
