@@ -1,7 +1,0 @@
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    
-    # Chuyển hướng tất cả các request đến thư mục public
-    RewriteCond %{REQUEST_URI} !^/ivymoda/ivymoda_mvc/public/
-    RewriteRule ^(.*)$ public/$1 [L]
-</IfModule>
