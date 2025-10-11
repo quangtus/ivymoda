@@ -1,0 +1,175 @@
+/* Style cho trang profile với màu xanh nước biển nhạt */
+.user-profile-section{
+    padding: 100px 0 0;
+}
+.profile-container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    border: 1px solid #e1f0ff;
+}
+
+.profile-container h1 {
+    color: #1971c2;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+}
+
+.profile-tabs {
+    display: flex;
+    border-bottom: 1px solid #a5d8ff;
+    margin-bottom: 20px;
+}
+
+.profile-tab {
+    padding: 12px 24px;
+    cursor: pointer;
+    margin-right: 5px;
+    border-radius: 5px 5px 0 0;
+    color: #333;
+    background-color: #f8f9fa;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.profile-tab:hover {
+    background-color: #e6f4ff;
+    color: #1971c2;
+}
+
+.profile-tab.active {
+    background-color: #4dabf7;
+    color: white;
+    border-color: #4dabf7;
+    font-weight: bold;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 0 0 5px 5px;
+    border: 1px solid #e1f0ff;
+    border-top: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #444;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #c5e3fa;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.2);
+}
+
+.form-group input[readonly] {
+    background-color: #f1f8ff;
+    cursor: not-allowed;
+}
+
+.btn-submit {
+    background-color: #4dabf7;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #1971c2;
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.alert-danger {
+    background-color: #fff1f0;
+    border: 1px solid #ffccc7;
+    color: #cf1322;
+}
+
+.alert-success {
+    background-color: #f6ffed;
+    border: 1px solid #b7eb8f;
+    color: #52c41a;
+}
+
+/* Style cho bảng đơn hàng */
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.orders-table th,
+.orders-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e1f0ff;
+}
+
+.orders-table th {
+    background-color: #f1f8ff;
+    color: #1971c2;
+    font-weight: bold;
+}
+
+.btn-view {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #4dabf7;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.btn-view:hover {
+    background-color: #1971c2;
+    color: white;
+}
+
+.status-pending {
+    color: #fa8c16;
+}
+
+.status-completed {
+    color: #52c41a;
+}
+
+.status-cancelled {
+    color: #f5222d;
+}

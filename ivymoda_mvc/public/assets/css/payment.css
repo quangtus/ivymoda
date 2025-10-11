@@ -1,0 +1,137 @@
+.payment-section{
+    padding: 100px 0;
+}
+.payment-content{
+    padding: 0 50px;
+    width: 100%;
+}
+.payment-top-wrap{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.payment-top{
+    height: 2px;
+    width: 70%;
+    background-color: #dddddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 50px 0 100px;
+}
+.payment-top-item{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #dddddd;
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.payment-top-item i{
+    color: #dddddd;
+}
+.chosen {
+    border: 1px solid #007bff;
+}
+.chosen i{
+    color: #007bff;
+}
+.payment-content-left{
+    width: 60%;
+    padding-right: 12px;
+}
+.payment-content-right{
+    width: 40%;
+    border-left: 2px solid #dddddd;
+    padding-left: 12px;
+}
+.payment-content-left p,label{
+    font-size: 12px;
+}
+.payment-content-right-button{
+    display: flex;
+    padding: 12px 0;
+    border-bottom: 2px solid #dddddd;
+}
+.payment-content-right-button input{
+    height: 30px;
+    width: 200px;
+    margin-right: 100px;
+    padding-left: 12px;
+}
+.payment-content-right-button button{
+    height: 30px;
+    width: 100px;
+    background-color: black;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+.payment-content-right-button button:hover{
+    background-color: #fff;
+    border: 2px solid #333;
+    color: #333;
+    transition: all 0.3s ease-in-out;
+}
+.payment-content-right-mnv{
+    padding: 12px 0;
+    border-bottom: 2px solid #dddddd;
+}
+.payment-content-right-mnv select{
+    height: 30px;
+    width: 100%;
+    color: #6f7275;
+    padding-left: 12px;
+}
+
+.payment-content-right-table{
+    margin-top: 20px;
+}
+.payment-content-right-table table{
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    border-collapse: collapse;
+}
+.payment-content-right-table table tr th:first-child{
+    text-align: left;
+}
+.payment-content-right-table table tr th{
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dddddd;
+}
+.payment-content-right-table table tr th:last-child{
+    text-align: right;
+}
+.payment-content-right-table table tr td {
+    padding: 6px 0;
+}
+.tr-border-top{
+    border-top: 2px solid #dddddd;
+}
+.payment-content-right-table table tr td:last-child{
+    text-align: right;
+}
+.payment-content-right-table table tr td:first-child{
+    text-align: left;
+}
+
+.payment-content-button{
+    margin-top: 50px;
+    align-items: center;
+    text-align: center;
+}
+.payment-content-button button{
+    height: 35px;
+    border: 2px solid #333;
+    padding: 6px 12px;
+    background-color: #fff;
+    cursor: pointer;
+}
+.payment-content-button button:hover{
+    background-color: #333;
+    color: #fff;
+    transition: all 0.5s ease-in-out;
+}
