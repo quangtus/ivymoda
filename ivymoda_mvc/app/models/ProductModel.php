@@ -58,7 +58,7 @@ class ProductModel extends Model {
      */
     public function getProductImages($productId, $colorId = null, $includeDefault = true) {
         $params = [$productId];
-        $query = "SELECT ap.*, sc.color_id, c.color_ten, c.color_anh 
+        $query = "SELECT ap.*, sc.color_id, c.color_ten, c.color_ma 
                   FROM tbl_anhsanpham ap
                   LEFT JOIN tbl_sanpham_color sc ON ap.sanpham_color_id = sc.sanpham_color_id
                   LEFT JOIN tbl_color c ON sc.color_id = c.color_id
@@ -91,7 +91,7 @@ class ProductModel extends Model {
                             'is_primary' => 1,
                             'color_id' => null,
                             'color_ten' => null,
-                            'color_anh' => null
+                            'color_ma' => null
                         ]
                     ];
                 }
@@ -126,7 +126,7 @@ class ProductModel extends Model {
      * Lấy danh sách màu có ảnh cho sản phẩm
      */
     public function getProductAvailableColors($productId) {
-        $query = "SELECT DISTINCT c.color_id, c.color_ten, c.color_anh
+        $query = "SELECT DISTINCT c.color_id, c.color_ten, c.color_ma
                   FROM tbl_anhsanpham ap
                   INNER JOIN tbl_sanpham_color sc ON ap.sanpham_color_id = sc.sanpham_color_id
                   INNER JOIN tbl_color c ON sc.color_id = c.color_id
@@ -140,7 +140,7 @@ class ProductModel extends Model {
      */
     public function getProductColors(int $productId) {
         $this->ensureProductColorPivot();
-        $query = "SELECT c.color_id, c.color_ten, c.color_anh, c.color_ma
+        $query = "SELECT c.color_id, c.color_ten, c.color_ma
                   FROM tbl_sanpham_color spc
                   INNER JOIN tbl_color c ON spc.color_id = c.color_id
                   WHERE spc.sanpham_id = ?

@@ -162,14 +162,26 @@ class CheckoutController extends Controller {
                 }
             }
             
-            // Xóa giỏ hàng sau khi thanh toán thành công
-            $this->cartModel->clearCart($sessionId, $userId);
+            // Xử lý thanh toán
+            $paymentMethod = $_POST['payment_method'];
             
-            // Lưu thông báo thành công
-            $_SESSION['success'] = 'Đặt hàng thành công! Mã đơn hàng: ' . $result['order_code'];
-            $_SESSION['order_code'] = $result['order_code'];
-            
-            $this->redirect('checkout/success');
+            if ($paymentMethod === 'momo') {
+                // Redirect đến thanh toán Momo
+                $this->redirect('payment/momo', [
+                    'order_id' => $orderId,
+                    'order_code' => $result['order_code'],
+                    'amount' => $totalAmount
+                ]);
+            } else {
+                // COD - Xóa giỏ hàng và redirect đến success
+                $this->cartModel->clearCart($sessionId, $userId);
+                
+                // Lưu thông báo thành công
+                $_SESSION['success'] = 'Đặt hàng thành công! Mã đơn hàng: ' . $result['order_code'];
+                $_SESSION['order_code'] = $result['order_code'];
+                
+                $this->redirect('checkout/success');
+            }
             
         } catch (Exception $e) {
             // Rollback nếu có lỗi (TODO: implement transaction trong Database class)

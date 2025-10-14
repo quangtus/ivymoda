@@ -80,7 +80,6 @@ CREATE TABLE `tbl_loaisanpham` (
 CREATE TABLE `tbl_color` (
   `color_id` int(11) NOT NULL AUTO_INCREMENT,
   `color_ten` varchar(255) NOT NULL,
-  `color_anh` varchar(255) DEFAULT NULL,
   `color_ma` varchar(20) DEFAULT NULL COMMENT 'Mã màu hex (vd: #FF0000)',
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`color_id`)
@@ -242,6 +241,20 @@ CREATE TABLE `tbl_order_items` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 COMMENT='VERSION 2.0: Lưu variant_id + snapshot để giữ history';
 
+-- Bảng log giao dịch MoMo (tối thiểu để nghiệm thu)
+CREATE TABLE IF NOT EXISTS `tbl_momo_transaction` (
+  `momo_id` bigint NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) DEFAULT NULL,
+  `amount` decimal(15,2) DEFAULT NULL,
+  `result_code` int(11) DEFAULT NULL COMMENT '0 thành công',
+  `message` varchar(255) DEFAULT NULL,
+  `raw_response` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`momo_id`),
+  KEY `idx_momo_order` (`order_id`),
+  CONSTRAINT `fk_momo_order_min` FOREIGN KEY (`order_id`) REFERENCES `tbl_order` (`order_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Bảng mã giảm giá (UC2.6)
 CREATE TABLE `tbl_ma_giam_gia` (
   `ma_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -327,15 +340,15 @@ INSERT INTO `tbl_loaisanpham` VALUES
 (4, 2, 'Áo Nam', 'Các loại áo nam'),
 (5, 2, 'Quần Nam', 'Các loại quần nam');
 
--- Màu sắc
+-- Màu sắc (Đã bỏ color_anh, chỉ dùng color_ma)
 INSERT INTO `tbl_color` VALUES 
-(1, 'Trắng', 'white.png', '#FFFFFF', NOW()),
-(2, 'Đen', 'black.png', '#000000', NOW()),
-(3, 'Xanh Navy', 'navy.png', '#000080', NOW()),
-(4, 'Đỏ', 'red.png', '#FF0000', NOW()),
-(5, 'Be', 'beige.png', '#F5F5DC', NOW()),
-(6, 'Xanh Dương', 'blue.png', '#0000FF', NOW()),
-(7, 'Xám', 'gray.png', '#808080', NOW());
+(1, 'Trắng', '#FFFFFF', NOW()),
+(2, 'Đen', '#000000', NOW()),
+(3, 'Xanh Navy', '#000080', NOW()),
+(4, 'Đỏ', '#FF0000', NOW()),
+(5, 'Be', '#F5F5DC', NOW()),
+(6, 'Xanh Dương', '#0000FF', NOW()),
+(7, 'Xám', '#808080', NOW());
 
 -- Size
 INSERT INTO `tbl_size` VALUES 
@@ -488,12 +501,16 @@ CÁC THAY ĐỔI CHÍNH:
    ✅ Mỗi variant có: variant_id, sku, ton_kho, gia_ban, trang_thai
    ✅ UNIQUE constraint: (sanpham_id, color_id, size_id)
 
-4. TBL_CART (VERSION 2.0):
+4. TBL_COLOR:
+   ✅ Đã XÓA: color_anh (cột thừa, không sử dụng)
+   ✅ Chỉ giữ lại: color_ten, color_ma (mã hex)
+
+5. TBL_CART (VERSION 2.0):
    ✅ ĐÃ XÓA: sanpham_id, sanpham_tieude, sanpham_gia, sanpham_anh, sanpham_size, sanpham_color
    ✅ THÊM: variant_id FK (ON DELETE CASCADE)
    ✅ Giỏ hàng giờ lưu variant_id thay vì các trường rời
 
-5. TBL_ORDER_ITEMS (VERSION 2.0):
+6. TBL_ORDER_ITEMS (VERSION 2.0):
    ✅ THÊM: variant_id FK (ON DELETE SET NULL)
    ✅ GIỮ LẠI: sanpham_size, sanpham_color VARCHAR (snapshot để hiển thị lịch sử)
    ✅ Khi variant bị xóa → variant_id = NULL nhưng vẫn hiển thị snapshot
@@ -517,6 +534,11 @@ B. Khách hàng mua hàng:
       - Add order_items với variant_id + snapshot
       - Decrease stock (decreaseVariantStock)
       - Clear cart
+
+   6. Thanh toán Momo sandbox (tối giản):
+      - Gửi yêu cầu thanh toán → nhận callback
+      - Lưu callback vào tbl_momo_transaction (raw_response, result_code)
+      - Nếu result_code = 0 → cập nhật order_status = 1 (Đang giao hoặc Hoàn thành tùy flow)
 
 C. Truy vấn hữu ích:
 

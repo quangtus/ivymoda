@@ -11,12 +11,14 @@ window.addEventListener("scroll", function(){
 })
 //------------------------------------Menu-item-------------------
 const toP = document.querySelector(".top")
-window.addEventListener("scroll", function() {
-        const X = this.pageYOffset;
+if (toP) {
+    window.addEventListener("scroll", function() {
+        const X = window.pageYOffset;
         if (X > 1) { toP.classList.add("active") } else {
             toP.classList.remove("active")
         }
     })
+}
     //------------------------------------Menu-SLIDEBAR-CARTEGORY-------------------
 const itemSlidebar = document.querySelectorAll(".cartegory-left-li")
 itemSlidebar.forEach(function(menu, index) {
@@ -28,12 +30,14 @@ itemSlidebar.forEach(function(menu, index) {
 const bigImg = document.querySelector(".product-content-left-big-img img")
 const smallImg = document.querySelectorAll(".product-content-left-small-img img")
 
-smallImg.forEach(function(imgItem, X) {
-    imgItem.addEventListener("click", function() {
-        console.log(imgItem)
-        bigImg.src = imgItem.src
+if (bigImg && smallImg.length > 0) {
+    smallImg.forEach(function(imgItem, X) {
+        imgItem.addEventListener("click", function() {
+            console.log(imgItem)
+            bigImg.src = imgItem.src
+        })
     })
-})
+}
 
 const baoQuan = document.querySelector(".baoquan")
 const chiTiet = document.querySelector(".chitiet")

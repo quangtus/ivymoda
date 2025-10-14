@@ -55,10 +55,10 @@ try {
             addToCart($cartModel, $productModel, $sessionId, $userId);
             break;
         case 'remove':
-            removeFromCart($cartModel);
+            removeFromCart($cartModel, $sessionId, $userId);
             break;
         case 'update':
-            updateCart($cartModel);
+            updateCart($cartModel, $sessionId, $userId);
             break;
         case 'count':
             getCartCount($cartModel, $sessionId, $userId);
@@ -103,28 +103,11 @@ function addToCart($cartModel, $productModel, $sessionId, $userId) {
     $result = $cartModel->addToCart($sessionId, $userId, $variantId, $quantity);
     
     if ($result) {
-        // Lấy thông tin variant vừa thêm
-        $cartItems = $cartModel->getCartItems($sessionId, $userId);
-        $addedItem = null;
-        foreach ($cartItems as $item) {
-            if ($item->variant_id == $variantId) {
-                $addedItem = $item;
-                break;
-            }
-        }
-        
         echo json_encode([
             'success' => true,
             'message' => 'Đã thêm vào giỏ hàng',
             'cart_count' => $cartModel->getCartCount($sessionId, $userId),
-            'cart_total' => number_format($cartModel->getCartTotal($sessionId, $userId), 0, ',', '.'),
-            'item' => $addedItem ? [
-                'product_name' => $addedItem->sanpham_tieude,
-                'color' => $addedItem->color_ten,
-                'size' => $addedItem->size_ten,
-                'quantity' => $addedItem->quantity,
-                'price' => number_format($addedItem->gia_hien_tai, 0, ',', '.')
-            ] : null
+            'cart_total' => number_format($cartModel->getCartTotal($sessionId, $userId), 0, ',', '.')
         ]);
     } else {
         echo json_encode([
@@ -140,8 +123,11 @@ function addToCart($cartModel, $productModel, $sessionId, $userId) {
  * POST params:
  * - cart_id (required): ID của cart item
  */
-function removeFromCart($cartModel) {
+function removeFromCart($cartModel, $sessionId, $userId) {
     $cartId = (int)($_POST['cart_id'] ?? 0);
+    
+    // Debug logging
+    error_log("AJAX removeFromCart - cartId=$cartId, sessionId=$sessionId, userId=$userId");
     
     if (!$cartId) {
         echo json_encode([
@@ -151,7 +137,9 @@ function removeFromCart($cartModel) {
         return;
     }
     
-    $result = $cartModel->removeItem($cartId);
+    $result = $cartModel->removeFromCart($cartId, $sessionId, $userId);
+    
+    error_log("AJAX removeFromCart - result: " . ($result ? 'success' : 'failed'));
     
     echo json_encode([
         'success' => $result,
@@ -166,9 +154,12 @@ function removeFromCart($cartModel) {
  * - cart_id (required): ID của cart item
  * - quantity (required): Số lượng mới
  */
-function updateCart($cartModel) {
+function updateCart($cartModel, $sessionId, $userId) {
     $cartId = (int)($_POST['cart_id'] ?? 0);
     $quantity = (int)($_POST['quantity'] ?? 0);
+    
+    // Debug logging
+    error_log("AJAX updateCart - cartId=$cartId, quantity=$quantity, sessionId=$sessionId, userId=$userId");
     
     if (!$cartId) {
         echo json_encode([
@@ -178,7 +169,17 @@ function updateCart($cartModel) {
         return;
     }
     
-    $result = $cartModel->updateQuantity($cartId, $quantity);
+    if ($quantity <= 0) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Số lượng phải lớn hơn 0'
+        ]);
+        return;
+    }
+    
+    $result = $cartModel->updateCartQuantity($cartId, $quantity, $sessionId, $userId);
+    
+    error_log("AJAX updateCart - result: " . ($result ? 'success' : 'failed'));
     
     echo json_encode([
         'success' => $result,

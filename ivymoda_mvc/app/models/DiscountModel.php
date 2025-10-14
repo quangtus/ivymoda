@@ -1,202 +1,193 @@
 <?php
 /**
- * DiscountModel - Xử lý mã giảm giá (UC2.6)
- * Bảng: tbl_ma_giam_gia
+ * DiscountModel - Quản lý mã giảm giá
+ * 
+ * Tương thích với tbl_ma_giam_gia trong database
  */
+
 class DiscountModel extends Model {
     protected $table = 'tbl_ma_giam_gia';
-    
-    public function __construct() {
-        parent::__construct();
-    }
-    
-    /**
-     * Lấy tất cả mã giảm giá
-     */
-    public function getAllDiscounts() {
-        $query = "SELECT * FROM {$this->table} ORDER BY ma_batdau DESC";
-        return $this->getAll($query);
-    }
-    
-    /**
-     * Lấy mã giảm giá đang hoạt động
-     */
-    public function getActiveDiscounts() {
-        $now = date('Y-m-d H:i:s');
-        $query = "SELECT * FROM {$this->table} 
-                  WHERE ma_trangthai = 1 
-                  AND ma_batdau <= '$now' 
-                  AND ma_ketthuc >= '$now'
-                  AND (ma_soluong IS NULL OR ma_dadung < ma_soluong)
-                  ORDER BY ma_batdau DESC";
-        return $this->getAll($query);
-    }
     
     /**
      * Lấy mã giảm giá theo code
      */
     public function getDiscountByCode($code) {
-        $code = $this->escape($code);
-        $query = "SELECT * FROM {$this->table} WHERE ma_code = '$code'";
-        return $this->getOne($query);
+        try {
+            $sql = "SELECT * FROM {$this->table} WHERE ma_code = ? AND ma_trangthai = 1";
+            $result = $this->getOne($sql, [$code]);
+            
+            if (!$result) {
+                return null;
+            }
+            
+            // Kiểm tra thời gian hiệu lực
+            $now = date('Y-m-d H:i:s');
+            if ($now < $result->ma_batdau || $now > $result->ma_ketthuc) {
+                return null;
+            }
+            
+            // Kiểm tra số lượng còn lại
+            if ($result->ma_soluong !== null && $result->ma_dadung >= $result->ma_soluong) {
+                return null;
+            }
+            
+            return $result;
+        } catch (Exception $e) {
+            error_log("DiscountModel::getDiscountByCode - Exception: " . $e->getMessage());
+            return null;
+        }
     }
     
     /**
-     * Kiểm tra mã giảm giá có hợp lệ không
-     * @param string $code Mã giảm giá
-     * @param float $orderTotal Tổng giá trị đơn hàng
-     * @return array ['valid' => true/false, 'message' => 'thông báo', 'discount' => object]
+     * Validate mã giảm giá
      */
     public function validateDiscount($code, $orderTotal) {
-        $discount = $this->getDiscountByCode($code);
-        
-        if (!$discount) {
-            return ['valid' => false, 'message' => 'Mã giảm giá không tồn tại'];
+        try {
+            $discount = $this->getDiscountByCode($code);
+            
+            if (!$discount) {
+                return [
+                    'valid' => false,
+                    'message' => 'Mã giảm giá không hợp lệ hoặc đã hết hạn'
+                ];
+            }
+            
+            // Kiểm tra điều kiện đơn hàng tối thiểu
+            if ($orderTotal < $discount->ma_dieukien) {
+                return [
+                    'valid' => false,
+                    'message' => 'Đơn hàng tối thiểu ' . number_format($discount->ma_dieukien, 0, ',', '.') . ' ₫ để sử dụng mã này'
+                ];
+            }
+            
+            return [
+                'valid' => true,
+                'discount' => $discount,
+                'message' => 'Mã giảm giá hợp lệ'
+            ];
+        } catch (Exception $e) {
+            error_log("DiscountModel::validateDiscount - Exception: " . $e->getMessage());
+            return [
+                'valid' => false,
+                'message' => 'Lỗi hệ thống khi kiểm tra mã giảm giá'
+            ];
         }
-        
-        // Chuyển đổi object/array về dạng chuẩn
-        $ma_trangthai = is_object($discount) ? $discount->ma_trangthai : $discount['ma_trangthai'];
-        $ma_batdau = is_object($discount) ? $discount->ma_batdau : $discount['ma_batdau'];
-        $ma_ketthuc = is_object($discount) ? $discount->ma_ketthuc : $discount['ma_ketthuc'];
-        $ma_dieukien = is_object($discount) ? $discount->ma_dieukien : $discount['ma_dieukien'];
-        $ma_soluong = is_object($discount) ? $discount->ma_soluong : $discount['ma_soluong'];
-        $ma_dadung = is_object($discount) ? $discount->ma_dadung : $discount['ma_dadung'];
-        
-        // Kiểm tra trạng thái
-        if ($ma_trangthai != 1) {
-            return ['valid' => false, 'message' => 'Mã giảm giá đã bị vô hiệu hóa'];
-        }
-        
-        // Kiểm tra thời gian
-        $now = date('Y-m-d H:i:s');
-        if ($now < $ma_batdau) {
-            return ['valid' => false, 'message' => 'Mã giảm giá chưa có hiệu lực'];
-        }
-        if ($now > $ma_ketthuc) {
-            return ['valid' => false, 'message' => 'Mã giảm giá đã hết hạn'];
-        }
-        
-        // Kiểm tra điều kiện đơn hàng tối thiểu
-        if ($orderTotal < $ma_dieukien) {
-            return ['valid' => false, 'message' => 'Đơn hàng chưa đủ điều kiện (tối thiểu ' . number_format($ma_dieukien) . 'đ)'];
-        }
-        
-        // Kiểm tra số lượng
-        if ($ma_soluong !== null && $ma_dadung >= $ma_soluong) {
-            return ['valid' => false, 'message' => 'Mã giảm giá đã hết lượt sử dụng'];
-        }
-        
-        return ['valid' => true, 'message' => 'Mã giảm giá hợp lệ', 'discount' => $discount];
     }
     
     /**
-     * Tính số tiền giảm giá
-     * @param object $discount Thông tin mã giảm giá
-     * @param float $orderTotal Tổng giá trị đơn hàng
-     * @return float Số tiền được giảm
+     * Tính giá trị giảm giá
      */
-    public function calculateDiscount($discount, $orderTotal) {
-        $ma_loai = is_object($discount) ? $discount->ma_loai : $discount['ma_loai'];
-        $ma_giatri = is_object($discount) ? $discount->ma_giatri : $discount['ma_giatri'];
-        
-        if ($ma_loai == 1) {
-            // Giảm theo phần trăm
-            return ($orderTotal * $ma_giatri) / 100;
-        } else {
-            // Giảm số tiền cố định
-            return min($ma_giatri, $orderTotal);
+    public function calculateDiscountValue($discount, $orderTotal) {
+        try {
+            if ($discount->ma_loai == 1) {
+                // Giảm theo phần trăm
+                $discountValue = ($orderTotal * $discount->ma_giatri) / 100;
+            } else {
+                // Giảm theo số tiền cố định
+                $discountValue = $discount->ma_giatri;
+            }
+            
+            // Đảm bảo không giảm quá tổng tiền đơn hàng
+            return min($discountValue, $orderTotal);
+        } catch (Exception $e) {
+            error_log("DiscountModel::calculateDiscountValue - Exception: " . $e->getMessage());
+            return 0;
         }
     }
     
     /**
-     * Tăng số lần sử dụng mã giảm giá
+     * Sử dụng mã giảm giá (tăng số lần đã sử dụng)
      */
-    public function incrementUsage($code) {
-        $code = $this->escape($code);
-        $query = "UPDATE {$this->table} SET ma_dadung = ma_dadung + 1 WHERE ma_code = '$code'";
-        return $this->execute($query);
+    public function useDiscount($code) {
+        try {
+            $sql = "UPDATE {$this->table} SET ma_dadung = ma_dadung + 1 WHERE ma_code = ?";
+            return $this->execute($sql, [$code]);
+        } catch (Exception $e) {
+            error_log("DiscountModel::useDiscount - Exception: " . $e->getMessage());
+            return false;
+        }
     }
     
     /**
-     * Thêm mã giảm giá mới
+     * Lấy tất cả mã giảm giá (admin)
      */
-    public function addDiscount($data) {
-        $code = $this->escape($data['ma_code']);
-        $loai = (int)$data['ma_loai'];
-        $giatri = (float)$data['ma_giatri'];
-        $dieukien = (float)($data['ma_dieukien'] ?? 0);
-        $batdau = $this->escape($data['ma_batdau']);
-        $ketthuc = $this->escape($data['ma_ketthuc']);
-        $soluong = isset($data['ma_soluong']) && $data['ma_soluong'] !== '' ? (int)$data['ma_soluong'] : 'NULL';
-        $trangthai = (int)($data['ma_trangthai'] ?? 1);
-        
-        // Kiểm tra mã đã tồn tại chưa
-        $check = "SELECT * FROM {$this->table} WHERE ma_code = '$code'";
-        if ($this->getOne($check)) {
-            return "Mã giảm giá đã tồn tại";
-        }
-        
-        $query = "INSERT INTO {$this->table} 
-                  (ma_code, ma_loai, ma_giatri, ma_dieukien, ma_batdau, ma_ketthuc, ma_soluong, ma_trangthai) 
-                  VALUES ('$code', $loai, $giatri, $dieukien, '$batdau', '$ketthuc', $soluong, $trangthai)";
-        
-        if ($this->execute($query)) {
-            return true;
-        } else {
-            return "Thêm mã giảm giá thất bại";
+    public function getAllDiscounts($page = 1, $limit = 20) {
+        try {
+            $offset = ($page - 1) * $limit;
+            $sql = "SELECT * FROM {$this->table} ORDER BY ma_batdau DESC LIMIT ? OFFSET ?";
+            return $this->getAll($sql, [$limit, $offset]);
+        } catch (Exception $e) {
+            error_log("DiscountModel::getAllDiscounts - Exception: " . $e->getMessage());
+            return [];
         }
     }
     
     /**
-     * Cập nhật mã giảm giá
+     * Tạo mã giảm giá mới (admin)
+     */
+    public function createDiscount($data) {
+        try {
+            $sql = "INSERT INTO {$this->table} 
+                    (ma_code, ma_loai, ma_giatri, ma_dieukien, ma_batdau, ma_ketthuc, ma_soluong, ma_trangthai) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            return $this->execute($sql, [
+                $data['ma_code'],
+                $data['ma_loai'],
+                $data['ma_giatri'],
+                $data['ma_dieukien'],
+                $data['ma_batdau'],
+                $data['ma_ketthuc'],
+                $data['ma_soluong'],
+                $data['ma_trangthai']
+            ]);
+        } catch (Exception $e) {
+            error_log("DiscountModel::createDiscount - Exception: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Cập nhật mã giảm giá (admin)
      */
     public function updateDiscount($id, $data) {
-        $id = (int)$id;
-        $loai = (int)$data['ma_loai'];
-        $giatri = (float)$data['ma_giatri'];
-        $dieukien = (float)($data['ma_dieukien'] ?? 0);
-        $batdau = $this->escape($data['ma_batdau']);
-        $ketthuc = $this->escape($data['ma_ketthuc']);
-        $soluong = isset($data['ma_soluong']) && $data['ma_soluong'] !== '' ? (int)$data['ma_soluong'] : 'NULL';
-        $trangthai = (int)($data['ma_trangthai'] ?? 1);
-        
-        $query = "UPDATE {$this->table} SET 
-                  ma_loai = $loai,
-                  ma_giatri = $giatri,
-                  ma_dieukien = $dieukien,
-                  ma_batdau = '$batdau',
-                  ma_ketthuc = '$ketthuc',
-                  ma_soluong = $soluong,
-                  ma_trangthai = $trangthai
-                  WHERE ma_id = $id";
-        
-        if ($this->execute($query)) {
-            return true;
-        } else {
-            return "Cập nhật mã giảm giá thất bại";
+        try {
+            $fields = [];
+            $params = [];
+            
+            if (isset($data['ma_code'])) { $fields[] = "ma_code = ?"; $params[] = $data['ma_code']; }
+            if (isset($data['ma_loai'])) { $fields[] = "ma_loai = ?"; $params[] = $data['ma_loai']; }
+            if (isset($data['ma_giatri'])) { $fields[] = "ma_giatri = ?"; $params[] = $data['ma_giatri']; }
+            if (isset($data['ma_dieukien'])) { $fields[] = "ma_dieukien = ?"; $params[] = $data['ma_dieukien']; }
+            if (isset($data['ma_batdau'])) { $fields[] = "ma_batdau = ?"; $params[] = $data['ma_batdau']; }
+            if (isset($data['ma_ketthuc'])) { $fields[] = "ma_ketthuc = ?"; $params[] = $data['ma_ketthuc']; }
+            if (isset($data['ma_soluong'])) { $fields[] = "ma_soluong = ?"; $params[] = $data['ma_soluong']; }
+            if (isset($data['ma_trangthai'])) { $fields[] = "ma_trangthai = ?"; $params[] = $data['ma_trangthai']; }
+            
+            if (empty($fields)) {
+                return false;
+            }
+            
+            $params[] = $id;
+            $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE ma_id = ?";
+            
+            return $this->execute($sql, $params);
+        } catch (Exception $e) {
+            error_log("DiscountModel::updateDiscount - Exception: " . $e->getMessage());
+            return false;
         }
     }
     
     /**
-     * Xóa mã giảm giá
+     * Xóa mã giảm giá (admin)
      */
     public function deleteDiscount($id) {
-        $id = (int)$id;
-        $query = "DELETE FROM {$this->table} WHERE ma_id = $id";
-        
-        if ($this->execute($query)) {
-            return true;
-        } else {
-            return "Xóa mã giảm giá thất bại";
+        try {
+            $sql = "DELETE FROM {$this->table} WHERE ma_id = ?";
+            return $this->execute($sql, [$id]);
+        } catch (Exception $e) {
+            error_log("DiscountModel::deleteDiscount - Exception: " . $e->getMessage());
+            return false;
         }
-    }
-    
-    /**
-     * Lấy mã giảm giá theo ID
-     */
-    public function getDiscountById($id) {
-        $id = (int)$id;
-        $query = "SELECT * FROM {$this->table} WHERE ma_id = $id";
-        return $this->getOne($query);
     }
 }

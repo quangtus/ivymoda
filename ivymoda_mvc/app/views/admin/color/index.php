@@ -26,7 +26,8 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                                 <tr>
                                     <th style="width:80px">ID</th>
                                     <th>Tên màu</th>
-                                    <th style="width:140px">Swatch</th>
+                                    <th style="width:140px">Mã màu</th>
+                                    <th style="width:120px">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -36,7 +37,7 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                                             <td><?= (int)$color->color_id ?></td>
                                             <td><?= htmlspecialchars($color->color_ten) ?></td>
                                             <td>
-                                                <?php $hex = isset($color->color_anh) ? trim($color->color_anh) : ''; ?>
+                                                <?php $hex = isset($color->color_ma) ? trim($color->color_ma) : ''; ?>
                                                 <?php if($hex && preg_match('/^#?[A-Fa-f0-9]{6}$/', $hex)): ?>
                                                     <?php $hexVal = strpos($hex, '#') === 0 ? $hex : ('#' . $hex); ?>
                                                     <div style="width:36px;height:24px;border:1px solid #ccc;border-radius:4px;background: <?= htmlspecialchars($hexVal) ?>;"></div>
@@ -45,11 +46,21 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                                                     <span class="text-muted">(chưa có mã màu)</span>
                                                 <?php endif; ?>
                                             </td>
+                                            <td>
+                                                <a href="<?= BASE_URL ?>admin/color/edit/<?= $color->color_id ?>" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i> Sửa
+                                                </a>
+                                                <a href="<?= BASE_URL ?>admin/color/delete/<?= $color->color_id ?>" 
+                                                   class="btn btn-sm btn-danger" 
+                                                   onclick="return confirm('Bạn có chắc muốn xóa màu này?')">
+                                                    <i class="fas fa-trash"></i> Xóa
+                                                </a>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted">Chưa có màu nào</td>
+                                        <td colspan="4" class="text-center text-muted">Chưa có màu nào</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>

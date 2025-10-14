@@ -27,7 +27,8 @@ class ColorController extends \Controller {
     public function add() {
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name = trim($_POST['color_ten'] ?? '');
-            $hex = trim($_POST['color_hex'] ?? '');
+            $hex = trim($_POST['color_ma'] ?? '');
+            
             if(empty($name)) {
                 $_SESSION['error'] = 'Vui lòng nhập tên màu';
             } else {
@@ -45,6 +46,61 @@ class ColorController extends \Controller {
             'error' => $_SESSION['error'] ?? ''
         ]);
         unset($_SESSION['success'], $_SESSION['error']);
+    }
+
+    public function edit($id = null) {
+        if(!$id) {
+            $this->redirect('admin/color');
+            return;
+        }
+
+        $color = $this->colorModel->getColorById($id);
+        if(!$color) {
+            $_SESSION['error'] = 'Không tìm thấy màu';
+            $this->redirect('admin/color');
+            return;
+        }
+
+        if($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $name = trim($_POST['color_ten'] ?? '');
+            $hex = trim($_POST['color_ma'] ?? '');
+            
+            if(empty($name)) {
+                $_SESSION['error'] = 'Vui lòng nhập tên màu';
+            } else {
+                if($this->colorModel->updateColor($id, $name, $hex)) {
+                    $_SESSION['success'] = 'Cập nhật màu thành công';
+                    $this->redirect('admin/color');
+                    return;
+                }
+                $_SESSION['error'] = 'Không thể cập nhật màu';
+            }
+        }
+
+        $this->view('admin/color/edit', [
+            'title' => 'Sửa màu sắc',
+            'color' => $color,
+            'success' => $_SESSION['success'] ?? '',
+            'error' => $_SESSION['error'] ?? ''
+        ]);
+        unset($_SESSION['success'], $_SESSION['error']);
+    }
+
+    public function delete($id = null) {
+        if(!$id) {
+            $_SESSION['error'] = 'ID màu không hợp lệ';
+            $this->redirect('admin/color');
+            return;
+        }
+
+        $result = $this->colorModel->deleteColor($id);
+        if($result === true) {
+            $_SESSION['success'] = 'Xóa màu thành công';
+        } else {
+            $_SESSION['error'] = $result; // Error message from model
+        }
+        
+        $this->redirect('admin/color');
     }
 }
 

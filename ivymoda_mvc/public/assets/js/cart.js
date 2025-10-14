@@ -81,54 +81,53 @@ class CartManager {
      * Cập nhật số lượng sản phẩm
      */
     async updateQuantity(button) {
-        const action = button.dataset.action;
-        const productId = button.dataset.productId;
-        const input = document.querySelector(`input[data-product-id="${productId}"]`);
+        const cartId = button.dataset.cartId;
+        const input = document.querySelector(`input[data-cart-id="${cartId}"]`);
         
         if (!input) return;
         
         let quantity = parseInt(input.value) || 1;
         
-        if (action === 'increase') {
-            quantity = Math.min(quantity + 1, 99);
-        } else if (action === 'decrease') {
+        if (button.classList.contains('increase')) {
+            quantity = Math.min(quantity + 1, parseInt(input.max) || 99);
+        } else if (button.classList.contains('decrease')) {
             quantity = Math.max(quantity - 1, 1);
         }
         
         input.value = quantity;
         
         // Cập nhật qua AJAX
-        await this.updateCartItem(productId, quantity);
+        await this.updateCartItem(cartId, quantity);
     }
     
     /**
      * Xử lý thay đổi input số lượng
      */
     async handleQuantityInput(input) {
-        const productId = input.dataset.productId;
+        const cartId = input.dataset.cartId;
         let quantity = parseInt(input.value) || 1;
         
         // Validate
         if (quantity < 1) {
             quantity = 1;
             input.value = 1;
-        } else if (quantity > 99) {
-            quantity = 99;
-            input.value = 99;
+        } else if (quantity > (parseInt(input.max) || 99)) {
+            quantity = Math.min(parseInt(input.max) || 99, 99);
+            input.value = quantity;
         }
         
         // Cập nhật qua AJAX
-        await this.updateCartItem(productId, quantity);
+        await this.updateCartItem(cartId, quantity);
     }
     
     /**
      * Cập nhật sản phẩm trong giỏ hàng
      */
-    async updateCartItem(productId, quantity) {
+    async updateCartItem(cartId, quantity) {
         try {
             const response = await this.makeRequest('POST', {
                 action: 'update',
-                product_id: productId,
+                cart_id: cartId,
                 quantity: quantity
             });
             
@@ -147,7 +146,7 @@ class CartManager {
     /**
      * Xóa sản phẩm khỏi giỏ hàng
      */
-    async removeFromCart(productId) {
+    async removeFromCart(cartId) {
         if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
             return;
         }
@@ -155,7 +154,7 @@ class CartManager {
         try {
             const response = await this.makeRequest('POST', {
                 action: 'remove',
-                product_id: productId
+                cart_id: cartId
             });
             
             if (response.success) {
@@ -248,7 +247,10 @@ class CartManager {
     async updateCartUI() {
         // Reload trang giỏ hàng nếu đang ở trang đó
         if (window.location.pathname.includes('/cart')) {
-            window.location.reload();
+            // Delay một chút để tránh conflict
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
         }
     }
     
@@ -279,6 +281,13 @@ class CartManager {
      * Hiển thị thông báo
      */
     showMessage(message, type = 'info') {
+        // Xóa tất cả thông báo cũ trước
+        document.querySelectorAll('.alert-dismissible').forEach(alert => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        });
+        
         // Tạo element thông báo
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
@@ -287,16 +296,16 @@ class CartManager {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
-        // Thêm vào đầu trang
-        const container = document.querySelector('.container') || document.body;
-        container.insertBefore(alertDiv, container.firstChild);
+        // Thêm vào đầu cart content
+        const cartContent = document.querySelector('.cart-content-left') || document.body;
+        cartContent.insertBefore(alertDiv, cartContent.firstChild);
         
-        // Tự động ẩn sau 5 giây
+        // Tự động ẩn sau 3 giây
         setTimeout(() => {
             if (alertDiv.parentNode) {
                 alertDiv.remove();
             }
-        }, 5000);
+        }, 3000);
     }
 }
 

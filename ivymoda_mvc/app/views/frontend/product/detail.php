@@ -350,7 +350,7 @@ function addToCart(productId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(`✅ ${data.message}\n\n${data.item.product_name}\nMàu: ${data.item.color} - Size: ${data.item.size}\nSố lượng: ${data.item.quantity}\n\nTổng giỏ hàng: ${data.cart_count} sản phẩm`);
+            alert(`✅ ${data.message}\n\nTổng giỏ hàng: ${data.cart_count} sản phẩm`);
             
             // Update cart count in header (nếu có)
             const cartCountElements = document.querySelectorAll('.cart-count');

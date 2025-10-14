@@ -26,10 +26,10 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                             <input type="text" class="form-control" id="color_ten" name="color_ten" placeholder="Ví dụ: Đen, Trắng, Đỏ" required>
                         </div>
                         <div class="form-group">
-                            <label for="color_hex" class="font-weight-bold">Mã màu (Color Picker)</label>
+                            <label for="color_ma" class="font-weight-bold">Mã màu (Color Picker)</label>
                             <div class="d-flex align-items-center" style="gap:12px;">
                                 <input type="color" id="color_hex_picker" value="#000000" style="width:48px; height:38px; padding:0; border:none; background:transparent;">
-                                <input type="text" class="form-control" id="color_hex" name="color_hex" placeholder="#000000" value="#000000" maxlength="7" pattern="^#([A-Fa-f0-9]{6})$" title="Định dạng: #RRGGBB">
+                                <input type="text" class="form-control" id="color_ma" name="color_ma" placeholder="#000000" value="#000000" maxlength="7" pattern="^#([A-Fa-f0-9]{6})$" title="Định dạng: #RRGGBB">
                             </div>
                             <small class="form-text text-muted">Chọn màu để lưu mã hex (ví dụ: #FF0000). Sẽ dùng để hiển thị swatch.</small>
                         </div>
@@ -46,7 +46,7 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const picker = document.getElementById('color_hex_picker');
-    const input = document.getElementById('color_hex');
+    const input = document.getElementById('color_ma');
     picker.addEventListener('input', function(){
         input.value = picker.value.toUpperCase();
     });

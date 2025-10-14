@@ -12,24 +12,17 @@ class ColorModel extends Model {
         return $this->getAll($query);
     }
 
-    public function addColor($name, $colorImage = null, $colorCode = null) {
+    public function addColor($name, $colorCode = null) {
         $name = $this->escape($name);
-        $colorImage = $colorImage ? $this->escape($colorImage) : null;
         $colorCode = $colorCode ? $this->escape($colorCode) : null;
         
         if (empty($name)) {
             return false;
         }
         
-        // Cột color_anh: lưu ảnh màu
-        // Cột color_ma: lưu mã màu hex (#FFFFFF)
+        // Chỉ sử dụng color_ten và color_ma (mã hex)
         $fields = ['color_ten'];
         $values = ["'$name'"];
-        
-        if ($colorImage !== null && $colorImage !== '') {
-            $fields[] = 'color_anh';
-            $values[] = "'$colorImage'";
-        }
         
         if ($colorCode !== null && $colorCode !== '') {
             $fields[] = 'color_ma';
@@ -42,17 +35,12 @@ class ColorModel extends Model {
         return $this->execute($query);
     }
 
-    public function updateColor($id, $name, $colorImage = null, $colorCode = null) {
+    public function updateColor($id, $name, $colorCode = null) {
         $id = (int)$id;
         $name = $this->escape($name);
-        $colorImage = $colorImage ? $this->escape($colorImage) : null;
         $colorCode = $colorCode ? $this->escape($colorCode) : null;
         
         $updates = ["color_ten = '$name'"];
-        
-        if ($colorImage !== null && $colorImage !== '') {
-            $updates[] = "color_anh = '$colorImage'";
-        }
         
         if ($colorCode !== null && $colorCode !== '') {
             $updates[] = "color_ma = '$colorCode'";

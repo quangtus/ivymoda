@@ -116,6 +116,7 @@ class CartModel extends Model {
                         p.sanpham_id,
                         p.sanpham_tieude,
                         p.sanpham_gia,
+                        p.sanpham_gia_goc,
                         p.sanpham_anh,
                         COALESCE(v.gia_ban, p.sanpham_gia) as gia_hien_tai
                     FROM tbl_cart c
@@ -129,8 +130,9 @@ class CartModel extends Model {
             
             // Nếu có user_id, lấy cả giỏ hàng của user
             if ($userId) {
-                $sql .= " OR c.user_id = ?";
+                $sql .= " OR (c.user_id = ? AND c.session_id != ?)";
                 $params[] = $userId;
+                $params[] = $sessionId;
             }
             
             $sql .= " ORDER BY c.created_at DESC";
@@ -197,13 +199,22 @@ class CartModel extends Model {
     }
     
     /**
-     * Xóa một sản phẩm khỏi giỏ hàng
+     * Xóa một sản phẩm khỏi giỏ hàng (dùng cho AJAX)
      * 
      * @param int $cartId ID của cart item
      * @return bool Success or failure
      */
     public function removeItem($cartId) {
         try {
+            // Kiểm tra cart item có tồn tại không
+            $checkSql = "SELECT cart_id FROM tbl_cart WHERE cart_id = ?";
+            $exists = $this->getOne($checkSql, [$cartId]);
+            
+            if (!is_object($exists)) {
+                error_log("CartModel::removeItem - Cart item not found: cart_id=$cartId");
+                return false;
+            }
+            
             $sql = "DELETE FROM tbl_cart WHERE cart_id = ?";
             return $this->execute($sql, [$cartId]);
         } catch (Exception $e) {
@@ -356,4 +367,90 @@ class CartModel extends Model {
             'items' => $cartItems
         ];
     }
+    
+    /**
+     * Cập nhật số lượng sản phẩm trong giỏ hàng
+     */
+    public function updateCartQuantity($cartId, $quantity, $sessionId, $userId = null) {
+        try {
+            // Validate input
+            if (!$cartId || $quantity <= 0) {
+                return false;
+            }
+            
+            // Kiểm tra cart item có tồn tại không
+            $checkSql = "SELECT c.cart_id, c.variant_id, v.ton_kho, v.trang_thai 
+                        FROM tbl_cart c 
+                        JOIN tbl_product_variant v ON c.variant_id = v.variant_id 
+                        WHERE c.cart_id = ? AND c.session_id = ?";
+            $params = [$cartId, $sessionId];
+            
+            if ($userId) {
+                $checkSql .= " AND (c.user_id = ? OR c.user_id IS NULL)";
+                $params[] = $userId;
+            }
+            
+            $cartItem = $this->getOne($checkSql, $params);
+            
+            if (!is_object($cartItem)) {
+                return false;
+            }
+            
+            // Kiểm tra tồn kho - CHỈ kiểm tra nếu variant còn hoạt động
+            if ($cartItem->trang_thai != 1) {
+                error_log("CartModel::updateCartQuantity - Variant not active: cart_id=$cartId, trang_thai={$cartItem->trang_thai}");
+                return false;
+            }
+            
+            // Kiểm tra tồn kho có đủ không
+            if ($cartItem->ton_kho < $quantity) {
+                error_log("CartModel::updateCartQuantity - Insufficient stock: cart_id=$cartId, requested=$quantity, available={$cartItem->ton_kho}");
+                return false;
+            }
+            
+            // Cập nhật số lượng
+            $updateSql = "UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?";
+            return $this->execute($updateSql, [$quantity, $cartId]);
+            
+        } catch (Exception $e) {
+            error_log("CartModel::updateCartQuantity - Exception: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Xóa sản phẩm khỏi giỏ hàng
+     */
+    public function removeFromCart($cartId, $sessionId, $userId = null) {
+        try {
+            // Debug logging
+            error_log("CartModel::removeFromCart - Starting: cart_id=$cartId, session_id=$sessionId, user_id=$userId");
+            
+            // Kiểm tra cart item có tồn tại và thuộc về session/user này không
+            $checkSql = "SELECT cart_id FROM tbl_cart WHERE cart_id = ? AND session_id = ?";
+            $checkParams = [$cartId, $sessionId];
+            
+            if ($userId) {
+                $checkSql .= " AND (user_id = ? OR user_id IS NULL)";
+                $checkParams[] = $userId;
+            }
+            
+            $exists = $this->getOne($checkSql, $checkParams);
+            if (!is_object($exists)) {
+                error_log("CartModel::removeFromCart - Cart item not found or not authorized: cart_id=$cartId, session_id=$sessionId, user_id=$userId");
+                return false;
+            }
+            
+            // Xóa item
+            $sql = "DELETE FROM tbl_cart WHERE cart_id = ?";
+            $result = $this->execute($sql, [$cartId]);
+            
+            error_log("CartModel::removeFromCart - Delete result: " . ($result ? 'success' : 'failed'));
+            return $result;
+        } catch (Exception $e) {
+            error_log("CartModel::removeFromCart - Exception: " . $e->getMessage());
+            return false;
+        }
+    }
+    
 }

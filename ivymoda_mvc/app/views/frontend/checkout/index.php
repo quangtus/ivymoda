@@ -79,19 +79,19 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                                     
                                     <div class="form-check mb-3">
                                         <input class="form-check-input" type="radio" name="payment_method" 
-                                               id="bank_transfer" value="bank_transfer">
-                                        <label class="form-check-label" for="bank_transfer">
-                                            <i class="fas fa-university me-2"></i>
-                                            Chuyển khoản ngân hàng
+                                               id="momo" value="momo">
+                                        <label class="form-check-label" for="momo">
+                                            <img src="<?= BASE_URL ?>assets/images/momo.png" alt="Momo" style="height: 24px; margin-right: 8px;">
+                                            Thanh toán bằng Momo
                                         </label>
                                     </div>
                                     
                                     <div class="form-check mb-3">
                                         <input class="form-check-input" type="radio" name="payment_method" 
-                                               id="momo" value="momo">
-                                        <label class="form-check-label" for="momo">
-                                            <i class="fas fa-mobile-alt me-2"></i>
-                                            Ví điện tử MoMo
+                                               id="bank_transfer" value="bank_transfer">
+                                        <label class="form-check-label" for="bank_transfer">
+                                            <i class="fas fa-university me-2"></i>
+                                            Chuyển khoản ngân hàng
                                         </label>
                                     </div>
                                 </div>
