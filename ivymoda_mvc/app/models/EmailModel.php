@@ -33,7 +33,7 @@ class EmailModel extends Model {
      */
     public function getTemplateByType($type) {
         $type = $this->escape($type);
-        $query = "SELECT * FROM {$this->templateTable} WHERE template_type = '$type' LIMIT 1";
+        $query = "SELECT * FROM {$this->templateTable} WHERE type = '$type' LIMIT 1";
         return $this->getOne($query);
     }
     
@@ -51,12 +51,12 @@ class EmailModel extends Model {
      */
     public function addTemplate($data) {
         $name = $this->escape($data['template_name']);
-        $subject = $this->escape($data['template_subject']);
-        $body = $this->escape($data['template_body']);
-        $type = $this->escape($data['template_type']);
+        $subject = $this->escape($data['subject']);
+        $body = $this->escape($data['body']);
+        $type = $this->escape($data['type']);
         
         $query = "INSERT INTO {$this->templateTable} 
-                  (template_name, template_subject, template_body, template_type) 
+                  (template_name, subject, body, type) 
                   VALUES ('$name', '$subject', '$body', '$type')";
         
         if ($this->execute($query)) {
@@ -71,12 +71,12 @@ class EmailModel extends Model {
      */
     public function updateTemplate($id, $data) {
         $id = (int)$id;
-        $subject = $this->escape($data['template_subject']);
-        $body = $this->escape($data['template_body']);
+        $subject = $this->escape($data['subject']);
+        $body = $this->escape($data['body']);
         
         $query = "UPDATE {$this->templateTable} SET 
-                  template_subject = '$subject',
-                  template_body = '$body'
+                  subject = '$subject',
+                  body = '$body'
                   WHERE template_id = $id";
         
         if ($this->execute($query)) {
@@ -128,8 +128,8 @@ class EmailModel extends Model {
             return "Template không tồn tại";
         }
         
-        $subject = is_object($template) ? $template->template_subject : $template['template_subject'];
-        $body = is_object($template) ? $template->template_body : $template['template_body'];
+        $subject = is_object($template) ? $template->subject : $template['subject'];
+        $body = is_object($template) ? $template->body : $template['body'];
         
         // Thay thế biến
         $subject = $this->replaceVariables($subject, $variables);
@@ -153,7 +153,7 @@ class EmailModel extends Model {
         $success = mail($to, $subject, $body, $headers);
         
         // Log email
-        $this->logEmail($to, $subject, $body, $success ? 1 : 0);
+        $this->logEmail($to, $subject, $body, $success ? 'sent' : 'failed');
         
         return $success;
     }
@@ -161,15 +161,15 @@ class EmailModel extends Model {
     /**
      * Lưu log email
      */
-    public function logEmail($to, $subject, $body, $status = 0) {
+    public function logEmail($to, $subject, $body, $status = 'sent') {
         $to = $this->escape($to);
         $subject = $this->escape($subject);
         $body = $this->escape($body);
-        $status = (int)$status;
+        $status = $this->escape($status);
         
         $query = "INSERT INTO {$this->logTable} 
-                  (email_to, email_subject, email_body, email_status) 
-                  VALUES ('$to', '$subject', '$body', $status)";
+                  (recipient, subject, body, status) 
+                  VALUES ('$to', '$subject', '$body', '$status')";
         
         return $this->execute($query);
     }
@@ -192,7 +192,7 @@ class EmailModel extends Model {
         $email = $this->escape($email);
         $limit = (int)$limit;
         $query = "SELECT * FROM {$this->logTable} 
-                  WHERE email_to = '$email' 
+                  WHERE recipient = '$email' 
                   ORDER BY sent_at DESC 
                   LIMIT $limit";
         return $this->getAll($query);
@@ -202,8 +202,8 @@ class EmailModel extends Model {
      * Đếm số email đã gửi thành công/thất bại
      */
     public function getEmailStats() {
-        $successQuery = "SELECT COUNT(*) as count FROM {$this->logTable} WHERE email_status = 1";
-        $failQuery = "SELECT COUNT(*) as count FROM {$this->logTable} WHERE email_status = 0";
+        $successQuery = "SELECT COUNT(*) as count FROM {$this->logTable} WHERE status = 'sent'";
+        $failQuery = "SELECT COUNT(*) as count FROM {$this->logTable} WHERE status = 'failed'";
         
         $success = $this->getOne($successQuery);
         $fail = $this->getOne($failQuery);

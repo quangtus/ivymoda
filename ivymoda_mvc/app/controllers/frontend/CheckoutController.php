@@ -45,9 +45,33 @@ class CheckoutController extends Controller {
     }
     
     /**
-     * Hiển thị trang thanh toán
+     * Hiển thị trang thông tin giao hàng (Bước 2)
      */
-    public function index() {
+    public function delivery() {
+        $sessionId = session_id();
+        $userId = $_SESSION['user_id'];
+        
+        // Lấy giỏ hàng từ CartModel
+        $cartItems = $this->cartModel->getCartItems($sessionId, $userId);
+        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId);
+        $user = $this->userModel->getUserById($userId);
+        
+        $data = [
+            'title' => 'Thông tin giao hàng - IVY moda',
+            'cartItems' => $cartItems,
+            'totalAmount' => $totalAmount,
+            'user' => $user,
+            'cartCount' => $this->cartModel->getCartCount($sessionId, $userId),
+            'step' => 2
+        ];
+        
+        $this->view('frontend/checkout/delivery', $data);
+    }
+    
+    /**
+     * Hiển thị trang thanh toán (Bước 3)
+     */
+    public function payment() {
         $sessionId = session_id();
         $userId = $_SESSION['user_id'];
         
@@ -61,10 +85,50 @@ class CheckoutController extends Controller {
             'cartItems' => $cartItems,
             'totalAmount' => $totalAmount,
             'user' => $user,
-            'cartCount' => $this->cartModel->getCartCount($sessionId, $userId)
+            'cartCount' => $this->cartModel->getCartCount($sessionId, $userId),
+            'step' => 3
         ];
         
-        $this->view('frontend/checkout/index', $data);
+        $this->view('frontend/checkout/payment', $data);
+    }
+    
+    /**
+     * Hiển thị trang thanh toán (Legacy - redirect to payment)
+     */
+    public function index() {
+        $this->redirect('checkout/payment');
+    }
+    
+    /**
+     * Xử lý form thông tin giao hàng
+     */
+    public function processDelivery() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('checkout/delivery');
+            return;
+        }
+        
+        // Validate dữ liệu form
+        $errors = $this->validateDeliveryData($_POST);
+        
+        if (!empty($errors)) {
+            $_SESSION['delivery_errors'] = $errors;
+            $this->redirect('checkout/delivery');
+            return;
+        }
+        
+        // Lưu thông tin giao hàng vào session
+        $_SESSION['delivery_info'] = [
+            'customer_name' => $_POST['customer_name'],
+            'customer_phone' => $_POST['customer_phone'],
+            'customer_address' => $_POST['customer_address'],
+            'shipping_method' => $_POST['shipping_method'],
+            'notes' => $_POST['notes'] ?? '',
+            'payment_method' => $_POST['payment_method']
+        ];
+        
+        // Redirect đến trang thanh toán
+        $this->redirect('checkout/payment');
     }
     
     /**
@@ -76,12 +140,15 @@ class CheckoutController extends Controller {
             return;
         }
         
+        // Lấy thông tin giao hàng từ session hoặc POST
+        $deliveryInfo = $_SESSION['delivery_info'] ?? $_POST;
+        
         // Validate dữ liệu form
-        $errors = $this->validateCheckoutData($_POST);
+        $errors = $this->validateCheckoutData($deliveryInfo);
         
         if (!empty($errors)) {
             $_SESSION['checkout_errors'] = $errors;
-            $this->redirect('checkout');
+            $this->redirect('checkout/payment');
             return;
         }
         
@@ -109,15 +176,15 @@ class CheckoutController extends Controller {
         $orderData = [
             'user_id' => $userId,
             'session_id' => $sessionId,
-            'customer_name' => $user->fullname ?? $_POST['customer_name'],
-            'customer_phone' => $user->phone ?? $_POST['customer_phone'],
+            'customer_name' => $deliveryInfo['customer_name'],
+            'customer_phone' => $deliveryInfo['customer_phone'],
             'customer_email' => $user->email,
-            'customer_address' => $_POST['customer_address'],
+            'customer_address' => $deliveryInfo['customer_address'],
             'order_total' => $totalAmount,
             'order_status' => 0,
-            'payment_method' => $_POST['payment_method'],
-            'shipping_method' => $_POST['shipping_method'] ?? 'Standard',
-            'order_note' => $_POST['notes'] ?? ''
+            'payment_method' => $deliveryInfo['payment_method'],
+            'shipping_method' => $deliveryInfo['shipping_method'] ?? 'Standard',
+            'order_note' => $deliveryInfo['notes'] ?? ''
         ];
         
         // BEGIN TRANSACTION (quan trọng để đảm bảo data consistency)
@@ -163,18 +230,24 @@ class CheckoutController extends Controller {
             }
             
             // Xử lý thanh toán
-            $paymentMethod = $_POST['payment_method'];
+            $paymentMethod = $deliveryInfo['payment_method'];
             
             if ($paymentMethod === 'momo') {
-                // Redirect đến thanh toán Momo
-                $this->redirect('payment/momo', [
+                // Lưu thông tin đơn hàng vào session để PaymentController có thể truy cập
+                $_SESSION['momo_order_info'] = [
                     'order_id' => $orderId,
                     'order_code' => $result['order_code'],
-                    'amount' => $totalAmount
-                ]);
+                    'amount' => (int)$totalAmount
+                ];
+                
+                // Redirect đến thanh toán Momo (GET)
+                $this->redirect('payment/momo?order_id=' . urlencode($orderId) . '&order_code=' . urlencode($result['order_code']) . '&amount=' . urlencode((int)$totalAmount));
             } else {
                 // COD - Xóa giỏ hàng và redirect đến success
                 $this->cartModel->clearCart($sessionId, $userId);
+                
+                // Xóa thông tin giao hàng khỏi session
+                unset($_SESSION['delivery_info']);
                 
                 // Lưu thông báo thành công
                 $_SESSION['success'] = 'Đặt hàng thành công! Mã đơn hàng: ' . $result['order_code'];
@@ -251,6 +324,31 @@ class CheckoutController extends Controller {
      */
     private function updateCartCount() {
         $_SESSION['cart_count'] = $this->getCartCount();
+    }
+    
+    /**
+     * Validate dữ liệu thông tin giao hàng
+     */
+    private function validateDeliveryData($data) {
+        $errors = [];
+        
+        if (empty($data['customer_name'])) {
+            $errors['customer_name'] = 'Vui lòng nhập họ và tên';
+        }
+        
+        if (empty($data['customer_phone'])) {
+            $errors['customer_phone'] = 'Vui lòng nhập số điện thoại';
+        }
+        
+        if (empty($data['customer_address'])) {
+            $errors['customer_address'] = 'Vui lòng nhập địa chỉ giao hàng đầy đủ';
+        }
+        
+        if (empty($data['payment_method'])) {
+            $errors['payment_method'] = 'Vui lòng chọn phương thức thanh toán';
+        }
+        
+        return $errors;
     }
     
     /**

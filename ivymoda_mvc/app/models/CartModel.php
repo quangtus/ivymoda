@@ -123,15 +123,16 @@ class CartModel extends Model {
                     JOIN tbl_product_variant v ON c.variant_id = v.variant_id
                     JOIN tbl_size s ON v.size_id = s.size_id
                     JOIN tbl_color co ON v.color_id = co.color_id
-                    JOIN tbl_sanpham p ON v.sanpham_id = p.sanpham_id
-                    WHERE c.session_id = ?";
+                    JOIN tbl_sanpham p ON v.sanpham_id = p.sanpham_id";
             
-            $params = [$sessionId];
+            $params = [];
             
-            // Nếu có user_id, lấy cả giỏ hàng của user
+            // Đăng nhập: lọc theo user_id; Khách: lọc theo session_id
             if ($userId) {
-                $sql .= " OR (c.user_id = ? AND c.session_id != ?)";
+                $sql .= " WHERE c.user_id = ?";
                 $params[] = $userId;
+            } else {
+                $sql .= " WHERE c.session_id = ?";
                 $params[] = $sessionId;
             }
             
@@ -256,12 +257,12 @@ class CartModel extends Model {
      */
     public function getCartCount($sessionId, $userId = null) {
         try {
-            $sql = "SELECT COUNT(*) as total FROM tbl_cart WHERE session_id = ?";
-            $params = [$sessionId];
-            
             if ($userId) {
-                $sql .= " OR user_id = ?";
-                $params[] = $userId;
+                $sql = "SELECT COUNT(*) as total FROM tbl_cart WHERE user_id = ?";
+                $params = [$userId];
+            } else {
+                $sql = "SELECT COUNT(*) as total FROM tbl_cart WHERE session_id = ?";
+                $params = [$sessionId];
             }
             
             $result = $this->getOne($sql, $params);
@@ -288,13 +289,13 @@ class CartModel extends Model {
                         SUM(c.quantity * COALESCE(v.gia_ban, p.sanpham_gia)) as total
                     FROM tbl_cart c
                     JOIN tbl_product_variant v ON c.variant_id = v.variant_id
-                    JOIN tbl_sanpham p ON v.sanpham_id = p.sanpham_id
-                    WHERE c.session_id = ?";
-            $params = [$sessionId];
-            
+                    JOIN tbl_sanpham p ON v.sanpham_id = p.sanpham_id";
             if ($userId) {
-                $sql .= " OR c.user_id = ?";
-                $params[] = $userId;
+                $sql .= " WHERE c.user_id = ?";
+                $params = [$userId];
+            } else {
+                $sql .= " WHERE c.session_id = ?";
+                $params = [$sessionId];
             }
             
             $result = $this->getOne($sql, $params);
@@ -382,12 +383,15 @@ class CartModel extends Model {
             $checkSql = "SELECT c.cart_id, c.variant_id, v.ton_kho, v.trang_thai 
                         FROM tbl_cart c 
                         JOIN tbl_product_variant v ON c.variant_id = v.variant_id 
-                        WHERE c.cart_id = ? AND c.session_id = ?";
-            $params = [$cartId, $sessionId];
+                        WHERE c.cart_id = ?";
+            $params = [$cartId];
             
             if ($userId) {
-                $checkSql .= " AND (c.user_id = ? OR c.user_id IS NULL)";
+                $checkSql .= " AND c.user_id = ?";
                 $params[] = $userId;
+            } else {
+                $checkSql .= " AND c.session_id = ?";
+                $params[] = $sessionId;
             }
             
             $cartItem = $this->getOne($checkSql, $params);
@@ -427,12 +431,12 @@ class CartModel extends Model {
             error_log("CartModel::removeFromCart - Starting: cart_id=$cartId, session_id=$sessionId, user_id=$userId");
             
             // Kiểm tra cart item có tồn tại và thuộc về session/user này không
-            $checkSql = "SELECT cart_id FROM tbl_cart WHERE cart_id = ? AND session_id = ?";
-            $checkParams = [$cartId, $sessionId];
-            
             if ($userId) {
-                $checkSql .= " AND (user_id = ? OR user_id IS NULL)";
-                $checkParams[] = $userId;
+                $checkSql = "SELECT cart_id FROM tbl_cart WHERE cart_id = ? AND user_id = ?";
+                $checkParams = [$cartId, $userId];
+            } else {
+                $checkSql = "SELECT cart_id FROM tbl_cart WHERE cart_id = ? AND session_id = ?";
+                $checkParams = [$cartId, $sessionId];
             }
             
             $exists = $this->getOne($checkSql, $checkParams);

@@ -1,6 +1,10 @@
 <?php
 // filepath: c:\xampp\htdocs\ivymoda\ivymoda_mvc\config\config.php
 
+// Load environment variables
+require_once dirname(__FILE__) . '/../app/helpers/EnvHelper.php';
+EnvHelper::load();
+
 // Môi trường (development hoặc production)
 if (!defined('ENVIRONMENT')) {
     define('ENVIRONMENT', 'development');
@@ -70,6 +74,26 @@ if (!defined('SESSION_TIMEOUT')) {
     define('SESSION_TIMEOUT', 1800);
 }
 
+// MoMo Payment Configuration - Load from .env
+if (!defined('MOMO_PARTNER_CODE')) {
+    define('MOMO_PARTNER_CODE', EnvHelper::get('DEV_PARTNER_CODE', 'MOMO'));
+}
+if (!defined('MOMO_ACCESS_KEY')) {
+    define('MOMO_ACCESS_KEY', EnvHelper::get('DEV_ACCESS_KEY', 'F8BBA842ECF85'));
+}
+if (!defined('MOMO_SECRET_KEY')) {
+    define('MOMO_SECRET_KEY', EnvHelper::get('DEV_SECRET_KEY', 'K951B6PE1waDMi640xX08PD3vg6EkVlz'));
+}
+if (!defined('MOMO_ENDPOINT')) {
+    define('MOMO_ENDPOINT', EnvHelper::get('DEV_MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/api/create'));
+}
+if (!defined('MOMO_RETURN_URL')) {
+    define('MOMO_RETURN_URL', BASE_URL . 'payment/momoReturn');
+}
+if (!defined('MOMO_NOTIFY_URL')) {
+    define('MOMO_NOTIFY_URL', BASE_URL . 'payment/momoNotify');
+}
+
 // Database configuration
 if (!defined('DB_HOST')) {
     define('DB_HOST', 'localhost');
@@ -83,6 +107,7 @@ if (!defined('DB_PASS')) {
 if (!defined('DB_NAME')) {
     define('DB_NAME', 'ivymoda');
 }
+
 
 // Hiển thị lỗi dựa trên môi trường
 if (ENVIRONMENT === 'development') {

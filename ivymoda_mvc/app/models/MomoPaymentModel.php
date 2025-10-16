@@ -7,18 +7,24 @@
 
 class MomoPaymentModel extends Model {
     
-    // Momo Sandbox Configuration
-    private $partnerCode = 'MOMO5RGX20191128';
-    private $accessKey = 'klm05TvNBzhg7h7j';
-    private $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
-    private $endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
-    private $returnUrl = '';
-    private $notifyUrl = '';
+    // Momo Sandbox Configuration - Load from config
+    private $partnerCode;
+    private $accessKey;
+    private $secretKey;
+    private $endpoint;
+    private $returnUrl;
+    private $notifyUrl;
     
     public function __construct() {
         parent::__construct();
-        $this->returnUrl = BASE_URL . 'payment/momo/return';
-        $this->notifyUrl = BASE_URL . 'payment/momo/notify';
+        
+        // Load configuration from config.php (now uses .env file)
+        $this->partnerCode = defined('MOMO_PARTNER_CODE') ? MOMO_PARTNER_CODE : 'MOMO';
+        $this->accessKey = defined('MOMO_ACCESS_KEY') ? MOMO_ACCESS_KEY : 'F8BBA842ECF85';
+        $this->secretKey = defined('MOMO_SECRET_KEY') ? MOMO_SECRET_KEY : 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
+        $this->endpoint = defined('MOMO_ENDPOINT') ? MOMO_ENDPOINT : 'https://test-payment.momo.vn/v2/gateway/api/create';
+        $this->returnUrl = defined('MOMO_RETURN_URL') ? MOMO_RETURN_URL : BASE_URL . 'payment/momoReturn';
+        $this->notifyUrl = defined('MOMO_NOTIFY_URL') ? MOMO_NOTIFY_URL : BASE_URL . 'payment/momoNotify';
     }
     
     /**
@@ -180,17 +186,32 @@ class MomoPaymentModel extends Model {
     /**
      * Lưu payment log
      */
-    public function logPayment($orderId, $requestId, $amount, $status, $response = null) {
+    public function logPayment($orderId, $requestId, $amount, $status, $response = null, $orderCode = null) {
         try {
-            $sql = "INSERT INTO payment_logs (order_id, request_id, amount, status, response, created_at) 
-                    VALUES (?, ?, ?, ?, ?, NOW())";
+            // Map to tbl_momo_transaction per final schema
+            // Fields: order_id (nullable), request_id (unique), order_code, amount, result_code, message
+            $resultCode = null;
+            $message = null;
+            if (is_array($response)) {
+                $resultCode = isset($response['resultCode']) ? (string)$response['resultCode'] : ($status === 'success' ? '0' : null);
+                $message = $response['message'] ?? $status;
+            } elseif (is_string($response) && !empty($response)) {
+                $message = $response;
+            } else {
+                $message = $status;
+                $resultCode = $status === 'success' ? '0' : null;
+            }
+            
+            $sql = "INSERT INTO tbl_momo_transaction (order_id, request_id, order_code, amount, result_code, message, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, NOW())";
             
             return $this->execute($sql, [
                 $orderId,
                 $requestId,
+                $orderCode,
                 $amount,
-                $status,
-                $response ? json_encode($response) : null
+                $resultCode,
+                $message
             ]);
         } catch (Exception $e) {
             error_log("MomoPaymentModel::logPayment - Exception: " . $e->getMessage());

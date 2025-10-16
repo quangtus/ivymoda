@@ -66,6 +66,7 @@
                 <ul class="submenu">
                     <li><a href="<?php echo BASE_URL; ?>admin/user">👥 Danh sách tài khoản</a></li>
                     <li><a href="<?php echo BASE_URL; ?>admin/user/add">➕ Thêm tài khoản</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>admin/user/roles">🔐 Quản lý vai trò</a></li>
                 </ul>
             </li>
             

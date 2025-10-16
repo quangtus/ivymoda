@@ -74,13 +74,14 @@ class OrderModel extends Model {
      */
     public function addOrderItem($itemData) {
         $sql = "INSERT INTO tbl_order_items 
-                (order_id, variant_id, sanpham_ten, sanpham_gia, sanpham_soluong, 
+                (order_id, variant_id, sanpham_id, sanpham_ten, sanpham_gia, sanpham_soluong, 
                  sanpham_size, sanpham_color, sanpham_anh) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         return $this->db->execute($sql, [
             $itemData['order_id'],
             $itemData['variant_id'],
+            $itemData['sanpham_id'],
             $itemData['sanpham_ten'],
             $itemData['sanpham_gia'],
             $itemData['sanpham_soluong'],

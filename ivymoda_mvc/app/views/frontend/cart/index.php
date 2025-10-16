@@ -6,7 +6,7 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
     <div class="cart-container">
         <div class="cart-top-wrap">
             <div class="cart-top">
-                <div class="cart-top-item chosen">
+                <div class="cart-top-item active">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
                 <div class="cart-top-item">
@@ -165,7 +165,7 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                 </div>
                 <div class="cart-content-right-button">
                     <a href="<?= BASE_URL ?>" class="btn-continue-shopping">TIẾP TỤC MUA SẮM</a>
-                    <a href="<?= BASE_URL ?>checkout" class="btn-checkout" id="btnCheckout">THANH TOÁN</a>
+                    <a href="<?= BASE_URL ?>checkout/delivery" class="btn-checkout" id="btnCheckout">TIẾP TỤC THANH TOÁN</a>
                 </div>
                 <div class="cart-content-right-login">
                     <p>TÀI KHOẢN IVY</p>
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkoutBtn = document.getElementById('btnCheckout');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', function(){
-            window.location.href = '<?= BASE_URL ?>checkout';
+            window.location.href = '<?= BASE_URL ?>checkout/delivery';
         });
     }
     

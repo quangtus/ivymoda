@@ -12,7 +12,7 @@ class Model {
      * Constructor - Khởi tạo kết nối database
      */
     public function __construct() {
-        $this->db = new Database();
+        $this->db = Database::getInstance();
     }
     
     /**

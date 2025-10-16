@@ -116,11 +116,82 @@ class UserModel extends Model {
     }
     
     /**
+     * Lấy tất cả các vai trò kèm theo số lượng người dùng
+     */
+    public function getAllRolesWithUserCount() {
+        $query = "SELECT r.*, COUNT(u.id) as user_count 
+                  FROM roles r 
+                  LEFT JOIN {$this->table} u ON r.id = u.role_id 
+                  GROUP BY r.id 
+                  ORDER BY r.id";
+        $result = $this->getAll($query);
+        return $result ? $result : [];
+    }
+    
+    /**
+     * Lấy vai trò theo ID
+     */
+    public function getRoleById($id) {
+        $query = "SELECT * FROM roles WHERE id = $id";
+        return $this->getOne($query);
+    }
+    
+    /**
+     * Cập nhật vai trò
+     */
+    public function updateRole($id, $role_name, $description) {
+        $role_name = $this->escape($role_name);
+        $description = $this->escape($description);
+        
+        // Kiểm tra xem vai trò đã tồn tại chưa (trừ chính nó)
+        $check_query = "SELECT COUNT(*) as count FROM roles WHERE role_name = '$role_name' AND id != $id";
+        $result = $this->getOne($check_query);
+        
+        $count = 0;
+        if ($result) {
+            if (is_object($result) && isset($result->count)) {
+                $count = $result->count;
+            } elseif (is_array($result) && isset($result['count'])) {
+                $count = $result['count'];
+            }
+        }
+        
+        if($count > 0) {
+            return "Vai trò này đã tồn tại";
+        }
+        
+        $query = "UPDATE roles SET role_name = '$role_name', description = '$description' WHERE id = $id";
+        
+        if($this->execute($query)) {
+            return "success";
+        } else {
+            return "Cập nhật vai trò thất bại";
+        }
+    }
+    
+    /**
      * Thêm vai trò mới
      */
     public function addRole($role_name, $description) {
         $role_name = $this->escape($role_name);
         $description = $this->escape($description);
+        
+        // Kiểm tra xem vai trò đã tồn tại chưa
+        $check_query = "SELECT COUNT(*) as count FROM roles WHERE role_name = '$role_name'";
+        $result = $this->getOne($check_query);
+        
+        $count = 0;
+        if ($result) {
+            if (is_object($result) && isset($result->count)) {
+                $count = $result->count;
+            } elseif (is_array($result) && isset($result['count'])) {
+                $count = $result['count'];
+            }
+        }
+        
+        if($count > 0) {
+            return "Vai trò này đã tồn tại";
+        }
         
         $query = "INSERT INTO roles (role_name, description) VALUES ('$role_name', '$description')";
         

@@ -200,7 +200,7 @@ class UserController extends \Controller {
      * Quản lý vai trò người dùng
      */
     public function roles() {
-        $roles = $this->userModel->getAllRoles();
+        $roles = $this->userModel->getAllRolesWithUserCount();
         
         $data = [
             'title' => 'Quản lý vai trò - IVY moda',
@@ -228,7 +228,7 @@ class UserController extends \Controller {
                 if($result == "success") {
                     $data['success'] = 'Thêm vai trò thành công!';
                     // Cập nhật lại danh sách vai trò
-                    $data['roles'] = $this->userModel->getAllRoles();
+                    $data['roles'] = $this->userModel->getAllRolesWithUserCount();
                     // Reset form
                     $data['role_name'] = '';
                     $data['description'] = '';
@@ -239,6 +239,61 @@ class UserController extends \Controller {
         }
         
         $this->view('admin/user/roles', $data);
+    }
+    
+    /**
+     * Chỉnh sửa vai trò
+     * @param int $id ID của vai trò
+     */
+    public function editRole($id = null) {
+        if(!$id) {
+            $_SESSION['error'] = 'Không tìm thấy vai trò';
+            $this->redirect('admin/user/roles');
+            exit;
+        }
+        
+        $role = $this->userModel->getRoleById($id);
+        
+        if(!$role) {
+            $_SESSION['error'] = 'Không tìm thấy vai trò';
+            $this->redirect('admin/user/roles');
+            exit;
+        }
+        
+        $data = [
+            'title' => 'Chỉnh sửa vai trò - IVY moda',
+            'role' => $role,
+            'role_name' => $role->role_name,
+            'description' => $role->description,
+            'error' => '',
+            'success' => ''
+        ];
+        
+        // Xử lý cập nhật vai trò
+        if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_role'])) {
+            $role_name = trim($_POST['role_name']);
+            $description = trim($_POST['description']);
+            
+            // Cập nhật giá trị vào data để giữ lại khi form bị lỗi
+            $data['role_name'] = $role_name;
+            $data['description'] = $description;
+            
+            if(empty($role_name)) {
+                $data['error'] = 'Vui lòng nhập tên vai trò';
+            } else {
+                $result = $this->userModel->updateRole($id, $role_name, $description);
+                
+                if($result == "success") {
+                    $_SESSION['success'] = 'Cập nhật vai trò thành công!';
+                    $this->redirect('admin/user/roles');
+                    exit;
+                } else {
+                    $data['error'] = $result;
+                }
+            }
+        }
+        
+        $this->view('admin/user/edit_role', $data);
     }
     
     /**

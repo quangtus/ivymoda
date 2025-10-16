@@ -13,7 +13,7 @@ class DiscountModel extends Model {
      */
     public function getDiscountByCode($code) {
         try {
-            $sql = "SELECT * FROM {$this->table} WHERE ma_code = ? AND ma_trangthai = 1";
+            $sql = "SELECT * FROM {$this->table} WHERE ma_code = ? AND trang_thai = 1";
             $result = $this->getOne($sql, [$code]);
             
             if (!$result) {
@@ -22,12 +22,12 @@ class DiscountModel extends Model {
             
             // Kiểm tra thời gian hiệu lực
             $now = date('Y-m-d H:i:s');
-            if ($now < $result->ma_batdau || $now > $result->ma_ketthuc) {
+            if ($now < $result->ngay_bat_dau || $now > $result->ngay_ket_thuc) {
                 return null;
             }
             
             // Kiểm tra số lượng còn lại
-            if ($result->ma_soluong !== null && $result->ma_dadung >= $result->ma_soluong) {
+            if ($result->so_luong !== null && $result->da_su_dung >= $result->so_luong) {
                 return null;
             }
             
@@ -52,13 +52,7 @@ class DiscountModel extends Model {
                 ];
             }
             
-            // Kiểm tra điều kiện đơn hàng tối thiểu
-            if ($orderTotal < $discount->ma_dieukien) {
-                return [
-                    'valid' => false,
-                    'message' => 'Đơn hàng tối thiểu ' . number_format($discount->ma_dieukien, 0, ',', '.') . ' ₫ để sử dụng mã này'
-                ];
-            }
+            // Database final không còn trường điều kiện tối thiểu
             
             return [
                 'valid' => true,
@@ -79,12 +73,13 @@ class DiscountModel extends Model {
      */
     public function calculateDiscountValue($discount, $orderTotal) {
         try {
-            if ($discount->ma_loai == 1) {
-                // Giảm theo phần trăm
-                $discountValue = ($orderTotal * $discount->ma_giatri) / 100;
+            $type = is_object($discount) ? $discount->loai_giam : ($discount['loai_giam'] ?? 'percent');
+            $value = is_object($discount) ? $discount->ma_giam : ($discount['ma_giam'] ?? 0);
+            
+            if ($type === 'percent') {
+                $discountValue = ($orderTotal * (float)$value) / 100;
             } else {
-                // Giảm theo số tiền cố định
-                $discountValue = $discount->ma_giatri;
+                $discountValue = (float)$value;
             }
             
             // Đảm bảo không giảm quá tổng tiền đơn hàng
@@ -100,7 +95,7 @@ class DiscountModel extends Model {
      */
     public function useDiscount($code) {
         try {
-            $sql = "UPDATE {$this->table} SET ma_dadung = ma_dadung + 1 WHERE ma_code = ?";
+            $sql = "UPDATE {$this->table} SET da_su_dung = da_su_dung + 1 WHERE ma_code = ?";
             return $this->execute($sql, [$code]);
         } catch (Exception $e) {
             error_log("DiscountModel::useDiscount - Exception: " . $e->getMessage());
@@ -114,7 +109,7 @@ class DiscountModel extends Model {
     public function getAllDiscounts($page = 1, $limit = 20) {
         try {
             $offset = ($page - 1) * $limit;
-            $sql = "SELECT * FROM {$this->table} ORDER BY ma_batdau DESC LIMIT ? OFFSET ?";
+            $sql = "SELECT * FROM {$this->table} ORDER BY ngay_bat_dau DESC LIMIT ? OFFSET ?";
             return $this->getAll($sql, [$limit, $offset]);
         } catch (Exception $e) {
             error_log("DiscountModel::getAllDiscounts - Exception: " . $e->getMessage());
@@ -128,18 +123,18 @@ class DiscountModel extends Model {
     public function createDiscount($data) {
         try {
             $sql = "INSERT INTO {$this->table} 
-                    (ma_code, ma_loai, ma_giatri, ma_dieukien, ma_batdau, ma_ketthuc, ma_soluong, ma_trangthai) 
+                    (ma_code, ma_ten, ma_giam, loai_giam, ngay_bat_dau, ngay_ket_thuc, so_luong, trang_thai) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             
             return $this->execute($sql, [
                 $data['ma_code'],
-                $data['ma_loai'],
-                $data['ma_giatri'],
-                $data['ma_dieukien'],
-                $data['ma_batdau'],
-                $data['ma_ketthuc'],
-                $data['ma_soluong'],
-                $data['ma_trangthai']
+                $data['ma_ten'],
+                $data['ma_giam'],
+                $data['loai_giam'],
+                $data['ngay_bat_dau'],
+                $data['ngay_ket_thuc'],
+                $data['so_luong'],
+                $data['trang_thai']
             ]);
         } catch (Exception $e) {
             error_log("DiscountModel::createDiscount - Exception: " . $e->getMessage());
@@ -156,13 +151,13 @@ class DiscountModel extends Model {
             $params = [];
             
             if (isset($data['ma_code'])) { $fields[] = "ma_code = ?"; $params[] = $data['ma_code']; }
-            if (isset($data['ma_loai'])) { $fields[] = "ma_loai = ?"; $params[] = $data['ma_loai']; }
-            if (isset($data['ma_giatri'])) { $fields[] = "ma_giatri = ?"; $params[] = $data['ma_giatri']; }
-            if (isset($data['ma_dieukien'])) { $fields[] = "ma_dieukien = ?"; $params[] = $data['ma_dieukien']; }
-            if (isset($data['ma_batdau'])) { $fields[] = "ma_batdau = ?"; $params[] = $data['ma_batdau']; }
-            if (isset($data['ma_ketthuc'])) { $fields[] = "ma_ketthuc = ?"; $params[] = $data['ma_ketthuc']; }
-            if (isset($data['ma_soluong'])) { $fields[] = "ma_soluong = ?"; $params[] = $data['ma_soluong']; }
-            if (isset($data['ma_trangthai'])) { $fields[] = "ma_trangthai = ?"; $params[] = $data['ma_trangthai']; }
+            if (isset($data['ma_ten'])) { $fields[] = "ma_ten = ?"; $params[] = $data['ma_ten']; }
+            if (isset($data['ma_giam'])) { $fields[] = "ma_giam = ?"; $params[] = $data['ma_giam']; }
+            if (isset($data['loai_giam'])) { $fields[] = "loai_giam = ?"; $params[] = $data['loai_giam']; }
+            if (isset($data['ngay_bat_dau'])) { $fields[] = "ngay_bat_dau = ?"; $params[] = $data['ngay_bat_dau']; }
+            if (isset($data['ngay_ket_thuc'])) { $fields[] = "ngay_ket_thuc = ?"; $params[] = $data['ngay_ket_thuc']; }
+            if (isset($data['so_luong'])) { $fields[] = "so_luong = ?"; $params[] = $data['so_luong']; }
+            if (isset($data['trang_thai'])) { $fields[] = "trang_thai = ?"; $params[] = $data['trang_thai']; }
             
             if (empty($fields)) {
                 return false;
