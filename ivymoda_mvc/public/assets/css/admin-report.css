@@ -1,0 +1,13 @@
+.report-filter-form { display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:16px }
+.report-filter-form label { display:block; font-weight:600; margin-bottom:4px }
+.report-filter-form input, .report-filter-form select { padding:6px 8px }
+
+.report-cards { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px }
+.report-card { padding:12px; min-width:220px }
+.report-card > div { color:#666; margin-bottom:6px }
+.report-card > strong { font-size:20px }
+
+.report-chart { background:#fff; padding:16px; border-radius:8px; margin-bottom:16px }
+.report-table { background:#fff; padding:16px; border-radius:8px }
+.report-table h3 { margin-bottom:12px }
+

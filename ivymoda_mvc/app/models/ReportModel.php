@@ -178,6 +178,43 @@ class ReportModel extends Model {
     }
     
     /**
+     * Doanh thu theo ngày trong khoảng from-to (YYYY-MM-DD)
+     */
+    public function getDailyRevenue($fromDate, $toDate) {
+        $fromDate = $this->escape($fromDate);
+        $toDate = $this->escape($toDate);
+        $query = "SELECT 
+                  DATE(order_date) as ngay,
+                  SUM(order_total) as doanh_thu,
+                  COUNT(*) as orders
+                  FROM {$this->orderTable}
+                  WHERE DATE(order_date) BETWEEN '$fromDate' AND '$toDate'
+                  AND order_status != 3
+                  GROUP BY DATE(order_date)
+                  ORDER BY ngay ASC";
+        return $this->getAll($query);
+    }
+
+    /**
+     * Doanh thu theo từng ngày trong một tháng cụ thể
+     */
+    public function getDailyRevenueForMonth($year, $month) {
+        $year = (int)$year;
+        $month = (int)$month;
+        $query = "SELECT 
+                  DAY(order_date) as day,
+                  SUM(order_total) as revenue,
+                  COUNT(*) as orders
+                  FROM {$this->orderTable}
+                  WHERE YEAR(order_date) = $year
+                  AND MONTH(order_date) = $month
+                  AND order_status != 3
+                  GROUP BY DAY(order_date)
+                  ORDER BY day ASC";
+        return $this->getAll($query);
+    }
+    
+    /**
      * Lấy số lượng đơn hàng theo trạng thái
      */
     public function getOrdersByStatus() {

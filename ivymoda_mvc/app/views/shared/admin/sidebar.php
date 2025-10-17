@@ -60,6 +60,14 @@
                 </ul>
             </li>
             
+            <!-- Báo cáo -->
+            <li><a href="#"><img style="width:20px" src="<?php echo BASE_URL; ?>assets/images/icon/options.png" alt="">Báo cáo</a>
+                <ul>
+                    <li><a href="<?php echo BASE_URL; ?>admin/report/revenue">📈 Doanh thu</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>admin/report/topSelling">🏆 SP bán chạy</a></li>
+                </ul>
+            </li>
+            
             <!-- Quản lý tài khoản -->
             <li class="has-sub">
                 <a href="<?php echo BASE_URL; ?>admin/user">
