@@ -4,11 +4,13 @@
 class HomeController extends Controller {
     private $productModel;
     private $categoryModel;
+    private $promotionModel;
     
     public function __construct() {
         // Khởi tạo model
         $this->productModel = $this->model('ProductModel');
         $this->categoryModel = $this->model('CategoryModel');
+        $this->promotionModel = $this->model('PromotionModel');
     }
     
     public function index() {
@@ -17,11 +19,14 @@ class HomeController extends Controller {
         
         // Lấy danh mục
         $categories = $this->categoryModel->getAllCategories();
+        // Lấy banner khuyến mãi đang chạy
+        $promotions = $this->promotionModel ? $this->promotionModel->getActivePromotions(5) : [];
         
         $this->view('frontend/home/index', [
             'title' => 'IVY moda - Trang chủ',
             'featuredProducts' => $featuredProducts,
-            'categories' => $categories
+            'categories' => $categories,
+            'promotions' => $promotions
         ]);
     }
     

@@ -144,10 +144,26 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                             <?php endforeach; ?>
                         </tbody>
                         <tfoot>
-                            <tr class="total-row">
-                                <td colspan="2"><strong>Tổng cộng:</strong></td>
+                            <tr>
+                                <td colspan="2"><strong>Tổng tiền hàng:</strong></td>
                                 <td><strong><?= number_format($totalAmount, 0, ',', '.') ?> ₫</strong></td>
                             </tr>
+                            <?php if (isset($_SESSION['applied_discount'])): ?>
+                                <?php $discount = $_SESSION['applied_discount']; ?>
+                                <tr style="color:#28a745;">
+                                    <td colspan="2"><strong>Giảm giá (<?= htmlspecialchars($discount['code']) ?>):</strong></td>
+                                    <td><strong style="color:#28a745;">-<?= number_format($discount['discount_value'], 0, ',', '.') ?> ₫</strong></td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td colspan="2"><strong>Thành tiền:</strong></td>
+                                    <td><strong><?= number_format($discount['final_total'], 0, ',', '.') ?> ₫</strong></td>
+                                </tr>
+                            <?php else: ?>
+                                <tr class="total-row">
+                                    <td colspan="2"><strong>Thành tiền:</strong></td>
+                                    <td><strong><?= number_format($totalAmount, 0, ',', '.') ?> ₫</strong></td>
+                                </tr>
+                            <?php endif; ?>
                         </tfoot>
                     </table>
                 </div>

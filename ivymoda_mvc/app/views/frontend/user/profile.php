@@ -19,7 +19,7 @@
         <div class="profile-tabs">
             <div class="profile-tab active" data-tab="info">Thông tin cá nhân</div>
             <div class="profile-tab" data-tab="password">Đổi mật khẩu</div>
-            <div class="profile-tab" data-tab="orders">Đơn hàng của tôi</div>
+            <div class="profile-tab" data-tab="orders">Lịch sử mua hàng</div>
         </div>
         
         <div id="info" class="tab-content active">
@@ -79,7 +79,7 @@
         </div>
         
         <div id="orders" class="tab-content">
-            <h2>Đơn hàng của tôi</h2>
+            <h2>Lịch sử mua hàng</h2>
             <?php if(empty($orders)): ?>
                 <p>Chưa có đơn hàng nào.</p>
             <?php else: ?>
@@ -96,19 +96,21 @@
                     <tbody>
                         <?php foreach($orders as $order): ?>
                         <tr>
-                            <td><?= $order->order_code ?></td>
-                            <td><?= date('d/m/Y', strtotime($order->created_at)) ?></td>
+                            <td><?= is_object($order) ? $order->order_code : $order['order_code'] ?></td>
+                            <td><?= date('d/m/Y', strtotime(is_object($order) ? $order->order_date : $order['order_date'])) ?></td>
                             <td>
                                 <?php
-                                switch($order->status) {
-                                    case 0: echo '<span class="status-pending">Chờ xử lý</span>'; break;
-                                    case 1: echo '<span class="status-completed">Hoàn thành</span>'; break;
-                                    case 2: echo '<span class="status-cancelled">Đã hủy</span>'; break;
-                                }
+                                $status = is_object($order) ? (int)$order->order_status : (int)$order['order_status'];
+                                if ($status === 0) echo '<span class="status-pending">Chờ xử lý</span>';
+                                elseif ($status === 1) echo '<span class="status-shipping">Đang giao</span>';
+                                elseif ($status === 2) echo '<span class="status-completed">Hoàn thành</span>';
+                                else echo '<span class="status-cancelled">Đã hủy</span>';
                                 ?>
                             </td>
-                            <td><?= number_format($order->total_amount) ?>đ</td>
-                            <td><a href="<?= BASE_URL ?>user/orderDetail/<?= $order->id ?>" class="btn-view">Xem</a></td>
+                            <td><?= number_format(is_object($order) ? $order->order_total : $order['order_total']) ?>đ</td>
+                            <td>
+                                <a href="<?= BASE_URL ?>user/orderDetail/<?= is_object($order) ? $order->order_id : $order['order_id'] ?>" class="btn-view">Xem</a>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>

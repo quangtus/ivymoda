@@ -1,8 +1,15 @@
-<!-- Danh sách đơn hàng - Admin -->
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+<?php
+// Load header
+require_once ROOT_PATH . 'app/views/shared/admin/header.php';
+
+// Load sidebar
+require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
+?>
+
+<div class="admin-content-right">
+    <div class="admin-content-right-main">
+        <div class="container-fluid">
+            <div class="card shadow-sm">
                 <div class="card-header">
                     <h3 class="card-title"><?= $data['title'] ?></h3>
                 </div>
@@ -35,17 +42,19 @@
                                 <?php if (!empty($data['orders'])): ?>
                                     <?php foreach ($data['orders'] as $order): ?>
                                         <tr>
-                                            <td><?= $order['order_id'] ?></td>
-                                            <td><strong><?= $order['order_code'] ?></strong></td>
-                                            <td><?= htmlspecialchars($order['customer_name']) ?></td>
-                                            <td><?= htmlspecialchars($order['customer_phone']) ?></td>
-                                            <td><?= htmlspecialchars(substr($order['customer_address'], 0, 50)) ?>...</td>
-                                            <td><?= number_format($order['order_total'], 0, ',', '.') ?>đ</td>
+                                            <td><?= is_object($order) ? $order->order_id : $order['order_id'] ?></td>
+                                            <td><strong><?= is_object($order) ? $order->order_code : $order['order_code'] ?></strong></td>
+                                            <td><?= htmlspecialchars(is_object($order) ? $order->customer_name : $order['customer_name']) ?></td>
+                                            <td><?= htmlspecialchars(is_object($order) ? $order->customer_phone : $order['customer_phone']) ?></td>
+                                            <?php $addr = is_object($order) ? $order->customer_address : $order['customer_address']; ?>
+                                            <td><?= htmlspecialchars(mb_strimwidth($addr, 0, 50, '...','UTF-8')) ?></td>
+                                            <td><?= number_format(is_object($order) ? $order->order_total : $order['order_total'], 0, ',', '.') ?>đ</td>
                                             <td>
                                                 <?php
                                                 $statusClass = '';
                                                 $statusText = '';
-                                                switch ($order['order_status']) {
+                                                $statusVal = (int)(is_object($order) ? $order->order_status : $order['order_status']);
+                                                switch ($statusVal) {
                                                     case 0:
                                                         $statusClass = 'badge-warning';
                                                         $statusText = 'Chờ xử lý';
@@ -67,11 +76,11 @@
                                                         $statusText = 'Không xác định';
                                                 }
                                                 ?>
-                                                <span class="badge <?= $statusClass ?>"><?= $statusText ?></span>
+                                                <span class="badge <?= $statusClass ?> order-status"><?= $statusText ?></span>
                                             </td>
-                                            <td><?= date('d/m/Y H:i', strtotime($order['order_date'])) ?></td>
+                                            <td><?= date('d/m/Y H:i', strtotime(is_object($order) ? $order->order_date : $order['order_date'])) ?></td>
                                             <td>
-                                                <a href="<?= BASE_URL ?>admin/order/detail/<?= $order['order_id'] ?>" 
+                                                <a href="<?= BASE_URL ?>admin/order/detail/<?= is_object($order) ? $order->order_id : $order['order_id'] ?>" 
                                                    class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i> Xem
                                                 </a>
@@ -91,3 +100,8 @@
         </div>
     </div>
 </div>
+
+<?php
+// Load footer
+require_once ROOT_PATH . 'app/views/shared/admin/footer.php';
+?>

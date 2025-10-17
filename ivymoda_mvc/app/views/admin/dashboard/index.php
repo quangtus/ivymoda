@@ -11,8 +11,11 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
 <div class="admin-content-right">
     <div class="admin-content-right-main">
         <div class="container-fluid">
+            <!-- Page Heading -->
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </h1>
             </div>
 
     <!-- Content Row -->
@@ -83,11 +86,14 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                     <p>Chào mừng <strong><?= isset($_SESSION['username']) ? $_SESSION['username'] : $_SESSION['admin_name'] ?></strong> đến với khu vực quản trị hệ thống IVY moda.</p>
                     <p>Bạn có thể quản lý:</p>
                     <ul>
-                        <li><a href="<?= ADMIN_URL ?>user">Quản lý người dùng</a></li>
-                        <li><a href="<?= ADMIN_URL ?>user/roles">Quản lý vai trò</a></li>
-                        <li>Quản lý sản phẩm (Coming soon)</li>
-                        <li>Quản lý đơn hàng (Coming soon)</li>
-                        <li>Báo cáo thống kê (Coming soon)</li>
+                        <li><a href="<?= ADMIN_URL ?>user">👥 Quản lý người dùng</a></li>
+                        <li><a href="<?= ADMIN_URL ?>user/roles">🔐 Quản lý vai trò</a></li>
+                        <li><a href="<?= ADMIN_URL ?>product">📦 Quản lý sản phẩm</a></li>
+                        <li><a href="<?= ADMIN_URL ?>order">📋 Quản lý đơn hàng</a></li>
+                        <li><a href="<?= ADMIN_URL ?>discount">🎁 Quản lý khuyến mãi</a></li>
+                        <li><a href="<?= ADMIN_URL ?>category">🗂️ Quản lý danh mục</a></li>
+                        <li><a href="<?= ADMIN_URL ?>color">🎨 Quản lý màu sắc</a></li>
+                        <li><a href="<?= ADMIN_URL ?>size">📏 Quản lý size</a></li>
                     </ul>
                 </div>
             </div>

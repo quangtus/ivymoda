@@ -93,7 +93,7 @@ header:hover {
     margin: 0 20px;
 }
 
-.main-menu ul {
+.main-menu > ul {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -102,12 +102,21 @@ header:hover {
     padding: 0;
 }
 
-.main-menu ul li {
+.main-menu > ul > li {
     margin: 0;
     position: relative;
 }
 
-.main-menu ul li a {
+/* Category dropdown container */
+.main-menu > ul > li.has-dropdown {
+    position: relative;
+}
+
+.main-menu > ul > li.has-dropdown > a {
+    padding-right: 28px; /* breathing room for caret area */
+}
+
+.main-menu > ul > li a {
     text-transform: uppercase;
     font-weight: 600;
     font-size: 13px;
@@ -120,12 +129,12 @@ header:hover {
     white-space: nowrap;
 }
 
-.main-menu ul li a:hover {
+.main-menu > ul > li a:hover {
     color: var(--main-color);
     background-color: var(--light-bg);
 }
 
-.main-menu ul li a:after {
+.main-menu > ul > li a:after {
     content: '';
     position: absolute;
     bottom: 4px;
@@ -138,7 +147,7 @@ header:hover {
     border-radius: 1px;
 }
 
-.main-menu ul li a:hover:after {
+.main-menu > ul > li a:hover:after {
     width: 80%;
 }
 
@@ -217,33 +226,104 @@ header:hover {
     color: var(--dark-color);
 }
 
+/* User menu: show dropdown on hover (desktop) */
+.user-actions .dropdown > .dropdown-menu {
+    display: none; /* hidden by default for user icon */
+}
+.user-actions .dropdown:hover > .dropdown-menu {
+    display: block;
+}
+
 .dropdown-menu {
     position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 3px;
-    width: 180px;
-    padding: 10px 0;
+    top: calc(100% + 2px);
+    left: 0;
+    background-color: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    border-radius: 6px;
+    min-width: 200px;
+    padding: 8px 0;
     display: none;
-    z-index: 10;
+    z-index: 1000;
+    border: 1px solid rgba(0,0,0,0.06);
 }
 
 .dropdown-menu li {
-    padding: 8px 15px;
+    padding: 0;
 }
 
 .dropdown-menu li a {
     display: block;
+    padding: 10px 14px;
+    white-space: nowrap;
 }
 
 .dropdown-menu li a:hover {
     color: var(--main-color);
 }
 
-.dropdown:hover .dropdown-menu {
-    display: block;
+/* Category dropdown: avoid accidental initial show by using visibility instead of display */
+.main-menu > ul > li.has-dropdown > .dropdown-menu {
+    display: block;               /* keep layout stable */
+    opacity: 0;                   /* hidden by default */
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+/* Invisible hover bridge between tab and dropdown to prevent flicker */
+.main-menu > ul > li.has-dropdown::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 10px;             /* bridge area */
+    pointer-events: none;      /* don't block clicks */
+}
+
+/* Show dropdown on hover for desktop */
+.main-menu > ul > li.has-dropdown:hover > .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Prevent overlap flicker while hovering the menu itself */
+.main-menu > ul > li.has-dropdown .dropdown-menu:hover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Small visual caret indicator using underline already present; optional spacing */
+.main-menu > ul > li.has-dropdown > a:after {
+    bottom: 6px;
+}
+
+/* Responsive: disable hover dropdown stacking on small screens */
+@media (max-width: 992px) {
+    .main-menu > ul > li.has-dropdown > .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: 0;
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        padding: 4px 0 0;
+    }
+    .main-menu > ul > li.has-dropdown:hover > .dropdown-menu {
+        opacity: 0; /* keep hidden; could be toggled by JS if needed */
+        visibility: hidden;
+        pointer-events: none;
+    }
+}
+
+/* Ensure nested dropdown ULs do not inherit flex layout */
+.main-menu .dropdown-menu {
+    display: none;
+    flex-direction: column;
 }
 
 .cart {
@@ -541,11 +621,11 @@ footer {
     .header-top {
         flex-direction: column;
     }
-    .main-menu ul {
+    .main-menu > ul {
         flex-direction: column;
         align-items: center;
     }
-    .main-menu ul li {
+    .main-menu > ul > li {
         margin: 10px 0;
     }
     .header-actions {
@@ -555,11 +635,11 @@ footer {
 
 /* Responsive Header */
 @media (max-width: 1200px) {
-    .main-menu ul {
+    .main-menu > ul {
         gap: 10px;
     }
     
-    .main-menu ul li a {
+    .main-menu > ul > li a {
         padding: 10px 12px;
         font-size: 12px;
     }
@@ -587,13 +667,13 @@ footer {
         width: 100%;
     }
     
-    .main-menu ul {
+    .main-menu > ul {
         justify-content: center;
         flex-wrap: wrap;
         gap: 8px;
     }
     
-    .main-menu ul li a {
+    .main-menu > ul > li a {
         padding: 8px 12px;
         font-size: 11px;
     }
@@ -610,11 +690,11 @@ footer {
 }
 
 @media (max-width: 768px) {
-    .main-menu ul {
+    .main-menu > ul {
         gap: 5px;
     }
     
-    .main-menu ul li a {
+    .main-menu > ul > li a {
         padding: 6px 8px;
         font-size: 10px;
     }
@@ -643,17 +723,17 @@ footer {
         padding: 0 10px;
     }
     
-    .main-menu ul {
+    .main-menu > ul {
         flex-direction: column;
         gap: 2px;
         width: 100%;
     }
     
-    .main-menu ul li {
+    .main-menu > ul > li {
         width: 100%;
     }
     
-    .main-menu ul li a {
+    .main-menu > ul > li a {
         text-align: center;
         padding: 8px;
         font-size: 12px;

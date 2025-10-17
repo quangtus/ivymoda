@@ -117,10 +117,18 @@ class PaymentController extends Controller {
             return;
         }
         
+        // Support both object and array return from model layer
+        $orderStatus = is_object($order) ? ($order->order_status ?? null) : ($order['order_status'] ?? null);
+        $orderCode = is_object($order) ? ($order->order_code ?? null) : ($order['order_code'] ?? null);
+        $paymentStatus = is_object($order) ? ($order->payment_status ?? null) : ($order['payment_status'] ?? null);
+        $paymentTxn = is_object($order) ? ($order->payment_transaction_id ?? null) : ($order['payment_transaction_id'] ?? null);
+
         echo json_encode([
             'success' => true,
-            'order_status' => $order['order_status'],
-            'order_code' => $order['order_code']
+            'order_status' => $orderStatus,
+            'payment_status' => $paymentStatus,
+            'payment_transaction_id' => $paymentTxn,
+            'order_code' => $orderCode
         ]);
     }
     

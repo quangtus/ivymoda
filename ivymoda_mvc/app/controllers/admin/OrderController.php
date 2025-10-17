@@ -1,7 +1,8 @@
 <?php
 // filepath: C:\xampp\htdocs\ivymoda\ivymoda_mvc\app\controllers\admin\OrderController.php
+namespace admin;
 
-class OrderController extends Controller {
+class OrderController extends \Controller {
     private $orderModel;
     
     public function __construct() {

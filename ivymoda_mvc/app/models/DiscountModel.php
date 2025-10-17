@@ -9,6 +9,19 @@ class DiscountModel extends Model {
     protected $table = 'tbl_ma_giam_gia';
     
     /**
+     * Lấy mã giảm giá theo ID
+     */
+    public function getDiscountById($id) {
+        try {
+            $sql = "SELECT * FROM {$this->table} WHERE ma_id = ?";
+            return $this->getOne($sql, [$id]);
+        } catch (Exception $e) {
+            error_log("DiscountModel::getDiscountById - Exception: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * Lấy mã giảm giá theo code
      */
     public function getDiscountByCode($code) {

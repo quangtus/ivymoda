@@ -107,22 +107,100 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                                     </div>
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="sanpham_gia" class="font-weight-bold">
-                                        Giá sản phẩm <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="number" 
-                                           class="form-control <?= !empty($error) ? 'is-invalid' : '' ?>" 
-                                           id="sanpham_gia" 
-                                           name="sanpham_gia" 
-                                           value="<?= htmlspecialchars($sanpham_gia) ?>"
-                                           placeholder="Nhập giá sản phẩm"
-                                           min="0"
-                                           step="1000"
-                                           required>
-                                    <small class="form-text text-muted">
-                                        Nhập giá bằng số (Ví dụ: 199000)
-                                    </small>
+                                <!-- *** THÊM MỚI: Hệ thống giá với chiết khấu *** -->
+                                <div class="card border-success mb-4">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="m-0 font-weight-bold">
+                                            <i class="fas fa-tags"></i> Thông tin giá sản phẩm
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="sanpham_gia_goc" class="font-weight-bold">
+                                                        Giá gốc <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number" 
+                                                           class="form-control price-input" 
+                                                           id="sanpham_gia_goc" 
+                                                           name="sanpham_gia_goc" 
+                                                           value="<?= htmlspecialchars($sanpham_gia_goc ?? $product->sanpham_gia_goc ?? '') ?>"
+                                                           placeholder="Nhập giá gốc"
+                                                           min="0"
+                                                           step="1000"
+                                                           required>
+                                                    <small class="form-text text-muted">
+                                                        Giá ban đầu của sản phẩm
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="sanpham_gia" class="font-weight-bold">
+                                                        Giá bán <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number" 
+                                                           class="form-control price-input" 
+                                                           id="sanpham_gia" 
+                                                           name="sanpham_gia" 
+                                                           value="<?= htmlspecialchars($sanpham_gia) ?>"
+                                                           placeholder="Nhập giá bán"
+                                                           min="0"
+                                                           step="1000"
+                                                           required>
+                                                    <small class="form-text text-muted">
+                                                        Giá hiển thị cho khách hàng
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="sanpham_giam_gia" class="font-weight-bold">
+                                                        % Giảm giá
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <input type="number" 
+                                                               class="form-control" 
+                                                               id="sanpham_giam_gia" 
+                                                               name="sanpham_giam_gia" 
+                                                               value="<?= htmlspecialchars($sanpham_giam_gia ?? $product->sanpham_giam_gia ?? '') ?>"
+                                                               placeholder="0.00"
+                                                               min="0"
+                                                               max="100"
+                                                               step="0.01"
+                                                               readonly>
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text">%</span>
+                                                        </div>
+                                                    </div>
+                                                    <small class="form-text text-muted">
+                                                        Tự động tính từ giá gốc và giá bán
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Preview giá -->
+                                        <div class="alert alert-info" id="price-preview">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <strong>Giá gốc:</strong> <span id="preview-gia-goc">0 ₫</span>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Giá bán:</strong> <span id="preview-gia-ban">0 ₫</span>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <strong>Tiết kiệm:</strong> <span id="preview-tiet-kiem" class="text-success">0 ₫</span>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Giảm giá:</strong> <span id="preview-giam-gia" class="text-danger">0%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
@@ -440,15 +518,83 @@ document.querySelector('form').addEventListener('submit', function(e) {
         return false;
     }
     
-    // Validate price
-    const price = parseFloat(document.getElementById('sanpham_gia').value);
-    if (isNaN(price) || price <= 0) {
-        e.preventDefault();
-        alert('Giá sản phẩm phải là số dương');
-        document.getElementById('sanpham_gia').focus();
-        return false;
-    }
+// Validate prices
+const giaGoc = parseFloat(document.getElementById('sanpham_gia_goc').value);
+const giaBan = parseFloat(document.getElementById('sanpham_gia').value);
+
+if (isNaN(giaGoc) || giaGoc <= 0) {
+    e.preventDefault();
+    alert('Giá gốc phải là số dương');
+    document.getElementById('sanpham_gia_goc').focus();
+    return false;
+}
+
+if (isNaN(giaBan) || giaBan <= 0) {
+    e.preventDefault();
+    alert('Giá bán phải là số dương');
+    document.getElementById('sanpham_gia').focus();
+    return false;
+}
+
+if (giaBan > giaGoc) {
+    e.preventDefault();
+    alert('Giá bán không được cao hơn giá gốc');
+    document.getElementById('sanpham_gia').focus();
+    return false;
+}
 });
+
+// *** THÊM MỚI: Logic tính toán giá với chiết khấu ***
+const giaGocInput = document.getElementById('sanpham_gia_goc');
+const giaBanInput = document.getElementById('sanpham_gia');
+const giamGiaInput = document.getElementById('sanpham_giam_gia');
+
+// Function tính toán và cập nhật preview
+function updatePriceCalculation() {
+    const giaGoc = parseFloat(giaGocInput.value) || 0;
+    const giaBan = parseFloat(giaBanInput.value) || 0;
+    
+    // Cập nhật preview
+    document.getElementById('preview-gia-goc').textContent = formatPrice(giaGoc);
+    document.getElementById('preview-gia-ban').textContent = formatPrice(giaBan);
+    
+    if (giaGoc > 0 && giaBan > 0) {
+        const tietKiem = giaGoc - giaBan;
+        const phanTramGiam = giaGoc > giaBan ? ((giaGoc - giaBan) / giaGoc * 100) : 0;
+        
+        document.getElementById('preview-tiet-kiem').textContent = formatPrice(tietKiem);
+        document.getElementById('preview-giam-gia').textContent = phanTramGiam.toFixed(2) + '%';
+        
+        // Cập nhật trường % giảm giá
+        giamGiaInput.value = phanTramGiam.toFixed(2);
+        
+        // Validation
+        if (giaBan > giaGoc) {
+            giaBanInput.classList.add('is-invalid');
+            document.getElementById('preview-giam-gia').innerHTML = '<span class="text-danger">Giá bán không được cao hơn giá gốc!</span>';
+        } else {
+            giaBanInput.classList.remove('is-invalid');
+        }
+    } else {
+        document.getElementById('preview-tiet-kiem').textContent = '0 ₫';
+        document.getElementById('preview-giam-gia').textContent = '0%';
+        giamGiaInput.value = '';
+    }
+}
+
+// Function format giá tiền
+function formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price) + ' ₫';
+}
+
+// Event listeners cho các trường giá
+if (giaGocInput && giaBanInput) {
+    giaGocInput.addEventListener('input', updatePriceCalculation);
+    giaBanInput.addEventListener('input', updatePriceCalculation);
+    
+    // Khởi tạo preview
+    updatePriceCalculation();
+}
 
 // ============================================
 // QUẢN LÝ VARIANTS - AJAX OPERATIONS

@@ -249,8 +249,8 @@ class AuthController extends Controller {
         // Nội dung email với HTML formatting
         $subject = "Đặt lại mật khẩu - IVY moda";
         
-        // Tạo URL đầy đủ với localhost hiển thị rõ
-        $fullResetUrl = "http://localhost" . $resetUrl;
+        // Sử dụng URL tuyệt đối từ BASE_URL (đã bao gồm http://localhost)
+        $fullResetUrl = $resetUrl;
         
         // HTML email template
         $message = "

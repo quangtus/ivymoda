@@ -100,7 +100,7 @@ class CartModel extends Model {
      * - sanpham_anh: Ảnh đại diện
      * - trang_thai: Trạng thái variant
      */
-    public function getCartItems($sessionId, $userId = null) {
+    public function getCartItems($sessionId, $userId = null, $selectedIds = null) {
         try {
             $sql = "SELECT 
                         c.cart_id,
@@ -136,6 +136,14 @@ class CartModel extends Model {
                 $params[] = $sessionId;
             }
             
+            // Lọc theo danh sách cart_id nếu có
+            if (is_array($selectedIds) && !empty($selectedIds)) {
+                // Tạo placeholders an toàn
+                $placeholders = implode(',', array_fill(0, count($selectedIds), '?'));
+                $sql .= " AND c.cart_id IN ($placeholders)";
+                foreach ($selectedIds as $cid) { $params[] = (int)$cid; }
+            }
+
             $sql .= " ORDER BY c.created_at DESC";
             
             $cartItems = $this->getAll($sql, $params);
@@ -283,7 +291,7 @@ class CartModel extends Model {
      * @param int|null $userId User ID (optional)
      * @return float Tổng tiền
      */
-    public function getCartTotal($sessionId, $userId = null) {
+    public function getCartTotal($sessionId, $userId = null, $selectedIds = null) {
         try {
             $sql = "SELECT 
                         SUM(c.quantity * COALESCE(v.gia_ban, p.sanpham_gia)) as total
@@ -296,6 +304,13 @@ class CartModel extends Model {
             } else {
                 $sql .= " WHERE c.session_id = ?";
                 $params = [$sessionId];
+            }
+
+            // Lọc theo danh sách cart_id nếu có
+            if (is_array($selectedIds) && !empty($selectedIds)) {
+                $placeholders = implode(',', array_fill(0, count($selectedIds), '?'));
+                $sql .= " AND c.cart_id IN ($placeholders)";
+                foreach ($selectedIds as $cid) { $params[] = (int)$cid; }
             }
             
             $result = $this->getOne($sql, $params);
@@ -334,8 +349,8 @@ class CartModel extends Model {
      * @param int|null $userId User ID (optional)
      * @return array ['valid' => bool, 'errors' => array, 'items' => array]
      */
-    public function validateCartForCheckout($sessionId, $userId = null) {
-        $cartItems = $this->getCartItems($sessionId, $userId);
+    public function validateCartForCheckout($sessionId, $userId = null, $selectedIds = null) {
+        $cartItems = $this->getCartItems($sessionId, $userId, $selectedIds);
         $errors = [];
         $allValid = true;
         

@@ -54,6 +54,8 @@ try {
         if ($order) {
             // Cập nhật trạng thái đơn hàng thành "Đang giao" (status = 1)
             $orderModel->updateOrderStatus($order['order_id'], 1);
+            // Cập nhật trạng thái thanh toán và lưu transaction id
+            $orderModel->setPaymentStatus($order['order_id'], 'paid', $verification['transId'] ?? $transId);
             
             // Xóa giỏ hàng
             $sessionId = session_id();
@@ -73,6 +75,10 @@ try {
         // Thanh toán thất bại
         $order = $orderModel->getOrderByCode($orderId);
         $orderIdForLog = $order ? $order['order_id'] : null;
+        // Nếu có đơn hàng, cập nhật trạng thái thanh toán failed
+        if ($orderIdForLog) {
+            $orderModel->setPaymentStatus($orderIdForLog, 'failed', $transId ?: null);
+        }
         
         // Log payment failure
         $momoModel->logPayment($orderIdForLog, $requestId, $amount, 'failed', $_POST, $orderId);

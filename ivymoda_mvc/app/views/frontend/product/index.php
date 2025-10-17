@@ -17,32 +17,61 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
 
     <div class="produc-index-container">
         <div class = "row">
-            <div class = "product-index-left">
-                <ul>
-                    <?php if(isset($categories) && count($categories) > 0): ?>
-                        <?php foreach($categories as $category): ?>
-                            <li class="product-index-left"><a href="<?= BASE_URL ?>product/category/<?= $category->danhmuc_id ?>" 
-                            class="list-group-item list-group-item-action">
-                                <?= htmlspecialchars($category->danhmuc_ten) ?>
-                            </a></li> 
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
+            <div class = "product-index-left" style="display:none"></div>
             <div class = "product-index-right row">
                 <div class = "product-index-right-top-item">
                     <h1 class="h2">Tất cả sản phẩm</h1>
                     <p class="text-muted">Tìm thấy <?= $totalProducts ?> sản phẩm</p>
                 </div>
                 <div class="product-index-right-top-item">
-                    <button><span>Bộ lọc</span> <i class="fas fa-sort-down"></i></button>
+                    <select id="filter-category" class="sort-select">
+                        <option value="">Danh mục</option>
+                        <?php if(isset($categories) && count($categories) > 0): ?>
+                            <?php foreach($categories as $cat): ?>
+                                <option value="<?= $cat->danhmuc_id ?>"><?= htmlspecialchars($cat->danhmuc_ten) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
                 </div>
                 <div class="product-index-right-top-item">
-                    <select name = "" id = "">
-                        <option value = "">Sắp xếp theo</option>
-                        <option value = "">Giá thấp đến cao</option>
-                        <option value = "">Giá cao đến thấp</option>
+                    <select id="filter-type" class="sort-select">
+                        <option value="">Loại</option>
+                        <?php if(isset($productTypes) && count($productTypes) > 0): ?>
+                            <?php foreach($productTypes as $type): ?>
+                                <option data-category="<?= $type->danhmuc_id ?>" value="<?= $type->loaisanpham_id ?>"><?= htmlspecialchars($type->loaisanpham_ten) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </select>
+                </div>
+                <div class="product-index-right-top-item">
+                    <select id="filter-price" class="sort-select">
+                        <option value="">Khoảng giá</option>
+                        <option value="lt500">Giá dưới 500k</option>
+                        <option value="500-1000">Giá 500k - 1tr</option>
+                        <option value="gt1000">Giá trên 1tr</option>
+                    </select>
+                </div>
+                <div class="product-index-right-top-item">
+                    <select id="filter-size" class="sort-select">
+                        <option value="">Size</option>
+                        <?php if(isset($sizes) && count($sizes) > 0): ?>
+                            <?php foreach($sizes as $size): ?>
+                                <option value="<?= $size->size_id ?>"><?= htmlspecialchars($size->size_ten) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                <div class="product-index-right-top-item">
+                    <select id="filter-sort" class="sort-select">
+                        <option value="">Sắp xếp</option>
+                        <option value="price_asc">Giá: thấp đến cao</option>
+                        <option value="price_desc">Giá: cao đến thấp</option>
+                        <option value="name_asc">Tên: A-Z</option>
+                        <option value="name_desc">Tên: Z-A</option>
+                    </select>
+                </div>
+                <div class="product-index-right-top-item">
+                    <button id="apply-filters" class="btn btn-primary">Áp dụng</button>
                 </div>
                 <div class="product-index-right-top-item">
                     <form method="GET" action="<?= BASE_URL ?>product/search" class="d-flex">
@@ -162,5 +191,65 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
     </div>
 </section>
 <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/product-index.css">
+
+<script>
+// Apply filters only when clicking the button; also cascade type by category
+document.addEventListener('DOMContentLoaded', function() {
+    const base = '<?= BASE_URL ?>product/filter';
+    const els = {
+        category: document.getElementById('filter-category'),
+        type: document.getElementById('filter-type'),
+        price: document.getElementById('filter-price'),
+        size: document.getElementById('filter-size'),
+        sort: document.getElementById('filter-sort'),
+        apply: document.getElementById('apply-filters')
+    };
+
+    // Filter type options to match selected category
+    function filterTypeOptions() {
+        if (!els.type) return;
+        const selectedCat = els.category ? els.category.value : '';
+        Array.from(els.type.options).forEach(function(opt) {
+            if (!opt.getAttribute) return;
+            const cat = opt.getAttribute('data-category');
+            if (!cat || !selectedCat) {
+                opt.style.display = '';
+                return;
+            }
+            opt.style.display = (cat === selectedCat) ? '' : 'none';
+        });
+        // Reset type if current hidden
+        if (els.type && els.type.selectedOptions.length) {
+            const sel = els.type.selectedOptions[0];
+            if (sel && sel.style.display === 'none') {
+                els.type.value = '';
+            }
+        }
+    }
+
+    if (els.category) {
+        els.category.addEventListener('change', filterTypeOptions);
+        filterTypeOptions();
+    }
+
+    if (els.apply) {
+        els.apply.addEventListener('click', function() {
+            const params = new URLSearchParams();
+            const cat = els.category && els.category.value;
+            const type = els.type && els.type.value;
+            const price = els.price && els.price.value;
+            const size = els.size && els.size.value;
+            const sort = els.sort && els.sort.value;
+            if (cat) params.set('category', cat);
+            if (type) params.set('product_type', type);
+            if (price) params.set('price_range', price);
+            if (size) params.set('size', size);
+            if (sort) params.set('sort', sort);
+            const qs = params.toString();
+            window.location.href = qs ? `${base}?${qs}` : base;
+        });
+    }
+});
+</script>
 
 <?php require_once ROOT_PATH . 'app/views/shared/frontend/footer.php'; ?>

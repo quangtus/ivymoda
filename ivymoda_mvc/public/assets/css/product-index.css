@@ -8,10 +8,101 @@
     padding: 0;
 } */
 
-/* Product Component */
+/* Product Component - RESPONSIVE LAYOUT */
+.product-index-right-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: flex-start;
+    flex: 0 0 100%; /* buộc lưới sản phẩm xuống hàng dưới thanh lọc */
+}
+
 .product-index-right-content-item {
-    width: calc(25% - 12px);
+    /* Responsive width - tự động điều chỉnh theo số lượng sản phẩm */
+    flex: 0 0 calc(25% - 1.125rem); /* 4 cột trên desktop */
+    min-width: 280px; /* Đảm bảo sản phẩm không quá nhỏ */
+    max-width: 350px; /* Đảm bảo sản phẩm không quá to */
     padding: 12px 0;
+}
+
+/* Responsive cho các màn hình khác nhau */
+@media (max-width: 1400px) {
+    .product-index-right-content-item {
+        flex: 0 0 calc(33.333% - 1rem); /* 3 cột */
+    }
+}
+
+@media (max-width: 992px) {
+    .product-index-right-content-item {
+        flex: 0 0 calc(50% - 0.75rem); /* 2 cột */
+        min-width: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-index-right-content-item {
+        flex: 0 0 calc(50% - 0.75rem); /* 2 cột trên mobile */
+        min-width: 200px;
+        max-width: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .product-index-right-content-item {
+        flex: 0 0 100%; /* 1 cột trên mobile nhỏ */
+        min-width: auto;
+        max-width: none;
+    }
+}
+
+/* CSS bổ sung cho layout đẹp hơn */
+.product-index-right-content {
+    transition: all 0.3s ease;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+/* Đảm bảo container có đủ không gian */
+.product-index-right {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;     /* đảm bảo các mục top bar nằm trên cùng một hàng */
+    flex-wrap: wrap;   /* cho phép xuống hàng khi chật */
+}
+
+/* Container chính */
+.produc-index-container {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+/* Row container */
+.row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+}
+
+/* Responsive cho sidebar và main content */
+@media (max-width: 992px) {
+    .product-index-left {
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+    .product-index-right {
+        width: 100%;
+    }
 }
 
 .product-card {
@@ -185,7 +276,7 @@
     font-weight: bold;
 }
 .product-index-right-top-item{
-    flex: 1;
+    flex: 0 0 auto; /* đừng kéo giãn chiếm hàng của grid sản phẩm */
     padding: 0 12px;
 }
 .product-index-right-top-item button{
@@ -250,12 +341,16 @@
 }
 .product-index-right-content{
     margin-top: 20px;
-    justify-content: space-between;
+    justify-content: flex-start; /* tránh bị dạt sang phải khi ít sản phẩm */
+    align-items: flex-start;
+    gap: 1.5rem;
+    width: 100%;
 }
 .product-index-right-bottom{
     margin: 30px 0 20px;
     width: 100%;
     justify-items: center;
+    flex: 0 0 100%; /* luôn nằm dưới phần sản phẩm */
 }
 .product-index-right-bottom li{
     font-size: 14px;
@@ -277,4 +372,214 @@
 .product-index-left ul li a:hover{
     color: #007bff;
     text-decoration: none;
+}
+
+/* ============================================ */
+/* FILTER SIDEBAR STYLES */
+/* ============================================ */
+
+.filter-sidebar {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    margin-bottom: 20px;
+    position: sticky;
+    top: 120px;
+    transition: all 0.3s ease;
+}
+
+.filter-sidebar .filter-section h4 {
+    color: #2c3e50;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.filter-group {
+    margin-bottom: 25px;
+}
+
+.filter-group h5 {
+    color: #495057;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.filter-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.filter-list li {
+    margin-bottom: 8px;
+}
+
+.filter-list li a {
+    display: block;
+    padding: 8px 12px;
+    color: #6c757d;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.filter-list li a:hover,
+.filter-list li a.active {
+    background: #007bff;
+    color: #fff;
+    text-decoration: none;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #fff;
+    color: #495057;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.filter-actions {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.filter-actions .btn {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.filter-actions .btn-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.filter-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.filter-actions .btn-secondary {
+    background: #6c757d;
+    border: none;
+}
+
+.filter-actions .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Filter Toggle Button */
+.filter-toggle-btn {
+    width: 100%;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    color: #495057;
+}
+
+.filter-toggle-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.filter-toggle-btn i {
+    transition: transform 0.3s ease;
+}
+
+.filter-sidebar.active .filter-toggle-btn i {
+    transform: rotate(180deg);
+}
+
+/* Responsive Design for Filter Sidebar */
+@media (max-width: 992px) {
+    .filter-sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 300px;
+        height: 100vh;
+        z-index: 1000;
+        overflow-y: auto;
+        transition: left 0.3s ease;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .filter-sidebar.active {
+        left: 0;
+    }
+    
+    .filter-sidebar::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .filter-sidebar.active::before {
+        opacity: 1;
+    }
+    
+    .product-index-left {
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-sidebar {
+        width: 280px;
+    }
+}
+
+/* Sort Select Styling */
+.sort-select {
+    width: 100%;
+    padding: 10px 15px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.sort-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }

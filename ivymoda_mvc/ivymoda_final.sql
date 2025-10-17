@@ -201,7 +201,7 @@ CREATE TABLE `tbl_cart` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 COMMENT='VERSION 2.0: Lưu variant_id thay vì các trường rời';
 
--- Bảng đơn hàng (UC10-12) - 100% TƯƠNG THÍCH VỚI CODE
+-- Bảng đơn hàng (UC10-12) - 100% TƯƠNG THÍCH VỚI CODE + HỖ TRỢ MÃ GIẢM GIÁ
 CREATE TABLE `tbl_order` (
   `order_id` int(11) NOT NULL AUTO_INCREMENT,
   `order_code` varchar(50) NOT NULL,
@@ -211,7 +211,10 @@ CREATE TABLE `tbl_order` (
   `customer_phone` varchar(20) NOT NULL,
   `customer_email` varchar(100) DEFAULT NULL,
   `customer_address` text NOT NULL COMMENT 'Địa chỉ đầy đủ',
-  `order_total` decimal(15,2) NOT NULL,
+  `order_total` decimal(15,2) NOT NULL COMMENT 'Tổng tiền cuối cùng sau giảm giá',
+  `original_total` decimal(15,2) DEFAULT NULL COMMENT 'Tổng tiền gốc trước khi giảm giá',
+  `discount_code` varchar(50) DEFAULT NULL COMMENT 'Mã giảm giá đã áp dụng',
+  `discount_value` decimal(10,2) DEFAULT 0 COMMENT 'Giá trị giảm giá',
   `order_status` tinyint(1) DEFAULT 0 COMMENT '0:Chờ xử lý, 1:Đang giao, 2:Hoàn thành, 3:Đã hủy',
   `payment_method` enum('cod','momo') DEFAULT 'cod',
   `payment_status` enum('pending','paid','failed','refunded') DEFAULT 'pending',
@@ -225,9 +228,10 @@ CREATE TABLE `tbl_order` (
   KEY `idx_user` (`user_id`),
   KEY `idx_status` (`order_status`),
   KEY `idx_date` (`order_date`),
+  KEY `idx_discount_code` (`discount_code`),
   CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-COMMENT='100% tương thích với OrderModel và CheckoutController';
+COMMENT='100% tương thích với OrderModel và CheckoutController + Hỗ trợ mã giảm giá';
 
 -- Bảng chi tiết đơn hàng (UC10-12) - VERSION 2.0
 CREATE TABLE `tbl_order_items` (
@@ -272,21 +276,25 @@ CREATE TABLE `tbl_momo_transaction` (
 -- 4. KHUYẾN MÃI (UC16-18, UC08-09)
 -- ============================================
 
--- Bảng mã giảm giá (UC16, UC18)
+-- Bảng mã giảm giá (UC42, UC44) - TÍCH HỢP TỪ DISCOUNT_UPDATE.SQL
 CREATE TABLE `tbl_ma_giam_gia` (
   `ma_id` int(11) NOT NULL AUTO_INCREMENT,
-  `ma_code` varchar(50) NOT NULL,
-  `ma_ten` varchar(255) NOT NULL,
-  `ma_giam` decimal(10,2) NOT NULL,
-  `loai_giam` enum('percent','fixed') DEFAULT 'percent',
-  `ngay_bat_dau` datetime NOT NULL,
-  `ngay_ket_thuc` datetime NOT NULL,
-  `so_luong` int(11) DEFAULT NULL,
-  `da_su_dung` int(11) DEFAULT 0,
-  `trang_thai` tinyint(1) DEFAULT 1,
+  `ma_code` varchar(50) NOT NULL COMMENT 'Mã code để khách hàng sử dụng',
+  `ma_ten` varchar(255) NOT NULL COMMENT 'Tên mô tả mã giảm giá',
+  `ma_giam` decimal(10,2) NOT NULL COMMENT 'Giá trị giảm (phần trăm hoặc số tiền)',
+  `loai_giam` enum('percent','fixed') DEFAULT 'percent' COMMENT 'Loại giảm: percent=phần trăm, fixed=số tiền cố định',
+  `ngay_bat_dau` datetime NOT NULL COMMENT 'Ngày bắt đầu hiệu lực',
+  `ngay_ket_thuc` datetime NOT NULL COMMENT 'Ngày kết thúc hiệu lực',
+  `so_luong` int(11) DEFAULT NULL COMMENT 'Số lượng sử dụng tối đa (NULL=không giới hạn)',
+  `da_su_dung` int(11) DEFAULT 0 COMMENT 'Số lần đã sử dụng',
+  `trang_thai` tinyint(1) DEFAULT 1 COMMENT '1=Kích hoạt, 0=Vô hiệu hóa',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`ma_id`),
-  UNIQUE KEY `ma_code` (`ma_code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  UNIQUE KEY `ma_code` (`ma_code`),
+  KEY `idx_status` (`trang_thai`),
+  KEY `idx_date_range` (`ngay_bat_dau`, `ngay_ket_thuc`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Bảng quản lý mã giảm giá - UC42, UC44';
 
 -- Bảng thông báo khuyến mãi (UC17, UC08, UC09)
 CREATE TABLE `tbl_promotion` (
@@ -647,10 +655,13 @@ INSERT INTO `tbl_email_template` VALUES
 (3, 'Đổi mật khẩu', 'Yêu cầu đặt lại mật khẩu', 
  '<p>Xin chào,</p><p>Click vào link sau để đặt lại mật khẩu: {reset_link}</p>', 'password_reset');
 
--- Mã giảm giá mẫu (phải tạo trước promotion)
+-- Mã giảm giá mẫu (tích hợp từ discount_update.sql)
 INSERT INTO `tbl_ma_giam_gia` VALUES 
-(1, 'WOMEN30', 'Giảm 30% cho sản phẩm nữ', 30.00, 'percent', '2025-10-15 00:00:00', '2025-10-31 23:59:59', 100, 0, 1),
-(2, 'FLASH50', 'Flash sale giảm 50%', 50.00, 'percent', '2025-10-20 00:00:00', '2025-10-22 23:59:59', 50, 0, 1);
+(1, 'WOMEN30', 'Giảm 30% cho sản phẩm nữ', 30.00, 'percent', '2025-10-15 00:00:00', '2025-10-31 23:59:59', 100, 0, 1, NOW(), NOW()),
+(2, 'FLASH50', 'Flash sale giảm 50%', 50.00, 'percent', '2025-10-20 00:00:00', '2025-10-22 23:59:59', 50, 0, 1, NOW(), NOW()),
+(3, 'WELCOME10', 'Giảm 10% cho khách hàng mới', 10.00, 'percent', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 100, 0, 1, NOW(), NOW()),
+(4, 'SUMMER20', 'Giảm 20% mùa hè', 20.00, 'percent', NOW(), DATE_ADD(NOW(), INTERVAL 60 DAY), 50, 0, 1, NOW(), NOW()),
+(5, 'SAVE50K', 'Giảm 50.000₫ cho đơn hàng từ 500.000₫', 50000.00, 'fixed', NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), 200, 0, 1, NOW(), NOW());
 
 -- Mẫu khuyến mãi (liên kết với mã giảm giá)
 INSERT INTO `tbl_promotion` VALUES 
@@ -685,37 +696,39 @@ COMMIT;
 -- ============================================
 
 /*
-DATABASE VERSION 4.0 - FINAL & PERFECT
+DATABASE VERSION 5.0 - FINAL & PERFECT + DISCOUNT INTEGRATION
 
 ĐẶC ĐIỂM:
 ✅ 100% tương thích với code hiện tại
 ✅ Kế thừa từ ivymoda_update.sql (đã dùng variant system)
 ✅ Bổ sung Review + Promotion từ ivymoda_complete.sql
+✅ TÍCH HỢP HOÀN TOÀN discount_update.sql
 ✅ Loại bỏ bảng thừa: wishlist, notification, chatbot_history, user_profile
 
-THAY ĐỔI SO VỚI IVYMODA_UPDATE.SQL:
-1. THÊM tbl_product_review (UC13)
-2. THÊM tbl_promotion (UC08, UC17)
-3. THÊM tbl_promotion_email_log (UC09, UC25)
-4. THÊM 3 Views hữu ích
+HỆ THỐNG CHIẾT KHẤU:
+1. CHIẾT KHẤU SẢN PHẨM CỐ ĐỊNH:
+   - Trường: sanpham_giam_gia (decimal 5,2) - phần trăm giảm giá cố định
+   - Trường: sanpham_gia_goc - giá gốc trước khi giảm
+   - Trường: sanpham_gia - giá sau khi giảm
+   - Ví dụ: -20.02%, -30.79%, -25.06% (hiển thị trên sản phẩm)
 
-THAY ĐỔI SO VỚI IVYMODA_COMPLETE.SQL:
-1. DÙNG tbl_order từ ivymoda_update.sql (có order_status int, session_id, order_total)
-2. DÙNG tbl_order_items từ ivymoda_update.sql (có sanpham_ten, sanpham_gia, sanpham_soluong)
-3. BỎ tbl_user_profile (không cần, ChatBot dùng session)
-4. BỎ tbl_chatbot_history (không cần, Gemini API tự quản lý)
-5. BỎ tbl_wishlist (không trong UC, dùng localStorage)
-6. BỎ tbl_user_notification (không trong UC)
+2. MÃ GIẢM GIÁ ĐỘNG (UC42, UC44):
+   - Bảng: tbl_ma_giam_gia - quản lý mã giảm giá
+   - Bảng: tbl_order - hỗ trợ original_total, discount_code, discount_value
+   - Ví dụ: WOMEN30, SUMMER20, SAVE50K (áp dụng khi thanh toán)
 
-CẢI TIẾN TÍNH TOÀN VẸN DỮ LIỆU:
-1. ✅ THÊM FK sanpham_id trong tbl_order_items → tbl_sanpham (ON DELETE RESTRICT)
-2. ✅ ĐỔI tbl_promotion.discount_code (varchar) → ma_giam_gia_id (FK) tới tbl_ma_giam_gia
+THAY ĐỔI SO VỚI VERSION 4.0:
+1. ✅ TÍCH HỢP discount_update.sql vào tbl_order
+2. ✅ CẢI TIẾN tbl_ma_giam_gia với đầy đủ comment và index
+3. ✅ THÊM 3 mã giảm giá mẫu từ discount_update.sql
+4. ✅ THÊM index idx_discount_code cho tbl_order
 
 TƯƠNG THÍCH 100%:
 ✅ ProductModel.php - Dùng color_ma (mã hex)
 ✅ CartModel.php - Dùng variant_id
 ✅ OrderModel.php - Dùng order_status (int), session_id, order_total
 ✅ CheckoutController.php - Dùng order_total, customer_address, shipping_method
+✅ DiscountModel.php - Tương thích với tbl_ma_giam_gia
 ✅ ReportModel.php - Dùng order_status (int)
 
 IMPORT:
@@ -727,4 +740,5 @@ HOẶC phpMyAdmin:
 3. Click Go
 
 SAU KHI IMPORT, KHÔNG CẦN SỬA CODE GÌ CẢ!
+TẤT CẢ CHỨC NĂNG CHIẾT KHẤU ĐÃ ĐƯỢC TÍCH HỢP HOÀN TOÀN!
 */

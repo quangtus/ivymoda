@@ -25,8 +25,9 @@ class CategoryModel extends Model {
      */
     public function getCategoryById($id) {
         $id = (int)$id;
-        $query = "SELECT * FROM {$this->table} WHERE danhmuc_id = $id";
-        return $this->getOne($query);
+        // Use prepared statement and ensure a single deterministic row
+        $query = "SELECT * FROM {$this->table} WHERE danhmuc_id = ? LIMIT 1";
+        return $this->getOne($query, [$id]);
     }
     
     /**
@@ -128,6 +129,14 @@ class CategoryModel extends Model {
     public function getSubcategoriesByCategoryId($danhmuc_id) {
         $danhmuc_id = (int)$danhmuc_id;
         $query = "SELECT * FROM {$this->subcategoryTable} WHERE danhmuc_id = $danhmuc_id ORDER BY loaisanpham_id";
+        return $this->getAll($query);
+    }
+    
+    /**
+     * Lấy tất cả loại sản phẩm
+     */
+    public function getAllSubcategories() {
+        $query = "SELECT * FROM {$this->subcategoryTable} ORDER BY danhmuc_id, loaisanpham_ten";
         return $this->getAll($query);
     }
     

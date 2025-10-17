@@ -6,14 +6,24 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
 <!-- Slider -->
 <section class="slider">
     <div class="aspect-ratio-169">
-        <img src="<?= BASE_URL ?>assets/images/slide1.jpg" alt="">
-        <img src="<?= BASE_URL ?>assets/images/slide2.jpg" alt="">
-        <img src="<?= BASE_URL ?>assets/images/slide3.jpg" alt="">
+        <?php if(isset($promotions) && !empty($promotions)): ?>
+            <?php foreach($promotions as $promo): ?>
+                <?php if(!empty($promo->image_url)): ?>
+                    <img src="<?= BASE_URL ?>assets/uploads/<?= htmlspecialchars($promo->image_url) ?>" alt="<?= htmlspecialchars($promo->title) ?>">
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <img src="<?= BASE_URL ?>assets/images/slide1.jpg" alt="">
+            <img src="<?= BASE_URL ?>assets/images/slide2.jpg" alt="">
+            <img src="<?= BASE_URL ?>assets/images/slide3.jpg" alt="">
+        <?php endif; ?>
     </div>
     <div class="dot-container">
-        <div class="dot active"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+        <?php 
+        $dotCount = (isset($promotions) && !empty($promotions)) ? count($promotions) : 3; 
+        for($i=0; $i<$dotCount; $i++): ?>
+            <div class="dot <?= $i===0 ? 'active' : '' ?>"></div>
+        <?php endfor; ?>
     </div>
 </section>
 

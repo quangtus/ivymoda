@@ -55,13 +55,23 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                 <?php else: ?>
                     <table>
                         <tr>
+                            <th style="width:40px; text-align:center;">
+                                <input type="checkbox" id="selectAll" checked>
+                            </th>
                             <th>Tên sản phẩm</th>
                             <th>Chiết khấu</th>
                             <th>Số lượng</th>
                             <th>Tổng tiền</th>
                         </tr>
-                        <?php foreach ($cartItems as $item): ?>
+                        <?php 
+                        $selectedIds = isset($selectedIds) && is_array($selectedIds) ? $selectedIds : null;
+                        foreach ($cartItems as $item): 
+                            $isChecked = !$selectedIds || in_array($item->cart_id, $selectedIds);
+                        ?>
                             <tr>
+                                <td style="text-align:center;">
+                                    <input type="checkbox" class="item-checkbox" data-cart-id="<?= $item->cart_id ?>" <?= $isChecked ? 'checked' : '' ?> />
+                                </td>
                                 <td>
                                     <div class="product-info">
                                         <img src="<?= BASE_URL . 'assets/uploads/' . $item->sanpham_anh ?>" 
@@ -134,28 +144,62 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                     </tr>
                     <tr>
                         <td>TỔNG SẢN PHẨM</td>
-                        <td><?= count($cartItems) ?></td>
+                        <td id="selectedCount"><?= isset($selectedIds) && is_array($selectedIds) ? count($selectedIds) : count($cartItems) ?></td>
                     </tr>
                     <tr>
                         <td>TỔNG TIỀN HÀNG</td>
-                        <td><p><?= number_format($totalAmount, 0, ',', '.') ?> ₫</p></td>
+                        <td><p id="subtotalDisplay"><?= number_format($totalAmount, 0, ',', '.') ?> ₫</p></td>
                     </tr>
-                    <tr>
-                        <td>THÀNH TIỀN</td>
-                        <td><p><?= number_format($totalAmount, 0, ',', '.') ?> ₫</p></td>
-                    </tr>
+                    
+                    <?php if (isset($_SESSION['applied_discount'])): ?>
+                        <?php $discount = $_SESSION['applied_discount']; ?>
+                        <tr style="color: #28a745;">
+                            <td>GIẢM GIÁ (<?= htmlspecialchars($discount['code']) ?>)</td>
+                            <td><p style="color: #28a745; font-weight: bold;">-<?= number_format($discount['discount_value'], 0, ',', '.') ?> ₫</p></td>
+                        </tr>
+                        <tr>
+                            <td>THÀNH TIỀN</td>
+                            <td><p id="finalTotalDisplay"><?= number_format($discount['final_total'], 0, ',', '.') ?> ₫</p></td>
+                        </tr>
+                    <?php else: ?>
+                        <tr>
+                            <td>THÀNH TIỀN</td>
+                            <td><p id="finalTotalDisplay"><?= number_format($totalAmount, 0, ',', '.') ?> ₫</p></td>
+                        </tr>
+                    <?php endif; ?>
+                    
                     <tr>
                         <td>TẠM TÍNH</td>
-                        <td><p style="color: black; font-weight: bold;"><?= number_format($totalAmount, 0, ',', '.') ?> ₫</p></td>
+                        <td><p style="color: black; font-weight: bold;" id="tempTotalDisplay">
+                            <?= isset($_SESSION['applied_discount']) ? number_format($_SESSION['applied_discount']['final_total'], 0, ',', '.') : number_format($totalAmount, 0, ',', '.') ?> ₫
+                        </p></td>
                     </tr>
                 </table>
                 <!-- Mã giảm giá -->
                 <div class="discount-section">
                     <h5>Mã giảm giá</h5>
-                    <div class="discount-form">
-                        <input type="text" id="discountCode" placeholder="Nhập mã giảm giá" class="discount-input">
-                        <button type="button" id="applyDiscount" class="btn-apply-discount">ÁP DỤNG</button>
-                    </div>
+                    
+                    <?php if (isset($_SESSION['applied_discount'])): ?>
+                        <?php $discount = $_SESSION['applied_discount']; ?>
+                        <div class="applied-discount" style="background: #d4edda; border: 1px solid #c3e6cb; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: between; align-items: center;">
+                                <div>
+                                    <strong style="color: #155724;">✓ <?= htmlspecialchars($discount['code']) ?></strong>
+                                    <br>
+                                    <small style="color: #155724;"><?= htmlspecialchars($discount['name'] ?? '') ?></small>
+                                </div>
+                                <button type="button" id="removeDiscount" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="discount-form">
+                            <input type="text" id="discountCode" placeholder="Nhập mã giảm giá" class="discount-input">
+                            <button type="button" id="applyDiscount" class="btn-apply-discount">ÁP DỤNG</button>
+                        </div>
+                    <?php endif; ?>
+                    
                     <div id="discountResult" class="discount-result"></div>
                 </div>
                 
@@ -165,12 +209,14 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                 </div>
                 <div class="cart-content-right-button">
                     <a href="<?= BASE_URL ?>" class="btn-continue-shopping">TIẾP TỤC MUA SẮM</a>
-                    <a href="<?= BASE_URL ?>checkout/delivery" class="btn-checkout" id="btnCheckout">TIẾP TỤC THANH TOÁN</a>
+                    <a href="<?= BASE_URL ?>checkout/delivery" class="btn-checkout" id="btnCheckout">ĐẶT HÀNG</a>
                 </div>
+                <?php if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])): ?>
                 <div class="cart-content-right-login">
                     <p>TÀI KHOẢN IVY</p>
                     <p>Hãy <a href="<?= BASE_URL ?>auth/login">Đăng nhập</a> để nhận nhiều ưu đãi hấp dẫn</p>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -237,6 +283,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Checkbox logic
+    const selectAll = document.getElementById('selectAll');
+    const itemCheckboxes = Array.from(document.querySelectorAll('.item-checkbox'));
+
+    function getSelectedIds() {
+        return itemCheckboxes.filter(cb => cb.checked).map(cb => cb.getAttribute('data-cart-id'));
+    }
+
+    function syncSelection(updateTotalsOnly = false) {
+        const ids = getSelectedIds();
+        // Cập nhật hiển thị đếm
+        const countEl = document.getElementById('selectedCount');
+        if (countEl) countEl.textContent = ids.length;
+        // Gửi lên server lưu session + nhận lại tổng
+        fetch('<?= BASE_URL ?>cart/api?action=select', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'selected=' + encodeURIComponent(ids.join(','))
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const subtotalEl = document.getElementById('subtotalDisplay');
+                const finalEl = document.getElementById('finalTotalDisplay');
+                const tempEl = document.getElementById('tempTotalDisplay');
+                const formatted = new Intl.NumberFormat('vi-VN').format(data.totalAmount) + ' ₫';
+                if (subtotalEl) subtotalEl.textContent = formatted;
+                if (finalEl) finalEl.textContent = formatted;
+                if (tempEl) tempEl.textContent = formatted;
+            }
+        });
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            itemCheckboxes.forEach(cb => cb.checked = selectAll.checked);
+            syncSelection();
+        });
+    }
+
+    itemCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (!this.checked && selectAll) selectAll.checked = false;
+            if (itemCheckboxes.every(c => c.checked) && selectAll) selectAll.checked = true;
+            syncSelection();
+        });
+    });
+
     // Xử lý quantity controls
     // Xử lý nút tăng/giảm số lượng
     document.querySelectorAll('.quantity-btn').forEach(btn => {
@@ -334,53 +428,91 @@ document.addEventListener('DOMContentLoaded', function() {
     // Xử lý mã giảm giá
     const discountCodeInput = document.getElementById('discountCode');
     const applyDiscountBtn = document.getElementById('applyDiscount');
+    const removeDiscountBtn = document.getElementById('removeDiscount');
     const discountResult = document.getElementById('discountResult');
     
-    applyDiscountBtn.addEventListener('click', function() {
-        const code = discountCodeInput.value.trim();
-        
-        if (!code) {
-            showDiscountResult('Vui lòng nhập mã giảm giá', 'error');
-            return;
-        }
-        
-        // Disable button để tránh double-click
-        this.disabled = true;
-        this.textContent = 'Đang xử lý...';
-        
-        fetch('<?= BASE_URL ?>discount/validate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `code=${encodeURIComponent(code)}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showDiscountResult(`✅ ${data.message}`, 'success');
-                updateCartTotal(data.discount.final_total);
-                discountCodeInput.value = '';
-            } else {
-                showDiscountResult(`❌ ${data.message}`, 'error');
+    // Xử lý áp dụng mã giảm giá
+    if (applyDiscountBtn) {
+        applyDiscountBtn.addEventListener('click', function() {
+            const code = discountCodeInput.value.trim();
+            
+            if (!code) {
+                showDiscountResult('Vui lòng nhập mã giảm giá', 'error');
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showDiscountResult('❌ Lỗi kết nối. Vui lòng thử lại.', 'error');
-        })
-        .finally(() => {
-            this.disabled = false;
-            this.textContent = 'ÁP DỤNG';
+            
+            // Disable button để tránh double-click
+            this.disabled = true;
+            this.textContent = 'Đang xử lý...';
+            
+            fetch('<?= BASE_URL ?>discount/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `code=${encodeURIComponent(code)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showDiscountResult(`✅ ${data.message}`, 'success');
+                    // Reload trang để cập nhật hiển thị
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showDiscountResult(`❌ ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showDiscountResult('❌ Lỗi kết nối. Vui lòng thử lại.', 'error');
+            })
+            .finally(() => {
+                this.disabled = false;
+                this.textContent = 'ÁP DỤNG';
+            });
         });
-    });
+    }
+    
+    // Xử lý xóa mã giảm giá
+    if (removeDiscountBtn) {
+        removeDiscountBtn.addEventListener('click', function() {
+            fetch('<?= BASE_URL ?>discount/remove', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showDiscountResult(`✅ ${data.message}`, 'success');
+                    // Reload trang để cập nhật hiển thị
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showDiscountResult(`❌ ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showDiscountResult('❌ Lỗi kết nối. Vui lòng thử lại.', 'error');
+            });
+        });
+    }
     
     // Xử lý Enter key trong input mã giảm giá
-    discountCodeInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            applyDiscountBtn.click();
-        }
-    });
+    if (discountCodeInput) {
+        discountCodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (applyDiscountBtn) {
+                    applyDiscountBtn.click();
+                }
+            }
+        });
+    }
     
     function showDiscountResult(message, type) {
         discountResult.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'danger'}">${message}</div>`;

@@ -57,7 +57,8 @@ class ProductController extends \Controller {
      */
     public function add() {
         $categories = $this->categoryModel->getAllCategories();
-        $colors = $this->productModel->getAllColors();
+        $colorModel = $this->model('ColorModel');
+        $colors = $colorModel->getAllColors();
         $sizes = $this->productModel->getAllSizes(); // *** THÊM MỚI ***
         
         $subcategories = [];
@@ -77,7 +78,9 @@ class ProductController extends \Controller {
             'sanpham_ma' => '',
             'danhmuc_id' => '',
             'loaisanpham_id' => '',
+            'sanpham_gia_goc' => '',
             'sanpham_gia' => '',
+            'sanpham_giam_gia' => '',
             'sanpham_chitiet' => '',
             'sanpham_baoquan' => '',
             'error' => '',
@@ -89,17 +92,23 @@ class ProductController extends \Controller {
             $data['sanpham_ma'] = trim($_POST['sanpham_ma'] ?? '');
             $data['danhmuc_id'] = (int)($_POST['danhmuc_id'] ?? 0);
             $data['loaisanpham_id'] = (int)($_POST['loaisanpham_id'] ?? 0);
+            $data['sanpham_gia_goc'] = trim($_POST['sanpham_gia_goc'] ?? '');
             $data['sanpham_gia'] = trim($_POST['sanpham_gia'] ?? '');
+            $data['sanpham_giam_gia'] = trim($_POST['sanpham_giam_gia'] ?? '');
             $data['sanpham_chitiet'] = trim($_POST['sanpham_chitiet'] ?? '');
             $data['sanpham_baoquan'] = trim($_POST['sanpham_baoquan'] ?? '');
 
             // Validation
             if(empty($data['sanpham_tieude']) || empty($data['sanpham_ma']) || 
                empty($data['danhmuc_id']) || empty($data['loaisanpham_id']) || 
-               empty($data['sanpham_gia'])) {
+               empty($data['sanpham_gia_goc']) || empty($data['sanpham_gia'])) {
                 $data['error'] = 'Vui lòng điền đầy đủ thông tin bắt buộc';
+            } elseif(!is_numeric($data['sanpham_gia_goc']) || $data['sanpham_gia_goc'] <= 0) {
+                $data['error'] = 'Giá gốc phải là số dương';
             } elseif(!is_numeric($data['sanpham_gia']) || $data['sanpham_gia'] <= 0) {
-                $data['error'] = 'Giá sản phẩm phải là số dương';
+                $data['error'] = 'Giá bán phải là số dương';
+            } elseif($data['sanpham_gia'] > $data['sanpham_gia_goc']) {
+                $data['error'] = 'Giá bán không được cao hơn giá gốc';
             } else {
                 // Xử lý upload ảnh theo nhóm màu
                 $uploadDir = ROOT_PATH . 'public/assets/uploads/';
@@ -157,13 +166,20 @@ class ProductController extends \Controller {
                 if ($firstImagePath === null) {
                     $data['error'] = 'Vui lòng upload ít nhất 1 ảnh sản phẩm';
                 } else {
+                    // Tính toán phần trăm giảm giá
+                    $giaGoc = (float)$data['sanpham_gia_goc'];
+                    $giaBan = (float)$data['sanpham_gia'];
+                    $phanTramGiam = $giaGoc > 0 ? (($giaGoc - $giaBan) / $giaGoc * 100) : 0;
+                    
                     // Thêm sản phẩm vào database
                     $result = $this->productModel->addProduct(
                         $data['sanpham_tieude'], 
                         $data['sanpham_ma'], 
                         $data['danhmuc_id'], 
                         $data['loaisanpham_id'], 
+                        $data['sanpham_gia_goc'],
                         $data['sanpham_gia'], 
+                        $phanTramGiam,
                         $data['sanpham_chitiet'], 
                         $data['sanpham_baoquan'], 
                         $firstImagePath
@@ -286,7 +302,8 @@ class ProductController extends \Controller {
         }
         
         $categories = $this->categoryModel->getAllCategories();
-        $allColors = $this->productModel->getAllColors();
+        $colorModel = $this->model('ColorModel');
+        $allColors = $colorModel->getAllColors();
         $sizes = $this->productModel->getAllSizes(); // *** THÊM MỚI ***
         
         // Lấy tất cả loại sản phẩm
@@ -349,7 +366,9 @@ class ProductController extends \Controller {
                 'sanpham_ma' => trim($_POST['sanpham_ma'] ?? ''),
                 'danhmuc_id' => (int)($_POST['danhmuc_id'] ?? 0),
                 'loaisanpham_id' => (int)($_POST['loaisanpham_id'] ?? 0),
+                'sanpham_gia_goc' => trim($_POST['sanpham_gia_goc'] ?? ''),
                 'sanpham_gia' => trim($_POST['sanpham_gia'] ?? ''),
+                'sanpham_giam_gia' => trim($_POST['sanpham_giam_gia'] ?? ''),
                 'sanpham_chitiet' => trim($_POST['sanpham_chitiet'] ?? ''),
                 'sanpham_baoquan' => trim($_POST['sanpham_baoquan'] ?? ''),
                 'sanpham_status' => isset($_POST['sanpham_status']) ? 1 : 0
@@ -358,8 +377,26 @@ class ProductController extends \Controller {
             // Validation
             if(empty($updateData['sanpham_tieude']) || empty($updateData['sanpham_ma']) || 
                empty($updateData['danhmuc_id']) || empty($updateData['loaisanpham_id']) || 
-               empty($updateData['sanpham_gia'])) {
+               empty($updateData['sanpham_gia_goc']) || empty($updateData['sanpham_gia'])) {
                 $data['error'] = 'Vui lòng điền đầy đủ thông tin bắt buộc';
+                $this->view('admin/product/edit', $data);
+                return;
+            }
+            
+            if(!is_numeric($updateData['sanpham_gia_goc']) || $updateData['sanpham_gia_goc'] <= 0) {
+                $data['error'] = 'Giá gốc phải là số dương';
+                $this->view('admin/product/edit', $data);
+                return;
+            }
+            
+            if(!is_numeric($updateData['sanpham_gia']) || $updateData['sanpham_gia'] <= 0) {
+                $data['error'] = 'Giá bán phải là số dương';
+                $this->view('admin/product/edit', $data);
+                return;
+            }
+            
+            if($updateData['sanpham_gia'] > $updateData['sanpham_gia_goc']) {
+                $data['error'] = 'Giá bán không được cao hơn giá gốc';
                 $this->view('admin/product/edit', $data);
                 return;
             }
@@ -377,25 +414,31 @@ class ProductController extends \Controller {
                 }
             }
             
+            // Tính toán lại phần trăm giảm giá
+            $giaGoc = (float)$updateData['sanpham_gia_goc'];
+            $giaBan = (float)$updateData['sanpham_gia'];
+            $updateData['sanpham_giam_gia'] = $giaGoc > 0 ? (($giaGoc - $giaBan) / $giaGoc * 100) : 0;
+            
             // Cập nhật thông tin cơ bản
             $result = $this->productModel->updateProductArray($updateData);
             
             if($result) {
-                // Xử lý cập nhật màu sắc
-                if(isset($_POST['colors']) && is_array($_POST['colors'])) {
+                // Xử lý cập nhật màu sắc - CHỈ CẬP NHẬT KHI CÓ DỮ LIỆU
+                if(isset($_POST['colors']) && is_array($_POST['colors']) && !empty($_POST['colors'])) {
                     $this->productModel->deleteProductColors($id);
                     foreach($_POST['colors'] as $colorId) {
                         $this->productModel->addProductColor($id, $colorId);
                     }
                 }
+                // Nếu không có colors trong POST, giữ nguyên màu sắc hiện tại
                 
                 // Xử lý upload ảnh nhiều màu (nếu có) - TODO: Implement nếu cần
                 // if(isset($_FILES['product_images']) && !empty($_FILES['product_images']['name'])) {
                 //     // Xử lý tương tự như trong add()
                 // }
                 
-                // Xử lý cập nhật variants
-                if(isset($_POST['variants']) && is_array($_POST['variants'])) {
+                // Xử lý cập nhật variants - CHỈ CẬP NHẬT KHI CÓ DỮ LIỆU
+                if(isset($_POST['variants']) && is_array($_POST['variants']) && !empty($_POST['variants'])) {
                     foreach($_POST['variants'] as $colorId => $sizes) {
                         foreach($sizes as $sizeId => $variantData) {
                             $tonKho = (int)($variantData['ton_kho'] ?? 0);
@@ -428,6 +471,7 @@ class ProductController extends \Controller {
                         }
                     }
                 }
+                // Nếu không có variants trong POST, giữ nguyên variants hiện tại
                 
                 // Xử lý thêm variants mới từ form (new_variants)
                 // Format: $_POST['new_variants'][$colorId][$sizeId]['ton_kho']

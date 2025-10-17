@@ -254,6 +254,105 @@ class ProductModel extends Model {
         
         return $this->getAll($query);
     }
+
+    /**
+     * Lấy sản phẩm theo bộ lọc trong một danh mục
+     * $filters = [
+     *   'subcategory_id' => int|null,
+     *   'size_id' => int|null,
+     *   'price_range' => string|null, // lt500 | 500-1000 | gt1000
+     * ]
+     */
+    public function getFilteredProductsByCategory(int $categoryId, array $filters = [], int $limit = 12, int $offset = 0) {
+        $categoryId = (int)$categoryId;
+        $limit = (int)$limit;
+        $offset = (int)$offset;
+
+        // Base query
+        $query = "SELECT DISTINCT p.*, c.danhmuc_ten, b.loaisanpham_ten,
+                  COALESCE(
+                      (SELECT ap.anh_path FROM tbl_anhsanpham ap 
+                       WHERE ap.sanpham_id = p.sanpham_id 
+                       ORDER BY ap.is_primary DESC, ap.anh_id ASC LIMIT 1),
+                      p.sanpham_anh
+                  ) as first_image
+                  FROM {$this->table} p
+                  LEFT JOIN tbl_danhmuc c ON p.danhmuc_id = c.danhmuc_id
+                  LEFT JOIN tbl_loaisanpham b ON p.loaisanpham_id = b.loaisanpham_id";
+
+        // Join variant if filter by size
+        $needVariantJoin = isset($filters['size_id']) && $filters['size_id'];
+        if ($needVariantJoin) {
+            $sizeId = (int)$filters['size_id'];
+            $query .= " INNER JOIN tbl_product_variant pv ON pv.sanpham_id = p.sanpham_id AND pv.trang_thai = 1 AND pv.ton_kho > 0 AND pv.size_id = $sizeId";
+        }
+
+        $query .= " WHERE p.danhmuc_id = $categoryId";
+
+        // Subcategory filter
+        if (!empty($filters['subcategory_id'])) {
+            $subcategoryId = (int)$filters['subcategory_id'];
+            $query .= " AND p.loaisanpham_id = $subcategoryId";
+        }
+
+        // Price filter
+        if (!empty($filters['price_range'])) {
+            $range = $this->escape($filters['price_range']);
+            if ($range === 'lt500') {
+                $query .= " AND CAST(p.sanpham_gia AS DECIMAL(10,2)) < 500000";
+            } elseif ($range === '500-1000') {
+                $query .= " AND CAST(p.sanpham_gia AS DECIMAL(10,2)) BETWEEN 500000 AND 1000000";
+            } elseif ($range === 'gt1000') {
+                $query .= " AND CAST(p.sanpham_gia AS DECIMAL(10,2)) > 1000000";
+            }
+        }
+
+        $query .= " ORDER BY p.sanpham_id DESC LIMIT $offset, $limit";
+
+        return $this->getAll($query);
+    }
+
+    /**
+     * Đếm tổng số sản phẩm theo bộ lọc trong danh mục
+     */
+    public function countFilteredProductsByCategory(int $categoryId, array $filters = []) {
+        $categoryId = (int)$categoryId;
+
+        $query = "SELECT COUNT(DISTINCT p.sanpham_id) as total
+                  FROM {$this->table} p
+                  LEFT JOIN tbl_danhmuc c ON p.danhmuc_id = c.danhmuc_id
+                  LEFT JOIN tbl_loaisanpham b ON p.loaisanpham_id = b.loaisanpham_id";
+
+        $needVariantJoin = isset($filters['size_id']) && $filters['size_id'];
+        if ($needVariantJoin) {
+            $sizeId = (int)$filters['size_id'];
+            $query .= " INNER JOIN tbl_product_variant pv ON pv.sanpham_id = p.sanpham_id AND pv.trang_thai = 1 AND pv.ton_kho > 0 AND pv.size_id = $sizeId";
+        }
+
+        $query .= " WHERE p.danhmuc_id = $categoryId";
+
+        if (!empty($filters['subcategory_id'])) {
+            $subcategoryId = (int)$filters['subcategory_id'];
+            $query .= " AND p.loaisanpham_id = $subcategoryId";
+        }
+
+        if (!empty($filters['price_range'])) {
+            $range = $this->escape($filters['price_range']);
+            if ($range === 'lt500') {
+                $query .= " AND CAST(p.sanpham_gia AS DECIMAL(10,2)) < 500000";
+            } elseif ($range === '500-1000') {
+                $query .= " AND CAST(p.sanpham_gia AS DECIMAL(10,2)) BETWEEN 500000 AND 1000000";
+            } elseif ($range === 'gt1000') {
+                $query .= " AND CAST(p.sanpham_gia AS DECIMAL(10,2)) > 1000000";
+            }
+        }
+
+        $result = $this->getOne($query);
+        if ($result) {
+            return is_object($result) ? (int)$result->total : (int)$result['total'];
+        }
+        return 0;
+    }
     
     /**
      * Lấy sản phẩm theo loại sản phẩm
@@ -304,13 +403,15 @@ class ProductModel extends Model {
     /**
      * Thêm sản phẩm mới
      */
-    public function addProduct($title, $code, $category_id, $subcategory_id, $price, $description, $care_instructions, $image) {
+    public function addProduct($title, $code, $category_id, $subcategory_id, $gia_goc, $gia_ban, $giam_gia, $description, $care_instructions, $image) {
         // Escape dữ liệu
         $title = $this->escape($title);
         $code = $this->escape($code);
         $category_id = (int)$category_id;
         $subcategory_id = (int)$subcategory_id;
-        $price = $this->escape($price);
+        $gia_goc = $this->escape($gia_goc);
+        $gia_ban = $this->escape($gia_ban);
+        $giam_gia = (float)$giam_gia;
         $description = $this->escape($description);
         $care_instructions = $this->escape($care_instructions);
         $image = $this->escape($image);
@@ -326,7 +427,9 @@ class ProductModel extends Model {
                     sanpham_ma, 
                     danhmuc_id, 
                     loaisanpham_id, 
+                    sanpham_gia_goc,
                     sanpham_gia, 
+                    sanpham_giam_gia,
                     sanpham_chitiet, 
                     sanpham_baoquan,
                     sanpham_anh
@@ -335,7 +438,9 @@ class ProductModel extends Model {
                     '$code', 
                     $category_id, 
                     $subcategory_id, 
-                    '$price', 
+                    '$gia_goc',
+                    '$gia_ban', 
+                    $giam_gia,
                     '$description', 
                     '$care_instructions',
                     '$image'
@@ -414,13 +519,7 @@ class ProductModel extends Model {
         }
     }
     
-    /**
-     * Lấy tất cả màu sắc
-     */
-    public function getAllColors() {
-        $query = "SELECT * FROM tbl_color ORDER BY color_id";
-        return $this->getAll($query);
-    }
+    
 
     /**
      * Đảm bảo bảng liên kết sản phẩm - màu sắc tồn tại
@@ -564,7 +663,7 @@ class ProductModel extends Model {
     }
 
     /**
-     * Lấy sản phẩm với chi tiết
+     * Lấy sản phẩm với chi tiết (Admin - hiển thị tất cả sản phẩm)
      */
     public function getProductsWithDetails($limit = 10, $offset = 0) {
         $query = "SELECT p.*, c.danhmuc_ten, l.loaisanpham_ten,
@@ -577,7 +676,6 @@ class ProductModel extends Model {
                   FROM tbl_sanpham p
                   LEFT JOIN tbl_danhmuc c ON p.danhmuc_id = c.danhmuc_id
                   LEFT JOIN tbl_loaisanpham l ON p.loaisanpham_id = l.loaisanpham_id
-                  WHERE p.sanpham_status = 1
                   ORDER BY p.sanpham_id DESC 
                   LIMIT $limit OFFSET $offset";
         
@@ -585,7 +683,7 @@ class ProductModel extends Model {
     }
     
     /**
-     * Lấy sản phẩm nổi bật với đầy đủ thông tin
+     * Lấy sản phẩm nổi bật với đầy đủ thông tin (Frontend - hiển thị tất cả sản phẩm active)
      */
     public function getFeaturedProductsWithDetails($limit = 8) {
         $query = "SELECT p.*, c.danhmuc_ten, l.loaisanpham_ten,
@@ -781,15 +879,31 @@ class ProductModel extends Model {
     }
     
     /**
-     * Cập nhật tồn kho variant (tăng/giảm)
+     * Cập nhật tồn kho variant (SET giá trị mới, không cộng trừ)
      */
     public function updateVariantStock($variantId, $quantity) {
         $variantId = (int)$variantId;
         $quantity = (int)$quantity;
         
         $query = "UPDATE tbl_product_variant 
-                  SET ton_kho = ton_kho + $quantity, 
-                      trang_thai = CASE WHEN ton_kho + $quantity > 0 THEN 1 ELSE 0 END,
+                  SET ton_kho = $quantity, 
+                      trang_thai = CASE WHEN $quantity > 0 THEN 1 ELSE 0 END,
+                      updated_at = NOW()
+                  WHERE variant_id = $variantId";
+        
+        return $this->execute($query);
+    }
+    
+    /**
+     * Cập nhật tồn kho variant (tăng/giảm từ giá trị hiện tại)
+     */
+    public function adjustVariantStock($variantId, $adjustment) {
+        $variantId = (int)$variantId;
+        $adjustment = (int)$adjustment;
+        
+        $query = "UPDATE tbl_product_variant 
+                  SET ton_kho = ton_kho + $adjustment, 
+                      trang_thai = CASE WHEN ton_kho + $adjustment > 0 THEN 1 ELSE 0 END,
                       updated_at = NOW()
                   WHERE variant_id = $variantId";
         
@@ -948,14 +1062,103 @@ class ProductModel extends Model {
      */
     public function countVariantsBySize($sizeId) {
         $sizeId = (int)$sizeId;
-        $query = "SELECT COUNT(*) as total FROM tbl_product_variant WHERE size_id = $sizeId";
+        $query = "SELECT COUNT(*) as count FROM tbl_product_variant WHERE size_id = $sizeId";
         $result = $this->getOne($query);
         
         if ($result) {
-            return is_object($result) ? (int)$result->total : (int)$result['total'];
+            return is_object($result) ? (int)$result->count : (int)$result['count'];
         }
         
         return 0;
+    }
+    
+    /**
+     * Lấy sản phẩm với bộ lọc nâng cao
+     */
+    public function getFilteredProducts($filters = [], $limit = 12, $offset = 0) {
+        $limit = (int)$limit;
+        $offset = (int)$offset;
+        
+        $query = "SELECT DISTINCT p.*, c.danhmuc_ten, l.loaisanpham_ten,
+                  COALESCE(
+                      (SELECT ap.anh_path FROM tbl_anhsanpham ap 
+                       WHERE ap.sanpham_id = p.sanpham_id 
+                       ORDER BY ap.is_primary DESC, ap.anh_id ASC LIMIT 1),
+                      p.sanpham_anh
+                  ) as first_image
+                  FROM tbl_sanpham p
+                  LEFT JOIN tbl_danhmuc c ON p.danhmuc_id = c.danhmuc_id
+                  LEFT JOIN tbl_loaisanpham l ON p.loaisanpham_id = l.loaisanpham_id";
+        
+        $whereConditions = ["p.sanpham_status = 1"];
+        $params = [];
+        
+        // Filter by category
+        if (!empty($filters['category_id'])) {
+            $categoryId = (int)$filters['category_id'];
+            $whereConditions[] = "p.danhmuc_id = $categoryId";
+        }
+        
+        // Filter by product type
+        if (!empty($filters['product_type'])) {
+            $productType = (int)$filters['product_type'];
+            $whereConditions[] = "p.loaisanpham_id = $productType";
+        }
+        
+        // Filter by price range
+        if (!empty($filters['price_range'])) {
+            $priceRange = $this->escape($filters['price_range']);
+            if (strpos($priceRange, '-') !== false) {
+                list($minPrice, $maxPrice) = explode('-', $priceRange);
+                $minPrice = (float)$minPrice;
+                $maxPrice = (float)$maxPrice;
+                $whereConditions[] = "CAST(p.sanpham_gia AS DECIMAL) >= $minPrice AND CAST(p.sanpham_gia AS DECIMAL) <= $maxPrice";
+            }
+        }
+        
+        // Filter by size - requires joining with product variants
+        if (!empty($filters['size'])) {
+            $sizeId = (int)$filters['size'];
+            $query .= " INNER JOIN tbl_product_variant pv ON p.sanpham_id = pv.sanpham_id";
+            $whereConditions[] = "pv.size_id = $sizeId AND pv.trang_thai = 1";
+        }
+        
+        $query .= " WHERE " . implode(' AND ', $whereConditions);
+        
+        // Sorting
+        if (!empty($filters['sort'])) {
+            switch ($filters['sort']) {
+                case 'price_asc':
+                    $query .= " ORDER BY CAST(p.sanpham_gia AS DECIMAL) ASC";
+                    break;
+                case 'price_desc':
+                    $query .= " ORDER BY CAST(p.sanpham_gia AS DECIMAL) DESC";
+                    break;
+                case 'name_asc':
+                    $query .= " ORDER BY p.sanpham_tieude ASC";
+                    break;
+                case 'name_desc':
+                    $query .= " ORDER BY p.sanpham_tieude DESC";
+                    break;
+                default:
+                    $query .= " ORDER BY p.sanpham_id DESC";
+            }
+        } else {
+            $query .= " ORDER BY p.sanpham_id DESC";
+        }
+        
+        $query .= " LIMIT $offset, $limit";
+        
+        return $this->getAll($query);
+    }
+    
+    /**
+     * Lấy tất cả loại sản phẩm theo danh mục
+     */
+    public function getProductTypesByCategory($categoryId) {
+        $categoryId = (int)$categoryId;
+        $query = "SELECT * FROM tbl_loaisanpham WHERE danhmuc_id = $categoryId ORDER BY loaisanpham_ten ASC";
+        return $this->getAll($query);
     }
     
     /**
@@ -983,7 +1186,9 @@ class ProductModel extends Model {
         if(isset($data['sanpham_ma'])) $sets[] = "sanpham_ma = '" . addslashes($data['sanpham_ma']) . "'";
         if(isset($data['danhmuc_id'])) $sets[] = "danhmuc_id = " . (int)$data['danhmuc_id'];
         if(isset($data['loaisanpham_id'])) $sets[] = "loaisanpham_id = " . (int)$data['loaisanpham_id'];
+        if(isset($data['sanpham_gia_goc'])) $sets[] = "sanpham_gia_goc = " . floatval($data['sanpham_gia_goc']);
         if(isset($data['sanpham_gia'])) $sets[] = "sanpham_gia = " . floatval($data['sanpham_gia']);
+        if(isset($data['sanpham_giam_gia'])) $sets[] = "sanpham_giam_gia = " . floatval($data['sanpham_giam_gia']);
         if(isset($data['sanpham_chitiet'])) $sets[] = "sanpham_chitiet = '" . addslashes($data['sanpham_chitiet']) . "'";
         if(isset($data['sanpham_baoquan'])) $sets[] = "sanpham_baoquan = '" . addslashes($data['sanpham_baoquan']) . "'";
         if(isset($data['sanpham_anh'])) $sets[] = "sanpham_anh = '" . addslashes($data['sanpham_anh']) . "'";

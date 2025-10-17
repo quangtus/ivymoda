@@ -44,11 +44,32 @@ $isLoggedIn = isset($_SESSION['user_id']);
                         <li><a href="<?= BASE_URL ?>home">TRANG CHỦ</a></li>
                         <li><a href="<?= BASE_URL ?>product">TẤT CẢ SẢN PHẨM</a></li>
                         <?php if(isset($categories) && !empty($categories)): ?>
-                            <?php foreach($categories as $category): ?>
-                                <li>
-                                    <a href="<?= BASE_URL ?>product/category/<?= $category->danhmuc_id ?>">
-                                        <?= htmlspecialchars($category->danhmuc_ten) ?>
+                            <?php foreach($categories as $menuCategory): ?>
+                                <li class="has-dropdown">
+                                    <a href="<?= BASE_URL ?>product/category/<?= $menuCategory->danhmuc_id ?>">
+                                        <?= htmlspecialchars($menuCategory->danhmuc_ten) ?>
                                     </a>
+                                    <?php 
+                                    // Lazy-fetch subcategories if available via CategoryModel when header is included in contexts that didn't supply them
+                                    $headerSubcats = [];
+                                    if (!isset($menuCategory->subcategories) && class_exists('CategoryModel')) {
+                                        $__catModel = new CategoryModel();
+                                        $headerSubcats = $__catModel->getSubcategoriesByCategoryId($menuCategory->danhmuc_id);
+                                    } elseif(isset($menuCategory->subcategories)) {
+                                        $headerSubcats = $menuCategory->subcategories;
+                                    }
+                                    ?>
+                                    <?php if(!empty($headerSubcats)): ?>
+                                        <ul class="dropdown-menu">
+                                            <?php foreach($headerSubcats as $sub): ?>
+                                                <li>
+                                                    <a href="<?= BASE_URL ?>product/category/<?= $menuCategory->danhmuc_id ?>?type=<?= $sub->loaisanpham_id ?>">
+                                                        <?= htmlspecialchars($sub->loaisanpham_ten) ?>
+                                                    </a>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php endif; ?>
                                 </li>
                             <?php endforeach; ?>
                         <?php else: ?>

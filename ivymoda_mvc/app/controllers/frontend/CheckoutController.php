@@ -51,9 +51,11 @@ class CheckoutController extends Controller {
         $sessionId = session_id();
         $userId = $_SESSION['user_id'];
         
-        // Lấy giỏ hàng từ CartModel
-        $cartItems = $this->cartModel->getCartItems($sessionId, $userId);
-        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId);
+        // Lấy danh sách item được chọn (nếu có)
+        $selected = isset($_SESSION['cart_selected']) && is_array($_SESSION['cart_selected']) ? array_map('intval', $_SESSION['cart_selected']) : null;
+        // Lấy giỏ hàng từ CartModel (chỉ các item được chọn)
+        $cartItems = $this->cartModel->getCartItems($sessionId, $userId, $selected);
+        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId, $selected);
         $user = $this->userModel->getUserById($userId);
         
         $data = [
@@ -75,9 +77,9 @@ class CheckoutController extends Controller {
         $sessionId = session_id();
         $userId = $_SESSION['user_id'];
         
-        // Lấy giỏ hàng từ CartModel
-        $cartItems = $this->cartModel->getCartItems($sessionId, $userId);
-        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId);
+        $selected = isset($_SESSION['cart_selected']) && is_array($_SESSION['cart_selected']) ? array_map('intval', $_SESSION['cart_selected']) : null;
+        $cartItems = $this->cartModel->getCartItems($sessionId, $userId, $selected);
+        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId, $selected);
         $user = $this->userModel->getUserById($userId);
         
         $data = [
@@ -157,7 +159,8 @@ class CheckoutController extends Controller {
         $userId = $_SESSION['user_id'];
         
         // *** BƯỚC QUAN TRỌNG: Validate giỏ hàng trước khi checkout ***
-        $cartValidation = $this->cartModel->validateCartForCheckout($sessionId, $userId);
+        $selected = isset($_SESSION['cart_selected']) && is_array($_SESSION['cart_selected']) ? array_map('intval', $_SESSION['cart_selected']) : null;
+        $cartValidation = $this->cartModel->validateCartForCheckout($sessionId, $userId, $selected);
         
         if (!$cartValidation['valid']) {
             $_SESSION['checkout_errors'] = $cartValidation['errors'];
@@ -167,7 +170,23 @@ class CheckoutController extends Controller {
         }
         
         $cartItems = $cartValidation['items'];
-        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId);
+        $originalTotal = $this->cartModel->getCartTotal($sessionId, $userId, $selected);
+        
+        // Xử lý mã giảm giá nếu có
+        $discountCode = null;
+        $discountValue = 0;
+        $finalTotal = $originalTotal;
+        
+        if (isset($_SESSION['applied_discount'])) {
+            $discount = $_SESSION['applied_discount'];
+            $discountCode = $discount['code'];
+            $discountValue = $discount['discount_value'];
+            $finalTotal = $discount['final_total'];
+            
+            // Sử dụng mã giảm giá (tăng số lần đã sử dụng)
+            $discountModel = $this->model('DiscountModel');
+            $discountModel->useDiscount($discountCode);
+        }
         
         // Lấy thông tin user
         $user = $this->userModel->getUserById($userId);
@@ -180,7 +199,10 @@ class CheckoutController extends Controller {
             'customer_phone' => $deliveryInfo['customer_phone'],
             'customer_email' => $user->email,
             'customer_address' => $deliveryInfo['customer_address'],
-            'order_total' => $totalAmount,
+            'order_total' => $finalTotal, // Tổng tiền cuối cùng sau giảm giá
+            'original_total' => $originalTotal, // Tổng tiền gốc
+            'discount_code' => $discountCode,
+            'discount_value' => $discountValue,
             'order_status' => 0,
             'payment_method' => $deliveryInfo['payment_method'],
             'shipping_method' => $deliveryInfo['shipping_method'] ?? 'Standard',
@@ -209,6 +231,7 @@ class CheckoutController extends Controller {
                 $addItemResult = $this->orderModel->addOrderItem([
                     'order_id' => $orderId,
                     'variant_id' => $item->variant_id,
+                    'sanpham_id' => $item->sanpham_id,
                     'sanpham_ten' => $item->sanpham_tieude,
                     'sanpham_gia' => $item->gia_hien_tai,
                     'sanpham_soluong' => $item->quantity,
@@ -237,17 +260,19 @@ class CheckoutController extends Controller {
                 $_SESSION['momo_order_info'] = [
                     'order_id' => $orderId,
                     'order_code' => $result['order_code'],
-                    'amount' => (int)$totalAmount
+                    'amount' => (int)$finalTotal
                 ];
                 
                 // Redirect đến thanh toán Momo (GET)
-                $this->redirect('payment/momo?order_id=' . urlencode($orderId) . '&order_code=' . urlencode($result['order_code']) . '&amount=' . urlencode((int)$totalAmount));
+                $this->redirect('payment/momo?order_id=' . urlencode($orderId) . '&order_code=' . urlencode($result['order_code']) . '&amount=' . urlencode((int)$finalTotal));
             } else {
                 // COD - Xóa giỏ hàng và redirect đến success
                 $this->cartModel->clearCart($sessionId, $userId);
                 
-                // Xóa thông tin giao hàng khỏi session
+                // Xóa thông tin giao hàng và mã giảm giá khỏi session
                 unset($_SESSION['delivery_info']);
+                unset($_SESSION['applied_discount']);
+                unset($_SESSION['cart_selected']);
                 
                 // Lưu thông báo thành công
                 $_SESSION['success'] = 'Đặt hàng thành công! Mã đơn hàng: ' . $result['order_code'];

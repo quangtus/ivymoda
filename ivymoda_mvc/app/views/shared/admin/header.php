@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin-layout.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin-components.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/image-fix.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin-order.css">
     
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/54f0cb7e4a.js" crossorigin="anonymous"></script>

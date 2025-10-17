@@ -60,15 +60,15 @@ header {
     height: 50px;
 }
 
-.main-menu ul {
+.main-menu > ul {
     display: flex;
 }
 
-.main-menu ul li {
+.main-menu > ul > li {
     margin-right: 30px;
 }
 
-.main-menu ul li a {
+.main-menu > ul > li a {
     text-transform: uppercase;
     font-weight: 600;
     font-size: 14px;
@@ -77,7 +77,7 @@ header {
     position: relative;
 }
 
-.main-menu ul li a:after {
+.main-menu > ul > li a:after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -88,7 +88,7 @@ header {
     transition: width 0.3s;
 }
 
-.main-menu ul li a:hover:after {
+.main-menu > ul > li a:hover:after {
     width: 100%;
 }
 
@@ -162,7 +162,7 @@ header {
     color: #4dabf7;
 }
 
-.dropdown:hover .dropdown-menu {
+.user-actions .dropdown:hover .dropdown-menu {
     display: block;
 }
 

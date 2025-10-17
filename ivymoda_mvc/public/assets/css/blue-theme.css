@@ -34,11 +34,11 @@ button.primary:hover {
 
 /* Header và menu */
 
-.main-menu ul li a:hover {
+.main-menu > ul > li a:hover {
     color: var(--main-color);
 }
 
-.main-menu ul li a:after {
+.main-menu > ul > li a:after {
     background-color: var(--main-color);
 }
 

@@ -23,16 +23,23 @@ class CartController extends Controller {
         $sessionId = session_id();
         $userId = $_SESSION['user_id'] ?? null;
         
+        // Lấy danh sách cart_id được chọn từ session (mặc định: chọn tất cả)
+        $selected = isset($_SESSION['cart_selected']) && is_array($_SESSION['cart_selected'])
+            ? array_map('intval', $_SESSION['cart_selected'])
+            : null;
+
         // Lấy giỏ hàng từ CartModel
-        $cartItems = $this->cartModel->getCartItems($sessionId, $userId);
-        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId);
+        $cartItems = $this->cartModel->getCartItems($sessionId, $userId, $selected);
+        $allItems  = $this->cartModel->getCartItems($sessionId, $userId); // để render checkbox mặc định
+        $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId, $selected);
         $cartCount = $this->cartModel->getCartCount($sessionId, $userId);
         
         $data = [
             'title' => 'Giỏ hàng - IVY moda',
-            'cartItems' => $cartItems,
+            'cartItems' => $allItems,
             'totalAmount' => $totalAmount,
-            'cartCount' => $cartCount
+            'cartCount' => $cartCount,
+            'selectedIds' => $selected
         ];
         
         $this->view('frontend/cart/index', $data);
@@ -190,14 +197,29 @@ class CartController extends Controller {
                 echo json_encode(['success' => true, 'count' => $count]);
                 break;
             case 'list':
-                $items = $this->cartModel->getCartItems($sessionId, $userId);
-                $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId);
+                $selected = isset($_SESSION['cart_selected']) && is_array($_SESSION['cart_selected']) ? array_map('intval', $_SESSION['cart_selected']) : null;
+                $items = $this->cartModel->getCartItems($sessionId, $userId, $selected);
+                $totalAmount = $this->cartModel->getCartTotal($sessionId, $userId, $selected);
                 echo json_encode([
                     'success' => true, 
                     'items' => $items,
                     'totalAmount' => $totalAmount,
                     'count' => $this->cartModel->getCartCount($sessionId, $userId)
                 ]);
+                break;
+            case 'select':
+                // Cập nhật danh sách cart_id được chọn
+                $raw = $_POST['selected'] ?? '';
+                $ids = [];
+                if (is_array($raw)) {
+                    foreach ($raw as $id) { $ids[] = (int)$id; }
+                } elseif (is_string($raw) && $raw !== '') {
+                    foreach (explode(',', $raw) as $id) { $ids[] = (int)trim($id); }
+                }
+                // Lưu vào session; nếu trống -> coi như chọn tất cả
+                $_SESSION['cart_selected'] = $ids;
+                $total = $this->cartModel->getCartTotal($sessionId, $userId, $ids);
+                echo json_encode(['success' => true, 'selected' => $ids, 'totalAmount' => $total]);
                 break;
             default:
                 echo json_encode(['success' => false, 'message' => 'Invalid action']);

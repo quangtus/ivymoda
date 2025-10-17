@@ -55,6 +55,8 @@
                 <ul>
                     <li><a href="<?php echo BASE_URL; ?>admin/discount">🎁 Mã giảm giá</a></li>
                     <li><a href="<?php echo BASE_URL; ?>admin/discount/add">➕ Tạo mã mới</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>admin/promotion">🖼️ Banner khuyến mãi</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>admin/promotion/add">➕ Thêm banner</a></li>
                 </ul>
             </li>
             

@@ -1,9 +1,11 @@
 <?php
 class UserController extends Controller {
     private $userModel;
+    private $orderModel;
     
     public function __construct() {
         $this->userModel = $this->model('UserModel');
+        $this->orderModel = $this->model('OrderModel');
         
         // Kiểm tra đăng nhập
         if(!isset($_SESSION['user_id'])) {
@@ -26,10 +28,13 @@ class UserController extends Controller {
             exit;
         }
         
+        // Lấy danh sách đơn hàng của user
+        $orders = $this->orderModel->getOrdersByUser($user_id);
+
         $data = [
             'title' => 'Tài khoản của tôi - IVY moda',
             'user_info' => $user_info,
-            'orders' => [], // Sẽ implement sau khi có OrderModel
+            'orders' => $orders,
             'error' => '',
             'success' => ''
         ];
@@ -86,15 +91,50 @@ class UserController extends Controller {
      * Hiển thị chi tiết đơn hàng
      */
     public function orderDetail($order_id) {
-        // TODO: Implement khi có OrderModel
-        $this->redirect('user/profile');
+        $order_id = (int)$order_id;
+        $user_id = $_SESSION['user_id'];
+        $order = $this->orderModel->getOrderById($order_id);
+        if (!$order) {
+            $this->redirect('user/profile');
+            return;
+        }
+        $orderUserId = is_object($order) ? (int)$order->user_id : (int)$order['user_id'];
+        if ($orderUserId !== (int)$user_id) {
+            $this->redirect('user/profile');
+            return;
+        }
+        $orderItems = $this->orderModel->getOrderItems($order_id);
+        $data = [
+            'title' => 'Chi tiết đơn hàng #' . (is_object($order) ? $order->order_code : $order['order_code']),
+            'order' => $order,
+            'orderItems' => $orderItems
+        ];
+        $this->view('frontend/user/order_detail', $data);
     }
     
     /**
      * Hủy đơn hàng
      */
     public function cancelOrder($order_id) {
-        // TODO: Implement khi có OrderModel
-        $this->redirect('user/profile');
+        $order_id = (int)$order_id;
+        $user_id = $_SESSION['user_id'];
+        $order = $this->orderModel->getOrderById($order_id);
+        if (!$order) {
+            $this->redirect('user/profile');
+            return;
+        }
+        $orderUserId = is_object($order) ? (int)$order->user_id : (int)$order['user_id'];
+        if ($orderUserId !== (int)$user_id) {
+            $this->redirect('user/profile');
+            return;
+        }
+        // Chỉ cho phép hủy khi còn ở trạng thái chờ xử lý
+        $orderStatus = is_object($order) ? (int)$order->order_status : (int)$order['order_status'];
+        if ($orderStatus !== 0) {
+            $this->redirect('user/orderDetail/' . $order_id . '?error=cannot_cancel');
+            return;
+        }
+        $this->orderModel->updateOrderStatus($order_id, 3);
+        $this->redirect('user/orderDetail/' . $order_id . '?success=cancelled');
     }
 }

@@ -1,0 +1,36 @@
+/* Admin Order Styles */
+.admin-content-right .card .card-header {
+	background: #ffffff;
+	border-bottom: 1px solid #e3e6f0;
+}
+
+.orders-table .badge,
+.order-status.badge {
+	padding: 6px 10px;
+	font-size: 12px;
+	border-radius: 12px;
+}
+
+.table thead.thead-light th {
+	background-color: #f8f9fc;
+	border-color: #e3e6f0;
+}
+
+.table td,
+.table th {
+	vertical-align: middle;
+}
+
+.card .mb-3 .btn {
+	margin-right: 8px;
+}
+
+.order-detail-section .table td,
+.order-detail-section .table th {
+	padding: 10px 12px;
+}
+
+.table-responsive {
+	overflow-x: auto;
+}
+
