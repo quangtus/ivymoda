@@ -99,7 +99,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a href="<?= BASE_URL ?>user/profile">Tài khoản của tôi</a></li>
-                                    <?php if(isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
+                                    <?php if(isset($_SESSION['role_id']) && ($_SESSION['role_id'] == 1 || $_SESSION['role_id'] == 3)): ?>
                                         <li><a href="<?= BASE_URL ?>admin/dashboard">Quản trị hệ thống</a></li>
                                     <?php endif; ?>
                                     <li><a href="<?= BASE_URL ?>auth/logout">Đăng xuất</a></li>

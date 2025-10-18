@@ -47,9 +47,14 @@
                         <th>Đơn giá</th>
                         <th>Số lượng</th>
                         <th>Thành tiền</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <?php 
+                    $orderStatus = (int)(is_object($order) ? $order->order_status : $order['order_status']);
+                    $orderId = (int)(is_object($order) ? $order->order_id : $order['order_id']);
+                    ?>
                     <?php foreach ($orderItems as $item): ?>
                         <tr>
                             <td>
@@ -69,6 +74,19 @@
                                 $sl = (int)(is_object($item) ? $item->sanpham_soluong : $item['sanpham_soluong']);
                             ?>
                             <td><?= number_format($gia * $sl) ?>đ</td>
+                            <td>
+                                <?php if ($orderStatus === 2): // Chỉ hiển thị nút đánh giá khi đơn hàng đã hoàn thành ?>
+                                    <?php 
+                                    $productId = (int)(is_object($item) ? $item->sanpham_id : $item['sanpham_id']);
+                                    ?>
+                                    <a href="<?= BASE_URL ?>review/add/<?= $orderId ?>/<?= $productId ?>" 
+                                       class="btn btn-sm btn-primary review-btn">
+                                        Đánh giá
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">Chờ hoàn thành</span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

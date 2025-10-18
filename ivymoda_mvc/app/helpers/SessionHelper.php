@@ -105,6 +105,20 @@ class SessionHelper {
     }
     
     /**
+     * Kiểm tra có quyền quản lý tài khoản không (chỉ admin)
+     */
+    public static function canManageUsers() {
+        return self::isAdmin();
+    }
+    
+    /**
+     * Kiểm tra có quyền truy cập admin area không (admin + nhân viên)
+     */
+    public static function canAccessAdmin() {
+        return self::isStaff();
+    }
+    
+    /**
      * Tạo flash message
      */
     public static function setFlash($name, $message, $class = 'alert-success') {

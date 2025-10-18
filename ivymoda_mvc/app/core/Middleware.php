@@ -39,7 +39,7 @@ class Middleware {
      */
     public static function redirectLoggedIn() {
         if(isset($_SESSION['user_id'])) {
-            if($_SESSION['role_id'] == 1) {
+            if($_SESSION['role_id'] == 1 || $_SESSION['role_id'] == 3) {
                 header('Location: ' . URLROOT . '/admin/dashboard');
             } else {
                 header('Location: ' . URLROOT . '/');

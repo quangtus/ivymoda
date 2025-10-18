@@ -53,6 +53,17 @@ class Controller {
     }
     
     /**
+     * Kiểm tra quyền nhân viên (admin + staff)
+     * @return void
+     */
+    protected function requireStaff() {
+        if (!isset($_SESSION['user_id']) || ($_SESSION['role_id'] != 1 && $_SESSION['role_id'] != 3)) {
+            $this->redirect('admin/auth/login');
+            exit();
+        }
+    }
+    
+    /**
      * Chuyển hướng đến URL cụ thể
      * @param string $url URL cần chuyển hướng đến
      * @return void

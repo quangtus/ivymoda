@@ -12,8 +12,8 @@ class AuthController extends \Controller {
      * Hiển thị form đăng nhập admin
      */
     public function login() {
-        // Kiểm tra nếu đã đăng nhập admin
-        if(isset($_SESSION['user_id']) && $_SESSION['role_id'] == 1) {
+        // Kiểm tra nếu đã đăng nhập admin hoặc nhân viên
+        if(isset($_SESSION['user_id']) && ($_SESSION['role_id'] == 1 || $_SESSION['role_id'] == 3)) {
             $this->redirect('admin/dashboard');
             return;
         }
@@ -38,8 +38,8 @@ class AuthController extends \Controller {
                     // Kiểm tra quyền admin
                     $role_id = is_object($result) ? $result->role_id : (is_array($result) ? $result['role_id'] : null);
                     
-                    if($role_id == 1) {
-                        // Đăng nhập thành công với quyền admin
+                    if($role_id == 1 || $role_id == 3) {
+                        // Đăng nhập thành công với quyền admin hoặc nhân viên
                         $_SESSION['user_id'] = is_object($result) ? $result->id : $result['id'];
                         $_SESSION['username'] = is_object($result) ? $result->username : $result['username'];
                         $_SESSION['role_id'] = $role_id;

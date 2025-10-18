@@ -13,7 +13,7 @@ class UserController extends \Controller {
             exit;
         }
         
-        if($_SESSION['role_id'] != 1) {
+        if($_SESSION['role_id'] != 1 && $_SESSION['role_id'] != 3) {
             $this->redirect('error/forbidden');
             exit;
         }

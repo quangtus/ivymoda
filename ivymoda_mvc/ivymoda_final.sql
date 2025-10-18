@@ -349,6 +349,7 @@ CREATE TABLE `tbl_product_review` (
   `order_id` int(11) DEFAULT NULL COMMENT 'Chỉ cho phép đánh giá sau khi mua',
   `rating` tinyint(1) NOT NULL COMMENT '1-5 sao',
   `comment` text DEFAULT NULL,
+  `review_images` text DEFAULT NULL COMMENT 'Danh sách ảnh đánh giá (JSON format)',
   `is_verified_purchase` tinyint(1) DEFAULT 0 COMMENT '1: Đã mua hàng',
   `status` tinyint(1) DEFAULT 1 COMMENT '1: Hiển thị, 0: Ẩn',
   `admin_reply` text DEFAULT NULL COMMENT 'Phản hồi từ admin',
@@ -364,7 +365,7 @@ CREATE TABLE `tbl_product_review` (
   CONSTRAINT `fk_review_order` FOREIGN KEY (`order_id`) REFERENCES `tbl_order` (`order_id`) ON DELETE SET NULL,
   CONSTRAINT `chk_rating` CHECK (`rating` BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-COMMENT='Đánh giá sản phẩm - UC13';
+COMMENT='Đánh giá sản phẩm - UC13 - VERSION 2.0: Thêm hỗ trợ upload ảnh';
 
 -- ============================================
 -- 6. BÁO CÁO (UC19-22)
@@ -485,7 +486,9 @@ INSERT INTO `roles` VALUES
 -- Users (password: admin123 và customer123)
 INSERT INTO `users` VALUES 
 (1, 'admin', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'admin@ivymoda.com', 'Admin IVY', '0901234567', NULL, 1, 1, 0, NULL, NULL, NOW()),
-(2, 'customer1', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'customer@gmail.com', 'Nguyễn Văn A', '0987654321', 'Hà Nội', 2, 1, 0, NULL, NULL, NOW());
+(2, 'customer1', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'customer@gmail.com', 'Nguyễn Văn A', '0987654321', 'Hà Nội', 2, 1, 0, NULL, NULL, NOW()),
+(3, 'staff1', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'staff@ivymoda.com', 'Nhân viên 1', '0901111111', 'TP.HCM', 3, 1, 0, NULL, NULL, NOW()),
+(4, 'staff2', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'staff2@ivymoda.com', 'Nhân viên 2', '0902222222', 'Đà Nẵng', 3, 1, 0, NULL, NULL, NOW());
 
 -- Danh mục
 INSERT INTO `tbl_danhmuc` VALUES 
@@ -683,11 +686,11 @@ INSERT INTO `tbl_promotion` VALUES
  '2025-10-22 23:59:59', 
  1, 2, 1, NOW(), NOW());
 
--- Mẫu đánh giá
+-- Mẫu đánh giá (VERSION 2.0: Bao gồm ảnh đánh giá)
 INSERT INTO `tbl_product_review` VALUES 
-(1, 1, 2, NULL, 5, 'Áo rất đẹp, chất liệu tốt, mặc thoải mái', 1, 1, 'Cảm ơn bạn đã tin tưởng IVY moda!', NOW(), NOW()),
-(2, 2, 2, NULL, 4, 'Quần đẹp nhưng hơi dài, phải cắt gấu', 1, 1, NULL, NOW(), NOW()),
-(3, 3, 2, NULL, 5, 'Áo thun basic nhưng rất chất lượng', 1, 1, NULL, NOW(), NOW());
+(1, 1, 2, NULL, 5, 'Áo rất đẹp, chất liệu tốt, mặc thoải mái', '["reviews/ao_somi_review_1.jpg", "reviews/ao_somi_review_2.jpg"]', 1, 1, 'Cảm ơn bạn đã tin tưởng IVY moda!', NOW(), NOW()),
+(2, 2, 2, NULL, 4, 'Quần đẹp nhưng hơi dài, phải cắt gấu', '["reviews/quan_jeans_review_1.jpg"]', 1, 1, NULL, NOW(), NOW()),
+(3, 3, 2, NULL, 5, 'Áo thun basic nhưng rất chất lượng', NULL, 1, 1, NULL, NOW(), NOW());
 
 COMMIT;
 
@@ -696,13 +699,14 @@ COMMIT;
 -- ============================================
 
 /*
-DATABASE VERSION 5.0 - FINAL & PERFECT + DISCOUNT INTEGRATION
+DATABASE VERSION 6.0 - FINAL & PERFECT + DISCOUNT + REVIEW IMAGES
 
 ĐẶC ĐIỂM:
 ✅ 100% tương thích với code hiện tại
 ✅ Kế thừa từ ivymoda_update.sql (đã dùng variant system)
 ✅ Bổ sung Review + Promotion từ ivymoda_complete.sql
 ✅ TÍCH HỢP HOÀN TOÀN discount_update.sql
+✅ HỖ TRỢ UPLOAD ẢNH ĐÁNH GIÁ (VERSION 2.0)
 ✅ Loại bỏ bảng thừa: wishlist, notification, chatbot_history, user_profile
 
 HỆ THỐNG CHIẾT KHẤU:
@@ -717,11 +721,14 @@ HỆ THỐNG CHIẾT KHẤU:
    - Bảng: tbl_order - hỗ trợ original_total, discount_code, discount_value
    - Ví dụ: WOMEN30, SUMMER20, SAVE50K (áp dụng khi thanh toán)
 
-THAY ĐỔI SO VỚI VERSION 4.0:
+THAY ĐỔI SO VỚI VERSION 5.0:
 1. ✅ TÍCH HỢP discount_update.sql vào tbl_order
 2. ✅ CẢI TIẾN tbl_ma_giam_gia với đầy đủ comment và index
 3. ✅ THÊM 3 mã giảm giá mẫu từ discount_update.sql
 4. ✅ THÊM index idx_discount_code cho tbl_order
+5. ✅ THÊM cột review_images vào tbl_product_review
+6. ✅ HỖ TRỢ UPLOAD ẢNH ĐÁNH GIÁ (JSON format)
+7. ✅ CẬP NHẬT dữ liệu mẫu với ảnh đánh giá
 
 TƯƠNG THÍCH 100%:
 ✅ ProductModel.php - Dùng color_ma (mã hex)
@@ -730,6 +737,8 @@ TƯƠNG THÍCH 100%:
 ✅ CheckoutController.php - Dùng order_total, customer_address, shipping_method
 ✅ DiscountModel.php - Tương thích với tbl_ma_giam_gia
 ✅ ReportModel.php - Dùng order_status (int)
+✅ ReviewModel.php - Hỗ trợ review_images (JSON format)
+✅ ReviewController.php - Xử lý upload ảnh đánh giá
 
 IMPORT:
 mysql -u root -p < ivymoda_final.sql
@@ -740,5 +749,13 @@ HOẶC phpMyAdmin:
 3. Click Go
 
 SAU KHI IMPORT, KHÔNG CẦN SỬA CODE GÌ CẢ!
-TẤT CẢ CHỨC NĂNG CHIẾT KHẤU ĐÃ ĐƯỢC TÍCH HỢP HOÀN TOÀN!
+TẤT CẢ CHỨC NĂNG CHIẾT KHẤU VÀ UPLOAD ẢNH ĐÁNH GIÁ ĐÃ ĐƯỢC TÍCH HỢP HOÀN TOÀN!
+
+TÍNH NĂNG MỚI VERSION 6.0:
+🎯 Upload ảnh đánh giá sản phẩm (tối đa 5 ảnh, mỗi ảnh 5MB)
+🎯 Hiển thị ảnh đánh giá với modal xem phóng to
+🎯 Quản lý ảnh đánh giá trong admin panel
+🎯 Responsive design cho mobile
+🎯 Validation file type và size
+🎯 Drag & drop upload interface
 */

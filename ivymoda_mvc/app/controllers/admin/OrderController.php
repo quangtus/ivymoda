@@ -6,8 +6,8 @@ class OrderController extends \Controller {
     private $orderModel;
     
     public function __construct() {
-        // Kiểm tra quyền admin
-        $this->requireAdmin();
+        // Kiểm tra quyền nhân viên (admin + staff)
+        $this->requireStaff();
         
         $this->orderModel = $this->model('OrderModel');
     }

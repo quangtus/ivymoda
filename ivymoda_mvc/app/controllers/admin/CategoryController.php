@@ -7,13 +7,13 @@ class CategoryController extends \Controller {
     public function __construct() {
         $this->categoryModel = $this->model('CategoryModel');
         
-        // Kiểm tra đăng nhập và quyền admin
+        // Kiểm tra đăng nhập và quyền nhân viên (admin + staff)
         if(!isset($_SESSION['user_id'])) {
             $this->redirect('admin/auth/login');
             exit;
         }
         
-        if($_SESSION['role_id'] != 1) {
+        if($_SESSION['role_id'] != 1 && $_SESSION['role_id'] != 3) {
             $this->redirect('admin/auth/login');
             exit;
         }

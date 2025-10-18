@@ -60,6 +60,15 @@
                 </ul>
             </li>
             
+            <!-- Đánh giá sản phẩm -->
+            <li><a href="#"><img style="width:20px" src="<?php echo BASE_URL; ?>assets/images/icon/options.png" alt="">Đánh giá</a>
+                <ul>
+                    <li><a href="<?php echo BASE_URL; ?>admin/review">⭐ Tất cả đánh giá</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>admin/review?status=1">✅ Đánh giá hiển thị</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>admin/review?status=0">❌ Đánh giá ẩn</a></li>
+                </ul>
+            </li>
+            
             <!-- Báo cáo -->
             <li><a href="#"><img style="width:20px" src="<?php echo BASE_URL; ?>assets/images/icon/options.png" alt="">Báo cáo</a>
                 <ul>
@@ -68,7 +77,8 @@
                 </ul>
             </li>
             
-            <!-- Quản lý tài khoản -->
+            <!-- Quản lý tài khoản - CHỈ HIỂN THỊ CHO ADMIN -->
+            <?php if(isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
             <li class="has-sub">
                 <a href="<?php echo BASE_URL; ?>admin/user">
                     <img style="width:20px" src="<?php echo BASE_URL; ?>assets/images/icon/user.png" alt="">Tài khoản
@@ -79,6 +89,7 @@
                     <li><a href="<?php echo BASE_URL; ?>admin/user/roles">🔐 Quản lý vai trò</a></li>
                 </ul>
             </li>
+            <?php endif; ?>
             
         </ul>
     </div>

@@ -6,7 +6,7 @@ class PromotionController extends \Controller {
 
     public function __construct() {
         // Require login and admin role
-        if(!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || (int)$_SESSION['role_id'] !== 1) {
+        if(!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 1 && $_SESSION['role_id'] != 3)) {
             header('Location: ' . BASE_URL . 'admin/auth/login');
             exit;
         }

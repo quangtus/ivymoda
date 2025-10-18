@@ -5,8 +5,13 @@ class ColorController extends \Controller {
     private $colorModel;
 
     public function __construct() {
-        // Auth basic check (reuse style from other admin controllers)
+        // Kiểm tra đăng nhập và quyền nhân viên (admin + staff)
         if(!isset($_SESSION['user_id'])) {
+            $this->redirect('admin/auth/login');
+            exit;
+        }
+        
+        if($_SESSION['role_id'] != 1 && $_SESSION['role_id'] != 3) {
             $this->redirect('admin/auth/login');
             exit;
         }
