@@ -20,6 +20,7 @@
             <div class="profile-tab active" data-tab="info">Thông tin cá nhân</div>
             <div class="profile-tab" data-tab="password">Đổi mật khẩu</div>
             <div class="profile-tab" data-tab="orders">Lịch sử mua hàng</div>
+            <div class="profile-tab" data-tab="email">Quản lý Email</div>
         </div>
         
         <div id="info" class="tab-content active">
@@ -116,6 +117,52 @@
                     </tbody>
                 </table>
             <?php endif; ?>
+        </div>
+        
+        <div id="email" class="tab-content">
+            <h2>Quản lý Email</h2>
+            <div class="email-settings-info">
+                <p>Quản lý các thông báo email bạn muốn nhận từ IVY Moda</p>
+                <div class="email-info-card">
+                    <div class="email-info-item">
+                        <strong>Địa chỉ Email:</strong> <?php echo htmlspecialchars($user_info->email); ?>
+                    </div>
+                    <div class="email-info-item">
+                        <strong>Trạng thái:</strong> <span class="status-active">Hoạt động</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="email-actions">
+                <a href="<?php echo BASE_URL; ?>user/emailSettings" class="btn btn-primary">
+                    <i class="fas fa-cog"></i> Cài đặt Email Chi tiết
+                </a>
+                <a href="<?php echo BASE_URL; ?>user/emailSettings" class="btn btn-outline-secondary">
+                    <i class="fas fa-history"></i> Xem Lịch sử Email
+                </a>
+            </div>
+            
+            <div class="email-features">
+                <h3>Các tính năng Email</h3>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Email xác nhận đăng ký tài khoản</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Email xác nhận đơn hàng</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Email thông báo đổi mật khẩu</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Email khuyến mãi đặc biệt</span>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <script>

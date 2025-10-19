@@ -12,10 +12,16 @@ require_once dirname(__DIR__, 2) . '/app/core/App.php';
 require_once dirname(__DIR__, 2) . '/app/models/MomoPaymentModel.php';
 require_once dirname(__DIR__, 2) . '/app/models/OrderModel.php';
 require_once dirname(__DIR__, 2) . '/app/models/CartModel.php';
+require_once dirname(__DIR__, 2) . '/app/models/UserModel.php';
 require_once dirname(__DIR__, 2) . '/app/core/Database.php';
+require_once dirname(__DIR__, 2) . '/app/helpers/EmailHelper.php';
 
 // Start session
 session_start();
+
+// Log all incoming data for debugging
+error_log("MoMo Notify - Raw POST data: " . print_r($_POST, true));
+error_log("MoMo Notify - Raw GET data: " . print_r($_GET, true));
 
 // Get POST data from MoMo
 $orderId = $_POST['orderId'] ?? '';
@@ -32,13 +38,15 @@ $extraData = $_POST['extraData'] ?? '';
 $signature = $_POST['signature'] ?? '';
 
 // Log the notification for debugging
-error_log("MoMo Notify - orderId: $orderId, resultCode: $resultCode, message: $message");
+error_log("MoMo Notify - Parsed data: orderId=$orderId, requestId=$requestId, amount=$amount, resultCode=$resultCode, message=$message, transId=$transId");
 
 try {
     // Initialize models
     $momoModel = new MomoPaymentModel();
     $orderModel = new OrderModel();
     $cartModel = new CartModel();
+    $userModel = new UserModel();
+    $emailHelper = new EmailHelper();
     
     // Verify payment
     $verification = $momoModel->verifyPayment(
@@ -61,6 +69,22 @@ try {
             $sessionId = session_id();
             $userId = $order['user_id'];
             $cartModel->clearCart($sessionId, $userId);
+            
+            // Gửi email xác nhận đơn hàng
+            $user = $userModel->getUserById($userId);
+            if ($user && $user->email) {
+                $orderItems = $orderModel->getOrderItems($order['order_id']);
+                $orderData = [
+                    'order_code' => $order['order_code'],
+                    'customer_name' => $order['customer_name'],
+                    'order_total' => $order['order_total'],
+                    'order_date' => $order['order_date'],
+                    'customer_address' => $order['customer_address'],
+                    'payment_method' => 'momo',
+                    'items' => $orderItems
+                ];
+                $emailHelper->sendOrderConfirmation($user->email, $orderData);
+            }
             
             // Log payment success
             $momoModel->logPayment($order['order_id'], $requestId, $amount, 'success', $_POST, $orderId);

@@ -76,13 +76,13 @@ if (!defined('SESSION_TIMEOUT')) {
 
 // MoMo Payment Configuration - Load from .env
 if (!defined('MOMO_PARTNER_CODE')) {
-    define('MOMO_PARTNER_CODE', EnvHelper::get('DEV_PARTNER_CODE', 'MOMO'));
+    define('MOMO_PARTNER_CODE', EnvHelper::get('DEV_PARTNER_CODE', 'MOMOIQA420180417'));
 }
 if (!defined('MOMO_ACCESS_KEY')) {
-    define('MOMO_ACCESS_KEY', EnvHelper::get('DEV_ACCESS_KEY', 'F8BBA842ECF85'));
+    define('MOMO_ACCESS_KEY', EnvHelper::get('DEV_ACCESS_KEY', 'mTCKt9W3eU1m39TW'));
 }
 if (!defined('MOMO_SECRET_KEY')) {
-    define('MOMO_SECRET_KEY', EnvHelper::get('DEV_SECRET_KEY', 'K951B6PE1waDMi640xX08PD3vg6EkVlz'));
+    define('MOMO_SECRET_KEY', EnvHelper::get('DEV_SECRET_KEY', 'PPuDXq1KowPT1ftR8DvlQTHhC03aul17'));
 }
 if (!defined('MOMO_ENDPOINT')) {
     define('MOMO_ENDPOINT', EnvHelper::get('DEV_MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/api/create'));
@@ -92,6 +92,12 @@ if (!defined('MOMO_RETURN_URL')) {
 }
 if (!defined('MOMO_NOTIFY_URL')) {
     define('MOMO_NOTIFY_URL', BASE_URL . 'payment/momoNotify');
+}
+if (!defined('MOMO_PRIVATE_KEY')) {
+    define('MOMO_PRIVATE_KEY', EnvHelper::get('DEV_PRIVATE_KEY', ''));
+}
+if (!defined('MOMO_PUBLIC_KEY')) {
+    define('MOMO_PUBLIC_KEY', EnvHelper::get('DEV_PUBLIC_KEY', ''));
 }
 
 // Database configuration

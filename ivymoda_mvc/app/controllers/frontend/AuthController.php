@@ -102,7 +102,9 @@ class AuthController extends Controller {
                 $result = $this->userModel->register($username, $password, $email, $fullname, $phone, $address);
                 
                 if($result === true) {
-                    $data['success'] = 'Đăng ký tài khoản thành công! Vui lòng đăng nhập.';
+                    // Gửi email xác nhận đăng ký
+                    $this->sendRegistrationConfirmationEmail($email, $fullname, $username);
+                    $data['success'] = 'Đăng ký tài khoản thành công! Vui lòng kiểm tra email để xác nhận tài khoản.';
                 } else {
                     $data['error'] = $result;
                 }
@@ -244,119 +246,76 @@ class AuthController extends Controller {
         $this->view('frontend/auth/reset_password', $data);
     }
     
-    // Gửi email đặt lại mật khẩu
-    private function sendPasswordResetEmail($email, $name, $resetUrl) {
-        // Nội dung email với HTML formatting
-        $subject = "Đặt lại mật khẩu - IVY moda";
-        
-        // Sử dụng URL tuyệt đối từ BASE_URL (đã bao gồm http://localhost)
-        $fullResetUrl = $resetUrl;
-        
-        // HTML email template
-        $message = "
-        <html>
-        <head>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    color: #333333;
-                }
-                .container {
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                    border: 1px solid #dddddd;
-                    border-radius: 5px;
-                }
-                .header {
-                    text-align: center;
-                    padding: 20px 0;
-                    border-bottom: 1px solid #eeeeee;
-                }
-                .header img {
-                    max-height: 80px;
-                }
-                .content {
-                    padding: 20px 0;
-                }
-                .button {
-                    display: inline-block;
-                    background-color: #221f20;
-                    color: #ffffff !important;
-                    text-decoration: none;
-                    padding: 12px 30px;
-                    margin: 20px 0;
-                    border-radius: 4px;
-                    font-weight: bold;
-                }
-                .footer {
-                    text-align: center;
-                    padding-top: 20px;
-                    font-size: 12px;
-                    color: #777777;
-                    border-top: 1px solid #eeeeee;
-                }
-            </style>
-        </head>
-        <body>
-            <div class='container'>
-                <div class='header'>
-                    <h2>IVY moda</h2>
-                </div>
-                <div class='content'>
-                    <p>Xin chào <strong>{$name}</strong>,</p>
-                    <p>Bạn hoặc ai đó đã yêu cầu đặt lại mật khẩu cho tài khoản của bạn tại IVY moda.</p>
-                    <p>Vui lòng nhấp vào nút bên dưới để đặt lại mật khẩu:</p>
-                    <p style='text-align: center;'>
-                        <a href='{$fullResetUrl}' class='button'>Đặt lại mật khẩu</a>
-                    </p>
-                    <p>Hoặc copy đường dẫn sau và dán vào trình duyệt của bạn:</p>
-                    <p><a href='{$fullResetUrl}'>{$fullResetUrl}</a></p>
-                    <p>Liên kết này sẽ hết hạn sau 24 giờ.</p>
-                    <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
-                </div>
-                <div class='footer'>
-                    <p>Trân trọng,<br>IVY moda</p>
-                    <p>&copy; " . date('Y') . " IVY moda. All rights reserved.</p>
-                </div>
-            </div>
-        </body>
-        </html>";
-        
-        // Dùng PHPMailer
-        require_once ROOT_PATH . 'vendor/PHPMailer/src/Exception.php';
-        require_once ROOT_PATH . 'vendor/PHPMailer/src/PHPMailer.php';
-        require_once ROOT_PATH . 'vendor/PHPMailer/src/SMTP.php';
-        
-        $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+    // Gửi email xác nhận đăng ký
+    private function sendRegistrationConfirmationEmail($email, $name, $username) {
         try {
-            // Cấu hình SMTP
-            $mail->isSMTP();
-            $mail->Host = EMAIL_HOST;
-            $mail->SMTPAuth = true;
-            $mail->Username = EMAIL_USERNAME;
-            $mail->Password = EMAIL_PASSWORD;
-            $mail->SMTPSecure = 'tls';
-            $mail->Port = EMAIL_PORT;
-            $mail->CharSet = 'UTF-8';
+            // Sử dụng EmailHelper để gửi email
+            require_once ROOT_PATH . 'app/helpers/EmailHelper.php';
+            $emailHelper = new EmailHelper();
             
-            // Cấu hình email
-            $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);
-            $mail->addAddress($email, $name);
-            $mail->Subject = $subject;
+            // Tạo token kích hoạt và lưu vào database
+            $activationToken = $this->userModel->createActivationToken($email);
             
-            // Set email format to HTML
-            $mail->isHTML(true);
-            $mail->Body = $message;
-            $mail->AltBody = strip_tags(str_replace("<br>", "\n", $message)); // Plain text alternative
-            
-            // Gửi email
-            $mail->send();
-            return true;
-        } catch (\Exception $e) {
-            error_log("Email sending failed: " . $mail->ErrorInfo);
+            if($activationToken) {
+                // Gửi email xác nhận đăng ký
+                return $emailHelper->sendRegistrationConfirmation($email, $username, $activationToken);
+            } else {
+                error_log("Cannot create activation token for email: $email");
+                return false;
+            }
+        } catch (Exception $e) {
+            error_log("Registration email error: " . $e->getMessage());
             return false;
         }
+    }
+    
+    // Gửi email đặt lại mật khẩu
+    private function sendPasswordResetEmail($email, $name, $resetUrl) {
+        try {
+            // Sử dụng EmailHelper để gửi email
+            require_once ROOT_PATH . 'app/helpers/EmailHelper.php';
+            $emailHelper = new EmailHelper();
+            
+            // Tạo token từ URL
+            $token = basename(parse_url($resetUrl, PHP_URL_QUERY));
+            $token = str_replace('token=', '', $token);
+            
+            // Gửi email đặt lại mật khẩu
+            return $emailHelper->sendPasswordReset($email, $name, $token);
+        } catch (Exception $e) {
+            error_log("Password reset email error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // Method mặc định - chuyển hướng đến login
+    public function index() {
+        $this->redirect('auth/login');
+    }
+    
+    // Kích hoạt tài khoản qua email
+    public function activate() {
+        $data = [
+            'title' => 'Kích hoạt tài khoản - IVY moda',
+            'success' => '',
+            'error' => ''
+        ];
+        
+        if(isset($_GET['token'])) {
+            $token = $_GET['token'];
+            
+            // Kiểm tra token và kích hoạt tài khoản
+            $result = $this->userModel->activateAccount($token);
+            
+            if($result === true) {
+                $data['success'] = 'Tài khoản đã được kích hoạt thành công! Bạn có thể đăng nhập ngay bây giờ.';
+            } else {
+                $data['error'] = $result;
+            }
+        } else {
+            $data['error'] = 'Token kích hoạt không hợp lệ';
+        }
+        
+        $this->view('frontend/auth/activate', $data);
     }
 }

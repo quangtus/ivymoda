@@ -20,51 +20,63 @@ class PaymentController extends Controller {
      * Tạo thanh toán Momo
      */
     public function momo() {
-        // Cho phép cả POST (từ form) và GET (từ redirect nút thanh toán)
-        $orderId = $_REQUEST['order_id'] ?? '';
-        $orderCode = $_REQUEST['order_code'] ?? '';
-        $amount = (int)($_REQUEST['amount'] ?? 0);
-        
-        // Nếu không có thông tin trong URL, lấy từ session
-        if (!$orderId || !$orderCode || $amount <= 0) {
-            if (isset($_SESSION['momo_order_info'])) {
-                $momoInfo = $_SESSION['momo_order_info'];
-                $orderId = $momoInfo['order_id'];
-                $orderCode = $momoInfo['order_code'];
-                $amount = $momoInfo['amount'];
+        try {
+            // Cho phép cả POST (từ form) và GET (từ redirect nút thanh toán)
+            $orderId = $_REQUEST['order_id'] ?? '';
+            $orderCode = $_REQUEST['order_code'] ?? '';
+            $amount = (int)($_REQUEST['amount'] ?? 0);
+            
+            // Nếu không có thông tin trong URL, lấy từ session
+            if (!$orderId || !$orderCode || $amount <= 0) {
+                if (isset($_SESSION['momo_order_info'])) {
+                    $momoInfo = $_SESSION['momo_order_info'];
+                    $orderId = $momoInfo['order_id'];
+                    $orderCode = $momoInfo['order_code'];
+                    $amount = $momoInfo['amount'];
+                }
             }
-        }
-        
-        if (!$orderId || !$orderCode || $amount <= 0) {
+            
+            if (!$orderId || !$orderCode || $amount <= 0) {
+                // Debug logging
+                error_log("PaymentController::momo - Missing order info: orderId=$orderId, orderCode=$orderCode, amount=$amount");
+                error_log("PaymentController::momo - Session data: " . print_r($_SESSION, true));
+                
+                $_SESSION['error'] = 'Thông tin thanh toán không hợp lệ';
+                $this->redirect('checkout');
+                return;
+            }
+            
             // Debug logging
-            error_log("PaymentController::momo - Missing order info: orderId=$orderId, orderCode=$orderCode, amount=$amount");
-            error_log("PaymentController::momo - Session data: " . print_r($_SESSION, true));
+            error_log("PaymentController::momo - Processing payment: orderId=$orderId, orderCode=$orderCode, amount=$amount");
             
-            $_SESSION['error'] = 'Thông tin thanh toán không hợp lệ';
-            $this->redirect('checkout');
-            return;
-        }
-        
-        // Debug logging
-        error_log("PaymentController::momo - Processing payment: orderId=$orderId, orderCode=$orderCode, amount=$amount");
-        
-        // Tạo payment request
-        $orderData = [
-            'order_code' => $orderCode,
-            'order_total' => $amount
-        ];
-        
-        $paymentResult = $this->momoPaymentModel->createPaymentRequest($orderData);
-        
-        if ($paymentResult['success']) {
-            // Lưu payment log
-            $this->momoPaymentModel->logPayment($orderId, $paymentResult['requestId'], $amount, 'pending', null, $orderCode);
+            // Tạo payment request
+            $orderData = [
+                'order_code' => $orderCode,
+                'order_total' => $amount
+            ];
             
-            // Redirect đến Momo
-            header('Location: ' . $paymentResult['payUrl']);
-            exit;
-        } else {
-            $_SESSION['error'] = $paymentResult['message'];
+            $paymentResult = $this->momoPaymentModel->createPaymentRequest($orderData);
+            
+            if ($paymentResult['success']) {
+                // Lưu payment log
+                $this->momoPaymentModel->logPayment($orderId, $paymentResult['requestId'], $amount, 'pending', null, $orderCode);
+                
+                // Log success
+                error_log("PaymentController::momo - Payment request created successfully. Redirecting to: " . $paymentResult['payUrl']);
+                
+                // Redirect đến Momo
+                header('Location: ' . $paymentResult['payUrl']);
+                exit;
+            } else {
+                // Log error details
+                error_log("PaymentController::momo - Payment request failed: " . json_encode($paymentResult));
+                
+                $_SESSION['error'] = $paymentResult['message'] ?? 'Lỗi tạo thanh toán Momo';
+                $this->redirect('checkout');
+            }
+        } catch (Exception $e) {
+            error_log("PaymentController::momo - Exception: " . $e->getMessage());
+            $_SESSION['error'] = 'Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.';
             $this->redirect('checkout');
         }
     }

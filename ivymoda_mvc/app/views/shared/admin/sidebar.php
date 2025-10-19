@@ -77,6 +77,19 @@
                 </ul>
             </li>
             
+            <!-- Quản lý Email - CHỈ HIỂN THỊ CHO ADMIN -->
+            <?php if(isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
+            <li><a href="#"><img style="width:20px" src="<?php echo BASE_URL; ?>assets/images/icon/options.png" alt="">Quản lý Email</a>
+                <ul>
+                    <li><a href="<?= BASE_URL ?>admin/email">📧 Dashboard Email</a></li>
+                    <li><a href="<?= BASE_URL ?>admin/email/templates">📝 Quản lý Template</a></li>
+                    <li><a href="<?= BASE_URL ?>admin/email/send-promotion">📢 Gửi Email Khuyến Mãi</a></li>
+                    <li><a href="<?= BASE_URL ?>admin/email/logs">📋 Xem Log Email</a></li>
+                    <li><a href="<?= BASE_URL ?>admin/email/smtp-config">⚙️ Cấu hình SMTP</a></li>
+                </ul>
+            </li>
+            <?php endif; ?>
+            
             <!-- Quản lý tài khoản - CHỈ HIỂN THỊ CHO ADMIN -->
             <?php if(isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
             <li class="has-sub">

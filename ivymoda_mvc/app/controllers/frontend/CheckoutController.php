@@ -266,7 +266,10 @@ class CheckoutController extends Controller {
                 // Redirect đến thanh toán Momo (GET)
                 $this->redirect('payment/momo?order_id=' . urlencode($orderId) . '&order_code=' . urlencode($result['order_code']) . '&amount=' . urlencode((int)$finalTotal));
             } else {
-                // COD - Xóa giỏ hàng và redirect đến success
+                // COD - Gửi email xác nhận đơn hàng
+                $this->sendOrderConfirmationEmail($user->email, $result['order_code'], $orderId);
+                
+                // Xóa giỏ hàng và redirect đến success
                 $this->cartModel->clearCart($sessionId, $userId);
                 
                 // Xóa thông tin giao hàng và mã giảm giá khỏi session
@@ -275,7 +278,7 @@ class CheckoutController extends Controller {
                 unset($_SESSION['cart_selected']);
                 
                 // Lưu thông báo thành công
-                $_SESSION['success'] = 'Đặt hàng thành công! Mã đơn hàng: ' . $result['order_code'];
+                $_SESSION['success'] = 'Đặt hàng thành công! Mã đơn hàng: ' . $result['order_code'] . '. Email xác nhận đã được gửi đến ' . $user->email;
                 $_SESSION['order_code'] = $result['order_code'];
                 
                 $this->redirect('checkout/success');
@@ -391,5 +394,37 @@ class CheckoutController extends Controller {
         }
         
         return $errors;
+    }
+    
+    /**
+     * Gửi email xác nhận đơn hàng
+     */
+    private function sendOrderConfirmationEmail($email, $orderCode, $orderId) {
+        // Sử dụng EmailHelper để gửi email
+        require_once ROOT_PATH . 'app/helpers/EmailHelper.php';
+        $emailHelper = new EmailHelper();
+        
+        // Lấy thông tin đơn hàng chi tiết
+        $order = $this->orderModel->getOrderById($orderId);
+        if (!$order) {
+            return false;
+        }
+        
+        // Lấy chi tiết sản phẩm trong đơn hàng
+        $orderItems = $this->orderModel->getOrderItems($orderId);
+        
+        // Chuẩn bị dữ liệu cho email
+        $orderData = [
+            'order_code' => $orderCode,
+            'customer_name' => $order->customer_name,
+            'order_total' => $order->order_total,
+            'order_date' => $order->order_date,
+            'customer_address' => $order->customer_address,
+            'payment_method' => $order->payment_method,
+            'items' => $orderItems
+        ];
+        
+        // Gửi email xác nhận đơn hàng
+        return $emailHelper->sendOrderConfirmation($email, $orderData);
     }
 }

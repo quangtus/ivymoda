@@ -36,3 +36,17 @@
             <li><a href="<?= BASE_URL ?>admin/auth/logout">Đăng xuất</a></li>
         </ul>
     </section>
+    
+    <!-- Flash Messages -->
+    <?php if (isset($_SESSION['flash_message'])): ?>
+        <div class="alert alert-<?= $_SESSION['flash_type'] ?? 'info' ?> alert-dismissible fade show" role="alert" style="margin: 10px; position: relative; z-index: 1050;">
+            <?= htmlspecialchars($_SESSION['flash_message']) ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <?php 
+        unset($_SESSION['flash_message']);
+        unset($_SESSION['flash_type']);
+        ?>
+    <?php endif; ?>

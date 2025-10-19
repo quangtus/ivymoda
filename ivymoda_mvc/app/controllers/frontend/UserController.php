@@ -77,7 +77,9 @@ class UserController extends Controller {
                 $result = $this->userModel->changePassword($user_id, $current_password, $new_password);
                 
                 if($result == "success") {
-                    $data['success'] = 'Đổi mật khẩu thành công!';
+                    // Gửi email thông báo đổi mật khẩu thành công
+                    $this->sendPasswordChangeNotificationEmail($user_info->email, $user_info->fullname);
+                    $data['success'] = 'Đổi mật khẩu thành công! Email thông báo đã được gửi đến ' . $user_info->email;
                 } else {
                     $data['error'] = $result;
                 }
@@ -136,5 +138,96 @@ class UserController extends Controller {
         }
         $this->orderModel->updateOrderStatus($order_id, 3);
         $this->redirect('user/orderDetail/' . $order_id . '?success=cancelled');
+    }
+    
+    /**
+     * Quản lý email - hiển thị lịch sử email và cài đặt
+     */
+    public function emailSettings() {
+        $user_id = $_SESSION['user_id'];
+        $user_info = $this->userModel->getUserById($user_id);
+        
+        if(!$user_info) {
+            $this->redirect('auth/login');
+            exit;
+        }
+        
+        // Load EmailModel để lấy lịch sử email
+        require_once ROOT_PATH . 'app/models/EmailModel.php';
+        $emailModel = new EmailModel();
+        
+        // Lấy lịch sử email của user
+        $emailLogs = $emailModel->getUserEmailLogs($user_id, 20);
+        
+        $data = [
+            'title' => 'Quản lý Email - IVY Moda',
+            'user_info' => $user_info,
+            'email_logs' => $emailLogs,
+            'error' => '',
+            'success' => ''
+        ];
+        
+        // Xử lý cập nhật cài đặt email
+        if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_email_settings'])) {
+            $email_notifications = isset($_POST['email_notifications']) ? 1 : 0;
+            $promotion_emails = isset($_POST['promotion_emails']) ? 1 : 0;
+            
+            $result = $this->userModel->updateEmailSettings($user_id, $email_notifications, $promotion_emails);
+            
+            if($result == "success") {
+                $data['success'] = 'Cập nhật cài đặt email thành công!';
+            } else {
+                $data['error'] = $result;
+            }
+        }
+        
+        $this->view('frontend/user/email_settings', $data);
+    }
+    
+    /**
+     * Gửi email thông báo đổi mật khẩu thành công
+     */
+    private function sendPasswordChangeNotificationEmail($email, $name) {
+        // Sử dụng EmailHelper để gửi email
+        require_once ROOT_PATH . 'app/helpers/EmailHelper.php';
+        $emailHelper = new EmailHelper();
+        
+        $subject = "Thông báo đổi mật khẩu thành công - IVY Moda";
+        
+        $body = "
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+                .content { padding: 20px; }
+                .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h2>IVY Moda</h2>
+                </div>
+                <div class='content'>
+                    <p>Xin chào <strong>{$name}</strong>,</p>
+                    <p>Mật khẩu tài khoản của bạn đã được thay đổi thành công vào lúc " . date('d/m/Y H:i') . ".</p>
+                    <p>Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ với chúng tôi ngay lập tức.</p>
+                    <p>Để bảo mật tài khoản, chúng tôi khuyên bạn:</p>
+                    <ul>
+                        <li>Không chia sẻ mật khẩu với bất kỳ ai</li>
+                        <li>Sử dụng mật khẩu mạnh và độc đáo</li>
+                        <li>Thay đổi mật khẩu định kỳ</li>
+                    </ul>
+                </div>
+                <div class='footer'>
+                    <p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p>
+                </div>
+            </div>
+        </body>
+        </html>";
+        
+        return $emailHelper->sendEmail($email, $subject, $body);
     }
 }

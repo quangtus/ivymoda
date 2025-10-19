@@ -58,11 +58,58 @@ class App {
             return;
         }
         
-        // Xác định action
+        // Xác định action - xử lý URL có nhiều segment
         if (isset($url[0])) {
-            if (method_exists($this->controller, $url[0])) {
-                $this->action = $url[0];
-                array_shift($url);
+            // Xử lý đặc biệt cho email template management
+            if ($url[0] === 'templates') {
+                $actionMap = [
+                    'add' => 'addTemplate',
+                    'edit' => 'editTemplate', 
+                    'delete' => 'deleteTemplate'
+                ];
+                
+                if (isset($url[1]) && isset($actionMap[$url[1]])) {
+                    $this->action = $actionMap[$url[1]];
+                    array_shift($url); // Bỏ 'templates'
+                    array_shift($url); // Bỏ action (add/edit/delete)
+                } else {
+                    // Nếu không có action, mặc định là list templates
+                    $this->action = 'templates';
+                    array_shift($url);
+                }
+            } else {
+                // Kiểm tra xem có phải URL có nhiều segment không (vd: templates/edit/2)
+                if (isset($url[1]) && isset($url[2])) {
+                    // URL dạng: controller/action/subaction/param (vd: email/templates/edit/2)
+                    // Thử kết hợp subaction + action thành method name (vd: editTemplate)
+                    $combinedAction = ucfirst($this->convertToCamelCase($url[1])) . ucfirst($this->convertToCamelCase($url[0]));
+                    if (method_exists($this->controller, $combinedAction)) {
+                        $this->action = $combinedAction;
+                        array_shift($url); // Bỏ action đầu tiên
+                        array_shift($url); // Bỏ subaction
+                    } else {
+                        // Fallback: thử với action đầu tiên
+                        $actionName = $this->convertToCamelCase($url[0]);
+                        if (method_exists($this->controller, $actionName)) {
+                            $this->action = $actionName;
+                            array_shift($url);
+                        } else if (method_exists($this->controller, $url[0])) {
+                            $this->action = $url[0];
+                            array_shift($url);
+                        }
+                    }
+                } else {
+                    // URL đơn giản: controller/action
+                    $actionName = $this->convertToCamelCase($url[0]);
+                    
+                    if (method_exists($this->controller, $actionName)) {
+                        $this->action = $actionName;
+                        array_shift($url);
+                    } else if (method_exists($this->controller, $url[0])) {
+                        $this->action = $url[0];
+                        array_shift($url);
+                    }
+                }
             }
         }
         
@@ -86,5 +133,15 @@ class App {
         }
         
         return [];
+    }
+    
+    /**
+     * Chuyển đổi string có dấu gạch ngang thành camelCase
+     * @param string $string
+     * @return string
+     */
+    protected function convertToCamelCase($string) {
+        // Chuyển đổi send-promotion thành sendPromotion
+        return lcfirst(str_replace('-', '', ucwords($string, '-')));
     }
 }

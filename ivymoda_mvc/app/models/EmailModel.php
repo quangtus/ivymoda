@@ -1,251 +1,213 @@
 <?php
-/**
- * EmailModel - Xử lý email template và log (UC1.3, UC3.3)
- * Bảng: tbl_email_template, tbl_email_log
- */
 class EmailModel extends Model {
-    protected $templateTable = 'tbl_email_template';
-    protected $logTable = 'tbl_email_log';
+    protected $table = 'tbl_email_log';
     
     public function __construct() {
         parent::__construct();
     }
     
     /**
-     * Lấy tất cả email template
+     * Lưu log email
      */
-    public function getAllTemplates() {
-        $query = "SELECT * FROM {$this->templateTable} ORDER BY template_id ASC";
-        return $this->getAll($query);
-    }
-    
-    /**
-     * Lấy template theo tên
-     */
-    public function getTemplateByName($name) {
-        $name = $this->escape($name);
-        $query = "SELECT * FROM {$this->templateTable} WHERE template_name = '$name'";
-        return $this->getOne($query);
-    }
-    
-    /**
-     * Lấy template theo loại
-     */
-    public function getTemplateByType($type) {
-        $type = $this->escape($type);
-        $query = "SELECT * FROM {$this->templateTable} WHERE type = '$type' LIMIT 1";
-        return $this->getOne($query);
-    }
-    
-    /**
-     * Lấy template theo ID
-     */
-    public function getTemplateById($id) {
-        $id = (int)$id;
-        $query = "SELECT * FROM {$this->templateTable} WHERE template_id = $id";
-        return $this->getOne($query);
-    }
-    
-    /**
-     * Thêm email template
-     */
-    public function addTemplate($data) {
-        $name = $this->escape($data['template_name']);
-        $subject = $this->escape($data['subject']);
-        $body = $this->escape($data['body']);
-        $type = $this->escape($data['type']);
-        
-        $query = "INSERT INTO {$this->templateTable} 
-                  (template_name, subject, body, type) 
-                  VALUES ('$name', '$subject', '$body', '$type')";
-        
-        if ($this->execute($query)) {
-            return true;
-        } else {
-            return "Thêm template thất bại";
+    public function logEmail($recipient, $subject, $body, $status = 'sent', $errorMessage = null) {
+        // Note: error_message column doesn't exist in tbl_email_log table
+        // We'll include error info in the body if there's an error
+        if ($errorMessage && $status === 'failed') {
+            $body = $body . "\n\nError: " . $errorMessage;
         }
+        
+        $sql = "INSERT INTO tbl_email_log (recipient, subject, body, status, sent_at) VALUES (?, ?, ?, ?, NOW())";
+        $params = [$recipient, $subject, $body, $status];
+        
+        return $this->execute($sql, $params);
     }
     
     /**
-     * Cập nhật email template
+     * Lấy template email theo tên
      */
-    public function updateTemplate($id, $data) {
-        $id = (int)$id;
-        $subject = $this->escape($data['subject']);
-        $body = $this->escape($data['body']);
-        
-        $query = "UPDATE {$this->templateTable} SET 
-                  subject = '$subject',
-                  body = '$body'
-                  WHERE template_id = $id";
-        
-        if ($this->execute($query)) {
-            return true;
-        } else {
-            return "Cập nhật template thất bại";
-        }
+    public function getTemplate($templateName) {
+        $sql = "SELECT * FROM tbl_email_template WHERE template_name = ?";
+        return $this->query($sql, [$templateName]);
+    }
+    
+    /**
+     * Lấy template email theo ID
+     */
+    public function getTemplateById($templateId) {
+        $sql = "SELECT * FROM tbl_email_template WHERE template_id = ?";
+        return $this->query($sql, [$templateId]);
+    }
+    
+    /**
+     * Lấy danh sách template
+     */
+    public function getTemplates() {
+        $sql = "SELECT * FROM tbl_email_template ORDER BY template_name";
+        return $this->queryAll($sql);
+    }
+    
+    /**
+     * Thêm template mới
+     */
+    public function addTemplate($templateName, $subject, $body, $type = null) {
+        $sql = "INSERT INTO tbl_email_template (template_name, subject, body, type) VALUES (?, ?, ?, ?)";
+        return $this->execute($sql, [$templateName, $subject, $body, $type]);
+    }
+    
+    /**
+     * Cập nhật template
+     */
+    public function updateTemplate($templateId, $templateName, $subject, $body, $type = null) {
+        $sql = "UPDATE tbl_email_template SET template_name = ?, subject = ?, body = ?, type = ? WHERE template_id = ?";
+        return $this->execute($sql, [$templateName, $subject, $body, $type, $templateId]);
     }
     
     /**
      * Xóa template
      */
-    public function deleteTemplate($id) {
-        $id = (int)$id;
-        $query = "DELETE FROM {$this->templateTable} WHERE template_id = $id";
-        
-        if ($this->execute($query)) {
-            return true;
-        } else {
-            return "Xóa template thất bại";
-        }
-    }
-    
-    /**
-     * Thay thế biến trong template
-     * @param string $template Nội dung template
-     * @param array $variables Mảng biến cần thay thế ['customer_name' => 'John', ...]
-     * @return string Template đã được thay thế biến
-     */
-    public function replaceVariables($template, $variables) {
-        foreach ($variables as $key => $value) {
-            $template = str_replace('{' . $key . '}', $value, $template);
-        }
-        return $template;
-    }
-    
-    /**
-     * Gửi email sử dụng template
-     * @param string $to Email người nhận
-     * @param string $templateType Loại template (order, promotion, password_reset)
-     * @param array $variables Biến để thay thế trong template
-     * @return bool|string True nếu thành công, string message nếu thất bại
-     */
-    public function sendEmailWithTemplate($to, $templateType, $variables = []) {
-        // Lấy template
-        $template = $this->getTemplateByType($templateType);
-        
-        if (!$template) {
-            return "Template không tồn tại";
-        }
-        
-        $subject = is_object($template) ? $template->subject : $template['subject'];
-        $body = is_object($template) ? $template->body : $template['body'];
-        
-        // Thay thế biến
-        $subject = $this->replaceVariables($subject, $variables);
-        $body = $this->replaceVariables($body, $variables);
-        
-        // Gửi email (sử dụng EmailHelper nếu có)
-        if (class_exists('EmailHelper')) {
-            $result = EmailHelper::sendEmail($to, '', $subject, $body);
-            
-            // Log email
-            $this->logEmail($to, $subject, $body, $result ? 1 : 0);
-            
-            return $result;
-        }
-        
-        // Fallback: sử dụng mail() của PHP
-        $headers = "MIME-Version: 1.0" . "\r\n";
-        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-        $headers .= "From: IVY moda <noreply@ivymoda.com>" . "\r\n";
-        
-        $success = mail($to, $subject, $body, $headers);
-        
-        // Log email
-        $this->logEmail($to, $subject, $body, $success ? 'sent' : 'failed');
-        
-        return $success;
-    }
-    
-    /**
-     * Lưu log email
-     */
-    public function logEmail($to, $subject, $body, $status = 'sent') {
-        $to = $this->escape($to);
-        $subject = $this->escape($subject);
-        $body = $this->escape($body);
-        $status = $this->escape($status);
-        
-        $query = "INSERT INTO {$this->logTable} 
-                  (recipient, subject, body, status) 
-                  VALUES ('$to', '$subject', '$body', '$status')";
-        
-        return $this->execute($query);
+    public function deleteTemplate($templateId) {
+        $sql = "DELETE FROM tbl_email_template WHERE template_id = ?";
+        return $this->execute($sql, [$templateId]);
     }
     
     /**
      * Lấy log email
      */
-    public function getEmailLogs($limit = 50) {
-        $limit = (int)$limit;
-        $query = "SELECT * FROM {$this->logTable} 
-                  ORDER BY sent_at DESC 
-                  LIMIT $limit";
-        return $this->getAll($query);
+    public function getEmailLogs($limit = 50, $offset = 0) {
+        $sql = "SELECT * FROM tbl_email_log ORDER BY sent_at DESC LIMIT ? OFFSET ?";
+        return $this->queryAll($sql, [$limit, $offset]);
     }
     
     /**
-     * Lấy log email theo người nhận
+     * Đếm tổng số log email
      */
-    public function getEmailLogsByRecipient($email, $limit = 20) {
-        $email = $this->escape($email);
-        $limit = (int)$limit;
-        $query = "SELECT * FROM {$this->logTable} 
-                  WHERE recipient = '$email' 
-                  ORDER BY sent_at DESC 
-                  LIMIT $limit";
-        return $this->getAll($query);
+    public function getEmailLogCount() {
+        $sql = "SELECT COUNT(*) as total FROM tbl_email_log";
+        $result = $this->query($sql);
+        return $result->total ?? 0;
     }
     
     /**
-     * Đếm số email đã gửi thành công/thất bại
+     * Lấy thống kê email
      */
     public function getEmailStats() {
-        $successQuery = "SELECT COUNT(*) as count FROM {$this->logTable} WHERE status = 'sent'";
-        $failQuery = "SELECT COUNT(*) as count FROM {$this->logTable} WHERE status = 'failed'";
+        $sql = "SELECT 
+                    COUNT(*) as total_emails,
+                    SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent_emails,
+                    SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_emails,
+                    COUNT(DISTINCT recipient) as unique_recipients
+                FROM tbl_email_log";
+        $result = $this->query($sql);
         
-        $success = $this->getOne($successQuery);
-        $fail = $this->getOne($failQuery);
+        // Convert object to array
+        if ($result) {
+            return [
+                'total_emails' => (int)$result->total_emails,
+                'sent_emails' => (int)$result->sent_emails,
+                'failed_emails' => (int)$result->failed_emails,
+                'unique_recipients' => (int)$result->unique_recipients
+            ];
+        }
         
         return [
-            'success' => is_object($success) ? $success->count : ($success['count'] ?? 0),
-            'failed' => is_object($fail) ? $fail->count : ($fail['count'] ?? 0)
+            'total_emails' => 0,
+            'sent_emails' => 0,
+            'failed_emails' => 0,
+            'unique_recipients' => 0
         ];
     }
     
     /**
-     * Gửi email thông báo đơn hàng
+     * Lấy danh sách khuyến mãi
      */
-    public function sendOrderEmail($orderData) {
-        $variables = [
-            'customer_name' => $orderData['customer_name'],
-            'order_code' => $orderData['order_code'],
-            'order_total' => number_format($orderData['order_total']) . 'đ',
-            'order_date' => date('d/m/Y H:i', strtotime($orderData['order_date'])),
-            'customer_address' => $orderData['customer_address'],
-            'customer_phone' => $orderData['customer_phone']
-        ];
-        
-        return $this->sendEmailWithTemplate(
-            $orderData['customer_email'],
-            'order',
-            $variables
-        );
+    public function getPromotions() {
+        $sql = "SELECT * FROM tbl_promotion WHERE is_active = 1 AND start_date <= NOW() AND end_date >= NOW() ORDER BY priority DESC, created_at DESC";
+        return $this->queryAll($sql);
     }
     
     /**
-     * Gửi email khuyến mãi
+     * Lấy danh sách email khách hàng để gửi khuyến mãi
      */
-    public function sendPromotionEmail($email, $promotionData) {
-        $variables = [
-            'promotion_title' => $promotionData['title'] ?? 'Chương trình khuyến mãi',
-            'promotion_content' => $promotionData['content'] ?? '',
-            'discount_code' => $promotionData['code'] ?? '',
-            'valid_from' => $promotionData['valid_from'] ?? '',
-            'valid_to' => $promotionData['valid_to'] ?? ''
-        ];
+    public function getCustomerEmails() {
+        $sql = "SELECT DISTINCT email, fullname FROM users WHERE email IS NOT NULL AND email != '' AND role_id = 2 AND promotion_emails = 1 ORDER BY fullname";
+        return $this->queryAll($sql);
+    }
+    
+    /**
+     * Lưu log email khuyến mãi
+     */
+    public function logPromotionEmail($promotionTitle, $recipientEmail, $userId = null, $status = 'sent', $errorMessage = null) {
+        $sql = "INSERT INTO tbl_promotion_email_log (promotion_title, recipient_email, user_id, status, error_message, sent_at) VALUES (?, ?, ?, ?, ?, NOW())";
+        return $this->execute($sql, [$promotionTitle, $recipientEmail, $userId, $status, $errorMessage]);
+    }
+    
+    /**
+     * Lấy log email khuyến mãi
+     */
+    public function getPromotionEmailLogs($promotionTitle = null) {
+        $sql = "SELECT pel.*, u.fullname 
+                FROM tbl_promotion_email_log pel 
+                LEFT JOIN users u ON pel.user_id = u.id";
         
-        return $this->sendEmailWithTemplate($email, 'promotion', $variables);
+        $params = [];
+        if ($promotionTitle) {
+            $sql .= " WHERE pel.promotion_title = ?";
+            $params[] = $promotionTitle;
+        }
+        
+        $sql .= " ORDER BY pel.sent_at DESC";
+        
+        return $this->queryAll($sql, $params);
+    }
+    
+    /**
+     * Lấy log email theo ID
+     */
+    public function getEmailLogById($logId) {
+        $sql = "SELECT * FROM tbl_email_log WHERE log_id = ?";
+        return $this->query($sql, [$logId]);
+    }
+    
+    /**
+     * Lấy lịch sử email của user cụ thể
+     */
+    public function getUserEmailLogs($userId, $limit = 20) {
+        $sql = "SELECT * FROM tbl_email_log 
+                WHERE recipient = (SELECT email FROM users WHERE id = ?)
+                ORDER BY sent_at DESC 
+                LIMIT ?";
+        return $this->queryAll($sql, [$userId, $limit]);
+    }
+    
+    /**
+     * Lấy khuyến mãi theo ID
+     */
+    public function getPromotionById($promotionId) {
+        $sql = "SELECT * FROM tbl_promotion WHERE promotion_id = ?";
+        return $this->query($sql, [$promotionId]);
+    }
+    
+    /**
+     * Lấy thống kê email khách hàng
+     */
+    public function getCustomerEmailStats() {
+        $sql = "SELECT 
+                    COUNT(*) as total_customers,
+                    SUM(CASE WHEN promotion_emails = 1 THEN 1 ELSE 0 END) as promotion_enabled
+                FROM users 
+                WHERE role_id = 2 AND email IS NOT NULL AND email != ''";
+        $result = $this->query($sql);
+        
+        if ($result) {
+            return [
+                'total_customers' => (int)$result->total_customers,
+                'promotion_enabled' => (int)$result->promotion_enabled
+            ];
+        }
+        
+        return [
+            'total_customers' => 0,
+            'promotion_enabled' => 0
+        ];
     }
 }

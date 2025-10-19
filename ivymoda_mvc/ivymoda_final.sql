@@ -1,11 +1,14 @@
 -- ============================================
--- IVYMODA DATABASE - FINAL VERSION 4.0
+-- IVYMODA DATABASE - FINAL VERSION 7.2
 -- ============================================
 -- Kế thừa từ: ivymoda_update.sql (100% tương thích code)
 -- Bổ sung: Review, Promotion (từ ivymoda_complete.sql)
--- Loại bỏ: Các bảng thừa (wishlist, notification, chatbot)
+-- Bổ sung: Email Activation System (VERSION 7.0)
+-- Bổ sung: Chatbot System (VERSION 7.2 - UC3.47, UC3.48)
+-- Loại bỏ: Các bảng thừa (wishlist, notification)
 -- Tương thích: 100% với code hiện tại
--- Ngày tạo: 2025-10-14
+-- Ngày tạo: 2025-01-14
+-- Cập nhật: 2025-10-18 - Thêm hệ thống Chatbot
 -- ============================================
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -31,7 +34,7 @@ CREATE TABLE `roles` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Bảng users (UC01-06)
+-- Bảng users (UC01-06) - VERSION 7.0: Hỗ trợ kích hoạt tài khoản qua email
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(100) NOT NULL,
@@ -45,13 +48,19 @@ CREATE TABLE `users` (
   `login_attempts` int(11) DEFAULT 0,
   `reset_token` varchar(100) DEFAULT NULL,
   `reset_token_expire` datetime DEFAULT NULL,
+  `activation_token` varchar(100) DEFAULT NULL COMMENT 'Token kích hoạt tài khoản qua email',
+  `activation_token_expire` datetime DEFAULT NULL COMMENT 'Thời gian hết hạn token kích hoạt',
+  `email_notifications` tinyint(1) DEFAULT 1 COMMENT '1: Nhận thông báo email, 0: Không nhận',
+  `promotion_emails` tinyint(1) DEFAULT 1 COMMENT '1: Nhận email khuyến mãi, 0: Không nhận',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`),
   KEY `idx_role` (`role_id`),
+  KEY `idx_activation_token` (`activation_token`),
   CONSTRAINT `fk_user_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+COMMENT='Bảng người dùng - Hỗ trợ kích hoạt tài khoản qua email';
 
 -- ============================================
 -- 2. QUẢN LÝ SẢN PHẨM (UC07-08) - VARIANT SYSTEM
@@ -320,23 +329,21 @@ CREATE TABLE `tbl_promotion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 COMMENT='Khuyến mãi - UC08, UC17 - ĐÃ SỬA: discount_code → ma_giam_gia_id (FK)';
 
--- Log gửi email khuyến mãi (UC09, UC25)
+-- Log gửi email khuyến mãi (UC3.50) - Đơn giản hóa
 CREATE TABLE `tbl_promotion_email_log` (
   `log_id` int(11) NOT NULL AUTO_INCREMENT,
-  `promotion_id` int(11) NOT NULL,
+  `promotion_title` varchar(255) NOT NULL COMMENT 'Tiêu đề khuyến mãi',
   `recipient_email` varchar(255) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `sent_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `status` enum('sent','failed','pending') DEFAULT 'pending',
   `error_message` text DEFAULT NULL,
   PRIMARY KEY (`log_id`),
-  KEY `idx_promotion` (`promotion_id`),
   KEY `idx_status` (`status`),
   KEY `idx_user` (`user_id`),
-  CONSTRAINT `fk_promo_email_promotion` FOREIGN KEY (`promotion_id`) REFERENCES `tbl_promotion` (`promotion_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_promo_email_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-COMMENT='Log gửi email khuyến mãi - UC09, UC25';
+COMMENT='Log gửi email khuyến mãi - UC3.50 - Đơn giản hóa';
 
 -- ============================================
 -- 5. ĐÁNH GIÁ SẢN PHẨM (UC13)
@@ -383,10 +390,10 @@ CREATE TABLE `tbl_thong_ke` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================
--- 7. EMAIL (UC07, UC24, UC25)
+-- 7. EMAIL SYSTEM (UC3.50 - Tích hợp Email)
 -- ============================================
 
--- Bảng template email
+-- Bảng template email - Chỉ giữ các template cơ bản theo UC
 CREATE TABLE `tbl_email_template` (
   `template_id` int(11) NOT NULL AUTO_INCREMENT,
   `template_name` varchar(100) NOT NULL,
@@ -396,7 +403,7 @@ CREATE TABLE `tbl_email_template` (
   PRIMARY KEY (`template_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Bảng log email
+-- Bảng log email - Đơn giản hóa theo UC
 CREATE TABLE `tbl_email_log` (
   `log_id` int(11) NOT NULL AUTO_INCREMENT,
   `recipient` varchar(255) NOT NULL,
@@ -408,7 +415,77 @@ CREATE TABLE `tbl_email_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================
--- 8. VIEW HỮU ÍCH
+-- 8. CHATBOT SYSTEM (UC3.47, UC3.48)
+-- ============================================
+
+-- Bảng FAQ cho chatbot (UC3.48 - Chatbot hướng dẫn sử dụng hệ thống)
+CREATE TABLE `tbl_chatbot_faq` (
+  `faq_id` int(11) NOT NULL AUTO_INCREMENT,
+  `question` varchar(500) NOT NULL COMMENT 'Câu hỏi hiển thị cho người dùng',
+  `answer` text NOT NULL COMMENT 'Câu trả lời chi tiết (có thể chứa HTML)',
+  `category` varchar(100) NOT NULL COMMENT 'Danh mục FAQ (Đăng ký, Đặt hàng, Thanh toán...)',
+  `display_order` int(11) DEFAULT 0 COMMENT 'Thứ tự hiển thị',
+  `status` tinyint(1) DEFAULT 1 COMMENT '1: Active, 0: Inactive',
+  `help_link` varchar(255) DEFAULT NULL COMMENT 'Link hướng dẫn chi tiết',
+  `created_by` int(11) DEFAULT NULL COMMENT 'Admin tạo FAQ',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`faq_id`),
+  KEY `idx_category` (`category`),
+  KEY `idx_status_order` (`status`, `display_order`),
+  KEY `idx_created_by` (`created_by`),
+  CONSTRAINT `fk_faq_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='FAQ cho chatbot hướng dẫn - UC3.48';
+
+-- Bảng lịch sử hội thoại chatbot (UC3.47 - Chatbot tư vấn sản phẩm)
+CREATE TABLE `tbl_chatbot_conversation` (
+  `conversation_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL COMMENT 'Null nếu khách vãng lai',
+  `session_id` varchar(100) NOT NULL COMMENT 'Session ID để nhóm các tin nhắn',
+  `user_message` text NOT NULL COMMENT 'Tin nhắn từ người dùng',
+  `bot_response` text NOT NULL COMMENT 'Câu trả lời từ chatbot/Gemini AI',
+  `context_data` text DEFAULT NULL COMMENT 'Context gửi cho Gemini (JSON)',
+  `suggested_products` text DEFAULT NULL COMMENT 'Danh sách sản phẩm gợi ý (JSON)',
+  `response_time` int(11) DEFAULT NULL COMMENT 'Thời gian phản hồi (milliseconds)',
+  `is_from_faq` tinyint(1) DEFAULT 0 COMMENT '1: Câu trả lời từ FAQ, 0: Từ Gemini AI',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`conversation_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_session_id` (`session_id`),
+  KEY `idx_created_at` (`created_at`),
+  CONSTRAINT `fk_conversation_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Lịch sử hội thoại chatbot - UC3.47';
+
+-- Bảng cấu hình chatbot (UC3.47)
+CREATE TABLE `tbl_chatbot_config` (
+  `config_id` int(11) NOT NULL AUTO_INCREMENT,
+  `config_key` varchar(100) NOT NULL COMMENT 'Tên cấu hình',
+  `config_value` text NOT NULL COMMENT 'Giá trị cấu hình',
+  `description` text DEFAULT NULL COMMENT 'Mô tả cấu hình',
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`config_id`),
+  UNIQUE KEY `config_key` (`config_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Cấu hình chatbot - UC3.47';
+
+-- Bảng sở thích người dùng (Tùy chọn - UC3.47)
+CREATE TABLE `tbl_user_preferences` (
+  `preference_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `favorite_colors` varchar(255) DEFAULT NULL COMMENT 'Màu sắc yêu thích (JSON array)',
+  `favorite_categories` varchar(255) DEFAULT NULL COMMENT 'Danh mục yêu thích (JSON array)',
+  `size_preference` varchar(50) DEFAULT NULL COMMENT 'Size thường mặc',
+  `price_range` varchar(100) DEFAULT NULL COMMENT 'Khoảng giá mong muốn',
+  `skin_tone` varchar(50) DEFAULT NULL COMMENT 'Màu da',
+  `height` varchar(20) DEFAULT NULL COMMENT 'Chiều cao',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`preference_id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  CONSTRAINT `fk_pref_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Sở thích người dùng cho chatbot cá nhân hóa - UC3.47';
+
+-- ============================================
+-- 9. VIEW HỮU ÍCH
 -- ============================================
 
 -- View lịch sử mua hàng (UC11)
@@ -483,12 +560,12 @@ INSERT INTO `roles` VALUES
 (2, 'Khách hàng', 'Khách hàng'),
 (3, 'Nhân viên', 'Nhân viên');
 
--- Users (password: admin123 và customer123)
+-- Users (password: admin123 và customer123) - VERSION 7.0: Thêm activation token
 INSERT INTO `users` VALUES 
-(1, 'admin', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'admin@ivymoda.com', 'Admin IVY', '0901234567', NULL, 1, 1, 0, NULL, NULL, NOW()),
-(2, 'customer1', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'customer@gmail.com', 'Nguyễn Văn A', '0987654321', 'Hà Nội', 2, 1, 0, NULL, NULL, NOW()),
-(3, 'staff1', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'staff@ivymoda.com', 'Nhân viên 1', '0901111111', 'TP.HCM', 3, 1, 0, NULL, NULL, NOW()),
-(4, 'staff2', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'staff2@ivymoda.com', 'Nhân viên 2', '0902222222', 'Đà Nẵng', 3, 1, 0, NULL, NULL, NOW());
+(1, 'admin', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'admin@ivymoda.com', 'Admin IVY', '0901234567', NULL, 1, 1, 0, NULL, NULL, NULL, NULL, 1, 1, NOW()),
+(2, 'customer1', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'customer@gmail.com', 'Nguyễn Văn A', '0987654321', 'Hà Nội', 2, 1, 0, NULL, NULL, NULL, NULL, 1, 1, NOW()),
+(3, 'staff1', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'staff@ivymoda.com', 'Nhân viên 1', '0901111111', 'TP.HCM', 3, 1, 0, NULL, NULL, NULL, NULL, 1, 1, NOW()),
+(4, 'staff2', '$2y$10$b1iqdprgQ1A4opLXzatupuvtQAOHYPtppz4h/2l8biO5CAiEfnvvC', 'staff2@ivymoda.com', 'Nhân viên 2', '0902222222', 'Đà Nẵng', 3, 1, 0, NULL, NULL, NULL, NULL, 1, 1, NOW());
 
 -- Danh mục
 INSERT INTO `tbl_danhmuc` VALUES 
@@ -649,14 +726,19 @@ INSERT INTO `tbl_product_variant` VALUES
 (35, 5, 7, 3, 'AK-001-M-GRAY', 6, NULL, 1, NOW(), NOW()),
 (36, 5, 7, 4, 'AK-001-L-GRAY', 5, NULL, 1, NOW(), NOW());
 
--- Email template
+-- Email template - Chỉ giữ các template cơ bản theo UC3.50
 INSERT INTO `tbl_email_template` VALUES 
-(1, 'Xác nhận đơn hàng', 'Đơn hàng #{order_code} đã được xác nhận', 
- '<p>Xin chào {customer_name},</p><p>Đơn hàng của bạn đã được xác nhận.</p><p>Mã đơn hàng: {order_code}</p>', 'order'),
-(2, 'Khuyến mãi', 'Chương trình khuyến mãi đặc biệt', 
- '<p>Giảm giá lên đến 50%!</p>', 'promotion'),
-(3, 'Đổi mật khẩu', 'Yêu cầu đặt lại mật khẩu', 
- '<p>Xin chào,</p><p>Click vào link sau để đặt lại mật khẩu: {reset_link}</p>', 'password_reset');
+(1, 'registration_confirmation', 'Chào mừng đến với IVY Moda - Xác nhận đăng ký', 
+ '<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background-color:#f8f9fa;padding:20px;text-align:center}.content{padding:20px}.button{display:inline-block;background-color:#007bff;color:white;padding:12px 24px;text-decoration:none;border-radius:5px;margin:20px 0}.footer{background-color:#f8f9fa;padding:20px;text-align:center;font-size:12px;color:#666}</style></head><body><div class="container"><div class="header"><h2>Chào mừng đến với IVY Moda!</h2></div><div class="content"><p>Xin chào <strong>{username}</strong>,</p><p>Cảm ơn bạn đã đăng ký tài khoản tại IVY Moda. Để kích hoạt tài khoản, vui lòng click vào link bên dưới:</p><p style="text-align:center"><a href="{activation_link}" class="button">Kích hoạt tài khoản</a></p><p>Link này có hiệu lực trong 24 giờ.</p><p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.</p></div><div class="footer"><p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p></div></div></body></html>', 'registration'),
+
+(2, 'order_confirmation', 'Xác nhận đơn hàng #{order_code} - IVY Moda', 
+ '<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background-color:#f8f9fa;padding:20px;text-align:center}.content{padding:20px}.order-info{background-color:#f8f9fa;padding:15px;border-radius:5px;margin:20px 0}.footer{background-color:#f8f9fa;padding:20px;text-align:center;font-size:12px;color:#666}table{border-collapse:collapse;width:100%;margin:20px 0}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background-color:#f5f5f5}</style></head><body><div class="container"><div class="header"><h2>Đơn hàng của bạn đã được xác nhận!</h2></div><div class="content"><p>Xin chào <strong>{customer_name}</strong>,</p><p>Cảm ơn bạn đã mua sắm tại IVY Moda. Đơn hàng của bạn đã được xác nhận và đang được xử lý.</p><div class="order-info"><h3>Thông tin đơn hàng</h3><p><strong>Mã đơn hàng:</strong> #{order_code}</p><p><strong>Ngày đặt:</strong> {order_date}</p><p><strong>Tổng tiền:</strong> {order_total}</p><p><strong>Phương thức thanh toán:</strong> {payment_method}</p><p><strong>Địa chỉ giao hàng:</strong> {customer_address}</p></div><h3>Chi tiết sản phẩm</h3>{order_items}<p>Chúng tôi sẽ thông báo cho bạn khi đơn hàng được giao.</p></div><div class="footer"><p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p></div></div></body></html>', 'order'),
+
+(3, 'password_reset', 'Đặt lại mật khẩu - IVY Moda', 
+ '<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background-color:#f8f9fa;padding:20px;text-align:center}.content{padding:20px}.button{display:inline-block;background-color:#dc3545;color:white;padding:12px 24px;text-decoration:none;border-radius:5px;margin:20px 0}.footer{background-color:#f8f9fa;padding:20px;text-align:center;font-size:12px;color:#666}</style></head><body><div class="container"><div class="header"><h2>Đặt lại mật khẩu</h2></div><div class="content"><p>Xin chào <strong>{username}</strong>,</p><p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Click vào link bên dưới để đặt lại mật khẩu:</p><p style="text-align:center"><a href="{reset_link}" class="button">Đặt lại mật khẩu</a></p><p>Link này có hiệu lực trong 1 giờ.</p><p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p></div><div class="footer"><p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p></div></div></body></html>', 'password_reset'),
+
+(4, 'promotion', 'Khuyến mãi đặc biệt - IVY Moda', 
+ '<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background-color:#e74c3c;color:white;padding:20px;text-align:center}.content{padding:20px}.promotion-box{background-color:#f8f9fa;padding:20px;border-radius:10px;margin:20px 0;border:2px solid #e74c3c}.button{display:inline-block;background-color:#e74c3c;color:white;padding:15px 30px;text-decoration:none;border-radius:5px;margin:20px 0;font-weight:bold}.footer{background-color:#f8f9fa;padding:20px;text-align:center;font-size:12px;color:#666}</style></head><body><div class="container"><div class="header"><h2>🎉 {promotion_title}</h2></div><div class="content"><p>Xin chào <strong>{customer_name}</strong>,</p><div class="promotion-box"><h3>Chương trình khuyến mãi đặc biệt dành riêng cho bạn!</h3>{content}</div><p style="text-align:center"><a href="#" class="button">MUA NGAY</a></p><p>Đừng bỏ lỡ cơ hội mua sắm với giá tốt nhất!</p></div><div class="footer"><p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p></div></div></body></html>', 'promotion');
 
 -- Mã giảm giá mẫu (tích hợp từ discount_update.sql)
 INSERT INTO `tbl_ma_giam_gia` VALUES 
@@ -692,6 +774,63 @@ INSERT INTO `tbl_product_review` VALUES
 (2, 2, 2, NULL, 4, 'Quần đẹp nhưng hơi dài, phải cắt gấu', '["reviews/quan_jeans_review_1.jpg"]', 1, 1, NULL, NOW(), NOW()),
 (3, 3, 2, NULL, 5, 'Áo thun basic nhưng rất chất lượng', NULL, 1, 1, NULL, NOW(), NOW());
 
+-- Dữ liệu FAQ cho chatbot (UC3.48)
+INSERT INTO `tbl_chatbot_faq` VALUES 
+(1, 'Làm thế nào để đăng ký tài khoản?', 
+ '<p>Để đăng ký tài khoản trên IVY Moda, bạn thực hiện các bước sau:</p><ol><li>Click vào nút <strong>"Đăng ký"</strong> ở góc trên cùng</li><li>Điền đầy đủ thông tin: Họ tên, Email, Số điện thoại, Mật khẩu</li><li>Click <strong>"Đăng ký"</strong></li><li>Kiểm tra email và click vào link kích hoạt tài khoản</li></ol><p>Tài khoản của bạn sẽ được kích hoạt sau khi xác thực email.</p>', 
+ 'Đăng ký & Đăng nhập', 1, 1, NULL, 1, NOW(), NOW()),
+
+(2, 'Tôi quên mật khẩu, phải làm sao?', 
+ '<p>Để khôi phục mật khẩu:</p><ol><li>Click vào <strong>"Quên mật khẩu?"</strong> ở trang đăng nhập</li><li>Nhập email đã đăng ký</li><li>Kiểm tra email và click vào link đặt lại mật khẩu</li><li>Nhập mật khẩu mới và xác nhận</li></ol><p>Link đặt lại mật khẩu có hiệu lực trong 1 giờ.</p>', 
+ 'Đăng ký & Đăng nhập', 2, 1, NULL, 1, NOW(), NOW()),
+
+(3, 'Làm thế nào để đặt hàng?', 
+ '<p>Quy trình đặt hàng rất đơn giản:</p><ol><li>Tìm kiếm và chọn sản phẩm bạn muốn mua</li><li>Chọn màu sắc và size phù hợp</li><li>Click <strong>"Thêm vào giỏ hàng"</strong></li><li>Vào giỏ hàng và click <strong>"Thanh toán"</strong></li><li>Điền thông tin giao hàng</li><li>Chọn phương thức thanh toán (COD hoặc MoMo)</li><li>Xác nhận đơn hàng</li></ol><p>Bạn sẽ nhận được email xác nhận đơn hàng ngay sau khi đặt thành công.</p>', 
+ 'Đặt hàng', 3, 1, NULL, 1, NOW(), NOW()),
+
+(4, 'Có những phương thức thanh toán nào?', 
+ '<p>IVY Moda hỗ trợ 2 phương thức thanh toán:</p><ul><li><strong>COD (Thanh toán khi nhận hàng):</strong> Bạn thanh toán bằng tiền mặt khi nhận được hàng</li><li><strong>MoMo:</strong> Thanh toán online qua ví điện tử MoMo</li></ul><p>Cả hai phương thức đều an toàn và bảo mật.</p>', 
+ 'Thanh toán', 4, 1, NULL, 1, NOW(), NOW()),
+
+(5, 'Làm thế nào để theo dõi đơn hàng?', 
+ '<p>Để theo dõi đơn hàng của bạn:</p><ol><li>Đăng nhập vào tài khoản</li><li>Vào mục <strong>"Đơn hàng của tôi"</strong></li><li>Xem danh sách tất cả đơn hàng và trạng thái</li></ol><p>Trạng thái đơn hàng bao gồm:</p><ul><li>Chờ xác nhận</li><li>Đã xác nhận</li><li>Đang giao</li><li>Đã giao</li><li>Đã hủy</li></ul>', 
+ 'Đơn hàng', 5, 1, NULL, 1, NOW(), NOW()),
+
+(6, 'Tôi có thể hủy đơn hàng không?', 
+ '<p>Có, bạn có thể hủy đơn hàng khi:</p><ul><li>Đơn hàng đang ở trạng thái <strong>"Chờ xác nhận"</strong></li><li>Đơn hàng chưa được giao cho đơn vị vận chuyển</li></ul><p>Để hủy đơn hàng:</p><ol><li>Vào <strong>"Đơn hàng của tôi"</strong></li><li>Chọn đơn hàng cần hủy</li><li>Click <strong>"Hủy đơn hàng"</strong></li></ol><p>Lưu ý: Đơn hàng đã xác nhận hoặc đang giao không thể hủy trực tuyến. Vui lòng liên hệ hotline để được hỗ trợ.</p>', 
+ 'Đơn hàng', 6, 1, NULL, 1, NOW(), NOW()),
+
+(7, 'Làm thế nào để sử dụng mã giảm giá?', 
+ '<p>Để áp dụng mã giảm giá:</p><ol><li>Thêm sản phẩm vào giỏ hàng</li><li>Vào trang <strong>"Thanh toán"</strong></li><li>Tìm ô <strong>"Nhập mã giảm giá"</strong></li><li>Nhập mã và click <strong>"Áp dụng"</strong></li></ol><p>Hệ thống sẽ tự động tính toán và hiển thị giá sau khi giảm.</p><p>Lưu ý: Mỗi đơn hàng chỉ áp dụng được 1 mã giảm giá.</p>', 
+ 'Khuyến mãi', 7, 1, NULL, 1, NOW(), NOW()),
+
+(8, 'Chính sách đổi trả như thế nào?', 
+ '<p>IVY Moda có chính sách đổi trả linh hoạt:</p><ul><li><strong>Thời gian:</strong> Trong vòng 7 ngày kể từ khi nhận hàng</li><li><strong>Điều kiện:</strong> Sản phẩm chưa qua sử dụng, còn nguyên tem mác, không bị hư hỏng</li><li><strong>Chi phí:</strong> Miễn phí đổi hàng (nếu lỗi từ nhà sản xuất), khách hàng chịu phí ship khi đổi size/màu</li></ul><p>Để đổi trả, vui lòng liên hệ hotline: <strong>0901234567</strong></p>', 
+ 'Chính sách', 8, 1, NULL, 1, NOW(), NOW()),
+
+(9, 'Làm thế nào để xem size chart?', 
+ '<p>Để xem bảng size chi tiết:</p><ol><li>Vào trang chi tiết sản phẩm</li><li>Tìm phần <strong>"Hướng dẫn chọn size"</strong></li><li>Click để xem bảng size</li></ol><p>Mỗi sản phẩm có bảng size riêng phù hợp với thiết kế. Nếu cần tư vấn thêm, hãy chat với chúng tôi!</p>', 
+ 'Sản phẩm', 9, 1, NULL, 1, NOW(), NOW()),
+
+(10, 'Làm thế nào để liên hệ với bộ phận hỗ trợ?', 
+ '<p>Bạn có thể liên hệ với chúng tôi qua:</p><ul><li><strong>Hotline:</strong> 0901234567 (8:00 - 22:00 hàng ngày)</li><li><strong>Email:</strong> support@ivymoda.com</li><li><strong>Chatbot:</strong> Ngay trên website này (góc dưới bên phải)</li><li><strong>Facebook:</strong> fb.com/ivymoda</li></ul><p>Chúng tôi luôn sẵn sàng hỗ trợ bạn!</p>', 
+ 'Hỗ trợ', 10, 1, NULL, 1, NOW(), NOW());
+
+-- Cấu hình chatbot (UC3.47)
+INSERT INTO `tbl_chatbot_config` VALUES 
+(1, 'gemini_api_key', '', 'API key của Gemini AI để tư vấn sản phẩm', NOW()),
+(2, 'max_products_suggest', '5', 'Số lượng sản phẩm gợi ý tối đa mỗi lần', NOW()),
+(3, 'context_max_length', '2000', 'Độ dài context tối đa gửi cho Gemini (ký tự)', NOW()),
+(4, 'response_timeout', '3000', 'Thời gian chờ phản hồi tối đa (milliseconds)', NOW()),
+(5, 'chatbot_welcome_message', 'Xin chào! Tôi có thể giúp gì cho bạn hôm nay? 😊', 'Lời chào mặc định của chatbot', NOW()),
+(6, 'enable_faq_mode', '1', 'Bật/tắt chế độ FAQ (1: bật, 0: tắt)', NOW()),
+(7, 'enable_gemini_mode', '1', 'Bật/tắt chế độ Gemini AI (1: bật, 0: tắt)', NOW()),
+(8, 'chatbot_position', 'bottom-right', 'Vị trí hiển thị chatbot (bottom-right, bottom-left)', NOW());
+
+-- Dữ liệu mẫu sở thích người dùng (cho khách hàng ID=2)
+INSERT INTO `tbl_user_preferences` VALUES 
+(1, 2, '["Trắng", "Đen", "Be"]', '["Áo Nữ", "Đầm Nữ"]', 'M', '500000-1000000', 'Sáng', '160cm', NOW(), NOW());
+
 COMMIT;
 
 -- ============================================
@@ -699,7 +838,7 @@ COMMIT;
 -- ============================================
 
 /*
-DATABASE VERSION 6.0 - FINAL & PERFECT + DISCOUNT + REVIEW IMAGES
+DATABASE VERSION 7.2 - CHATBOT SYSTEM INTEGRATION (UC3.47, UC3.48)
 
 ĐẶC ĐIỂM:
 ✅ 100% tương thích với code hiện tại
@@ -707,7 +846,51 @@ DATABASE VERSION 6.0 - FINAL & PERFECT + DISCOUNT + REVIEW IMAGES
 ✅ Bổ sung Review + Promotion từ ivymoda_complete.sql
 ✅ TÍCH HỢP HOÀN TOÀN discount_update.sql
 ✅ HỖ TRỢ UPLOAD ẢNH ĐÁNH GIÁ (VERSION 2.0)
-✅ Loại bỏ bảng thừa: wishlist, notification, chatbot_history, user_profile
+✅ HỖ TRỢ KÍCH HOẠT TÀI KHOẢN QUA EMAIL (VERSION 7.0)
+✅ EMAIL SYSTEM TỐI ƯU THEO UC3.50 (VERSION 7.1)
+✅ CHATBOT SYSTEM (VERSION 7.2 - UC3.47, UC3.48)
+✅ Loại bỏ bảng thừa: wishlist, notification
+
+HỆ THỐNG CHATBOT (VERSION 7.2):
+1. FAQ CHATBOT (UC3.48):
+   - Bảng: tbl_chatbot_faq
+   - Quản lý câu hỏi thường gặp
+   - Admin có thể CRUD FAQ qua panel
+   - Hỗ trợ phân loại theo category
+   - Sắp xếp thứ tự hiển thị
+   - 10 FAQ mẫu đã được thêm vào
+
+2. GEMINI AI CHATBOT (UC3.47):
+   - Bảng: tbl_chatbot_conversation - Lưu lịch sử chat
+   - Bảng: tbl_chatbot_config - Cấu hình API key và settings
+   - Tích hợp Gemini AI để tư vấn sản phẩm
+   - Gợi ý sản phẩm dựa trên context database
+   - Lưu lịch sử hội thoại theo session
+   - Tracking response time
+
+3. USER PREFERENCES (UC3.47):
+   - Bảng: tbl_user_preferences
+   - Lưu sở thích người dùng (màu, size, giá...)
+   - Hỗ trợ chatbot cá nhân hóa
+   - Tùy chọn, không bắt buộc
+
+HỆ THỐNG EMAIL ACTIVATION (UC3.50):
+1. KÍCH HOẠT TÀI KHOẢN QUA EMAIL:
+   - Trường: activation_token (varchar 100) - Token kích hoạt tài khoản
+   - Trường: activation_token_expire (datetime) - Thời gian hết hạn token (24h)
+   - Index: idx_activation_token - Tìm kiếm nhanh token
+   - Luồng: Đăng ký → Gửi email → Click link → Kích hoạt tài khoản
+
+2. RESET PASSWORD QUA EMAIL:
+   - Trường: reset_token (varchar 100) - Token đặt lại mật khẩu
+   - Trường: reset_token_expire (datetime) - Thời gian hết hạn token (1h)
+   - Luồng: Quên mật khẩu → Gửi email → Click link → Đặt lại mật khẩu
+
+3. EMAIL SYSTEM TỐI ƯU (UC3.50):
+   - Chỉ giữ 4 template cơ bản: registration, order, password_reset, promotion
+   - Đơn giản hóa tbl_promotion_email_log (bỏ FK promotion_id)
+   - Giữ nguyên tbl_email_log cho logging cơ bản
+   - Loại bỏ các tính năng phức tạp không cần thiết
 
 HỆ THỐNG CHIẾT KHẤU:
 1. CHIẾT KHẤU SẢN PHẨM CỐ ĐỊNH:
@@ -721,14 +904,12 @@ HỆ THỐNG CHIẾT KHẤU:
    - Bảng: tbl_order - hỗ trợ original_total, discount_code, discount_value
    - Ví dụ: WOMEN30, SUMMER20, SAVE50K (áp dụng khi thanh toán)
 
-THAY ĐỔI SO VỚI VERSION 5.0:
-1. ✅ TÍCH HỢP discount_update.sql vào tbl_order
-2. ✅ CẢI TIẾN tbl_ma_giam_gia với đầy đủ comment và index
-3. ✅ THÊM 3 mã giảm giá mẫu từ discount_update.sql
-4. ✅ THÊM index idx_discount_code cho tbl_order
-5. ✅ THÊM cột review_images vào tbl_product_review
-6. ✅ HỖ TRỢ UPLOAD ẢNH ĐÁNH GIÁ (JSON format)
-7. ✅ CẬP NHẬT dữ liệu mẫu với ảnh đánh giá
+THAY ĐỔI SO VỚI VERSION 6.0:
+1. ✅ THÊM activation_token và activation_token_expire vào bảng users
+2. ✅ THÊM index idx_activation_token cho tìm kiếm nhanh
+3. ✅ CẬP NHẬT comment bảng users với thông tin kích hoạt email
+4. ✅ HỖ TRỢ HOÀN TOÀN chức năng kích hoạt tài khoản qua email
+5. ✅ TƯƠNG THÍCH với AuthController::activate() và UserModel::activateAccount()
 
 TƯƠNG THÍCH 100%:
 ✅ ProductModel.php - Dùng color_ma (mã hex)
@@ -739,6 +920,9 @@ TƯƠNG THÍCH 100%:
 ✅ ReportModel.php - Dùng order_status (int)
 ✅ ReviewModel.php - Hỗ trợ review_images (JSON format)
 ✅ ReviewController.php - Xử lý upload ảnh đánh giá
+✅ AuthController.php - Hỗ trợ activate() và index()
+✅ UserModel.php - Hỗ trợ activateAccount() và createActivationToken()
+✅ EmailHelper.php - Tạo activation link và gửi email
 
 IMPORT:
 mysql -u root -p < ivymoda_final.sql
@@ -749,13 +933,19 @@ HOẶC phpMyAdmin:
 3. Click Go
 
 SAU KHI IMPORT, KHÔNG CẦN SỬA CODE GÌ CẢ!
-TẤT CẢ CHỨC NĂNG CHIẾT KHẤU VÀ UPLOAD ẢNH ĐÁNH GIÁ ĐÃ ĐƯỢC TÍCH HỢP HOÀN TOÀN!
+TẤT CẢ CHỨC NĂNG EMAIL ACTIVATION ĐÃ ĐƯỢC TÍCH HỢP HOÀN TOÀN!
 
-TÍNH NĂNG MỚI VERSION 6.0:
-🎯 Upload ảnh đánh giá sản phẩm (tối đa 5 ảnh, mỗi ảnh 5MB)
-🎯 Hiển thị ảnh đánh giá với modal xem phóng to
-🎯 Quản lý ảnh đánh giá trong admin panel
+TÍNH NĂNG EMAIL SYSTEM VERSION 7.1 (UC3.50):
+🎯 Kích hoạt tài khoản qua email với token bảo mật (24h)
+🎯 Reset mật khẩu qua email với token có thời hạn (1h)
+🎯 Gửi email xác nhận đăng ký tự động
+🎯 Gửi email xác nhận đơn hàng
+🎯 Gửi email khuyến mãi hàng loạt (đơn giản hóa)
+🎯 Dashboard email với thống kê cơ bản
+🎯 Xem log email với phân trang
+🎯 Test email cho các loại email chính
+🎯 Cấu hình SMTP cơ bản
 🎯 Responsive design cho mobile
-🎯 Validation file type và size
-🎯 Drag & drop upload interface
+🎯 Validation token và bảo mật
+🎯 Admin panel quản lý email tối ưu theo UC
 */

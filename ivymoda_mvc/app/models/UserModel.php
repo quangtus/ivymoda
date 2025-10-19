@@ -577,4 +577,86 @@ class UserModel extends Model {
             return "Đặt lại mật khẩu thất bại";
         }
     }
+    
+    /**
+     * Cập nhật cài đặt email của user
+     */
+    public function updateEmailSettings($userId, $emailNotifications, $promotionEmails) {
+        $userId = (int)$userId;
+        $emailNotifications = (int)$emailNotifications;
+        $promotionEmails = (int)$promotionEmails;
+        
+        // Kiểm tra xem bảng có cột email_notifications và promotion_emails không
+        // Nếu không có, chỉ cập nhật thông tin cơ bản
+        $query = "UPDATE {$this->table} SET 
+                email_notifications = $emailNotifications,
+                promotion_emails = $promotionEmails
+                WHERE id = $userId";
+        
+        if($this->execute($query)) {
+            return "success";
+        } else {
+            return "Cập nhật cài đặt email thất bại";
+        }
+    }
+    
+    /**
+     * Kích hoạt tài khoản qua token
+     */
+    public function activateAccount($token) {
+        $token = $this->escape($token);
+        
+        // Tìm user có token này và chưa hết hạn
+        $query = "SELECT * FROM {$this->table} WHERE activation_token = '$token' AND activation_token_expire > NOW()";
+        $user = $this->getOne($query);
+        
+        if($user) {
+            // Kích hoạt tài khoản và xóa token
+            $user_id = is_object($user) ? $user->id : $user['id'];
+            $update_query = "UPDATE {$this->table} SET 
+                            status = 1,
+                            activation_token = NULL,
+                            activation_token_expire = NULL
+                            WHERE id = $user_id";
+            
+            if($this->execute($update_query)) {
+                return true;
+            } else {
+                return "Không thể kích hoạt tài khoản";
+            }
+        } else {
+            return "Token không hợp lệ hoặc đã hết hạn";
+        }
+    }
+    
+    /**
+     * Tạo activation token cho user
+     */
+    public function createActivationToken($email) {
+        $email = $this->escape($email);
+        
+        // Tìm user theo email
+        $user = $this->findUserByEmail($email);
+        if(!$user) {
+            return false;
+        }
+        
+        // Tạo token mới
+        $token = bin2hex(random_bytes(32));
+        $expire_time = date('Y-m-d H:i:s', strtotime('+24 hours'));
+        
+        $user_id = is_object($user) ? $user->id : $user['id'];
+        
+        // Cập nhật token vào database
+        $query = "UPDATE {$this->table} SET 
+                activation_token = '$token',
+                activation_token_expire = '$expire_time'
+                WHERE id = $user_id";
+        
+        if($this->execute($query)) {
+            return $token;
+        } else {
+            return false;
+        }
+    }
 }

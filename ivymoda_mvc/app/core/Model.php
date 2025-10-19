@@ -222,4 +222,24 @@ class Model {
         
         return $result ? $result->total : 0;
     }
+    
+    /**
+     * Thực thi câu truy vấn và trả về một bản ghi (alias cho getOne)
+     * @param string $query Câu truy vấn SQL
+     * @param array $params Mảng tham số để bind (tùy chọn)
+     * @return object|false Đối tượng kết quả hoặc false nếu không tìm thấy
+     */
+    public function query($query, $params = []) {
+        return $this->getOne($query, $params);
+    }
+    
+    /**
+     * Thực thi câu truy vấn và trả về tất cả kết quả (alias cho getAll)
+     * @param string $query Câu truy vấn SQL
+     * @param array $params Mảng tham số để bind (tùy chọn)
+     * @return object[] Mảng kết quả (mỗi phần tử là một đối tượng)
+     */
+    public function queryAll($query, $params = []) {
+        return $this->getAll($query, $params);
+    }
 }

@@ -73,4 +73,11 @@ class AuthController extends \Controller {
         // Chuyển hướng về trang đăng nhập admin
         $this->redirect('admin/auth/login');
     }
+    
+    /**
+     * Method mặc định - chuyển hướng đến login
+     */
+    public function index() {
+        $this->redirect('admin/auth/login');
+    }
 }
