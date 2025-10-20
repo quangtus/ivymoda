@@ -818,7 +818,7 @@ INSERT INTO `tbl_chatbot_faq` VALUES
 
 -- Cấu hình chatbot (UC3.47)
 INSERT INTO `tbl_chatbot_config` VALUES 
-(1, 'gemini_api_key', '', 'API key của Gemini AI để tư vấn sản phẩm', NOW()),
+(1, 'gemini_api_key', 'AIzaSyA6RZuA5V6DqAXWcdHMqXgn0Dxe_GEVIak', 'API key của Gemini AI để tư vấn sản phẩm', NOW()),
 (2, 'max_products_suggest', '5', 'Số lượng sản phẩm gợi ý tối đa mỗi lần', NOW()),
 (3, 'context_max_length', '2000', 'Độ dài context tối đa gửi cho Gemini (ký tự)', NOW()),
 (4, 'response_timeout', '3000', 'Thời gian chờ phản hồi tối đa (milliseconds)', NOW()),

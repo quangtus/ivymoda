@@ -15,8 +15,6 @@ logs/*
 # File cache
 cache/*
 
-# Thư mục vendor nếu dùng composer
-vendor/
 
 # File cấu hình IDE
 .idea/

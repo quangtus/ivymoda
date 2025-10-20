@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chatbot Fixed - UC3.47</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .test-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        
+        .test-section:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+        
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        input[type="text"],
+        input[type="email"] {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 200px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
+        
+        .loading {
+            display: inline-block;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        
+        .status-badge.pass {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-badge.fail {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+        }
+        
+        .summary h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🤖 Test Chatbot Fix - UC3.47</h1>
+        <p class="subtitle">Kiểm tra và xác nhận các lỗi JSON đã được sửa</p>
+
+        <!-- Test Database -->
+        <div class="test-section">
+            <h3>
+                <span class="section-icon">1</span> Test Database & Tables
+                <span class="status-badge" id="db-status"></span>
+            </h3>
+            <div class="controls">
+                <button onclick="testDatabase()">Test Database</button>
+            </div>
+            <div id="database-result" class="result"></div>
+        </div>
+
+        <!-- Test Gemini Connection -->
+        <div class="test-section">
+            <h3>
+                <span class="section-icon">2</span> Test Kết nối Gemini AI
+                <span class="status-badge" id="gemini-status"></span>
+            </h3>
+            <div class="controls">
+                <button onclick="testConnection()">Test Kết nối</button>
+            </div>
+            <div id="connection-result" class="result"></div>
+        </div>
+
+        <!-- Test Chat -->
+        <div class="test-section">
+            <h3>
+                <span class="section-icon">3</span> Test Chat với AI
+                <span class="status-badge" id="chat-status"></span>
+            </h3>
+            <div class="controls">
+                <input type="text" id="test-message" placeholder="Nhập tin nhắn test..." value="Tôi muốn tìm áo sơ mi nam màu trắng">
+                <button onclick="testChat()">Gửi Tin nhắn</button>
+            </div>
+            <div id="chat-result" class="result"></div>
+        </div>
+
+        <!-- Test JSON Response -->
+        <div class="test-section">
+            <h3>
+                <span class="section-icon">4</span> Test JSON Response Format
+                <span class="status-badge" id="json-status"></span>
+            </h3>
+            <div class="controls">
+                <button onclick="testJsonResponse()">Test JSON</button>
+            </div>
+            <div id="json-result" class="result"></div>
+        </div>
+
+        <!-- Test FAQ Endpoints -->
+        <div class="test-section">
+            <h3>
+                <span class="section-icon">5</span> Test FAQ Endpoints
+                <span class="status-badge" id="faq-status"></span>
+            </h3>
+            <div class="controls">
+                <button onclick="testFAQs()">Test Get FAQs</button>
+                <button onclick="testCategories()">Test Categories</button>
+            </div>
+            <div id="faq-result" class="result"></div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary">
+            <h3>📊 Tóm tắt Kết quả</h3>
+            <div class="summary-item">
+                <span>Database:</span>
+                <span id="summary-db">⏳ Chưa test</span>
+            </div>
+            <div class="summary-item">
+                <span>Gemini AI:</span>
+                <span id="summary-gemini">⏳ Chưa test</span>
+            </div>
+            <div class="summary-item">
+                <span>Chat AI:</span>
+                <span id="summary-chat">⏳ Chưa test</span>
+            </div>
+            <div class="summary-item">
+                <span>JSON Format:</span>
+                <span id="summary-json">⏳ Chưa test</span>
+            </div>
+            <div class="summary-item">
+                <span>FAQ Endpoints:</span>
+                <span id="summary-faq">⏳ Chưa test</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin + '/ivymoda/ivymoda_mvc/public/';
+
+        function showResult(elementId, message, className) {
+            const resultEl = document.getElementById(elementId);
+            resultEl.textContent = message;
+            resultEl.className = `result show ${className}`;
+        }
+
+        function setStatusBadge(elementId, passed, message) {
+            const badge = document.getElementById(elementId);
+            if (passed) {
+                badge.className = 'status-badge pass';
+                badge.textContent = '✓ PASS';
+            } else {
+                badge.className = 'status-badge fail';
+                badge.textContent = '✗ FAIL';
+            }
+
+            // Update summary
+            const summaryId = elementId.replace('-status', '');
+            const summaryEl = document.getElementById(`summary-${summaryId}`);
+            if (summaryEl) {
+                summaryEl.textContent = passed ? `✅ ${message}` : `❌ ${message}`;
+            }
+        }
+
+        async function testDatabase() {
+            const resultEl = document.getElementById('database-result');
+            resultEl.className = 'result show info';
+            resultEl.textContent = '⏳ Đang test database...';
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+                const contentType = response.headers.get('content-type');
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    showResult('database-result', `❌ LỖI: Response không phải JSON!\nContent-Type: ${contentType}\nResponse: ${text.substring(0, 300)}...`, 'error');
+                    setStatusBadge('db-status', false, 'JSON Error');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const msg = `✅ Database kết nối thành công!\n\n📊 Thông tin:\n- FAQ tổng số: ${data.total}\n- Status: ${data.status}`;
+                    showResult('database-result', msg, 'success');
+                    setStatusBadge('db-status', true, 'Connected');
+                } else {
+                    showResult('database-result', `❌ LỖI: ${data.message}`, 'error');
+                    setStatusBadge('db-status', false, 'Error');
+                }
+            } catch (error) {
+                showResult('database-result', `❌ LỖI KẾT NỐI: ${error.message}`, 'error');
+                setStatusBadge('db-status', false, 'Connection Error');
+            }
+        }
+
+        async function testConnection() {
+            const resultEl = document.getElementById('connection-result');
+            resultEl.className = 'result show info';
+            resultEl.textContent = '⏳ Đang test kết nối Gemini AI...';
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=test_gemini`);
+                const contentType = response.headers.get('content-type');
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    showResult('connection-result', `❌ LỖI: Response không phải JSON!\nContent-Type: ${contentType}\nResponse: ${text.substring(0, 300)}...`, 'error');
+                    setStatusBadge('gemini-status', false, 'JSON Error');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult('connection-result', `✅ ${data.message}`, 'success');
+                    setStatusBadge('gemini-status', true, 'Connected');
+                } else {
+                    showResult('connection-result', `❌ LỖI: ${data.message}`, 'error');
+                    setStatusBadge('gemini-status', false, 'Connection Failed');
+                }
+            } catch (error) {
+                showResult('connection-result', `❌ LỖI KẾT NỐI: ${error.message}`, 'error');
+                setStatusBadge('gemini-status', false, 'Error');
+            }
+        }
+
+        async function testChat() {
+            const message = document.getElementById('test-message').value.trim();
+            const resultEl = document.getElementById('chat-result');
+
+            if (!message) {
+                alert('Vui lòng nhập tin nhắn');
+                return;
+            }
+
+            resultEl.className = 'result show info';
+            resultEl.textContent = '⏳ Đang gửi tin nhắn...';
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'chat_with_ai',
+                        message: message,
+                        session_id: 'test_session_' + Date.now()
+                    })
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    showResult('chat-result', `❌ LỖI: Response không phải JSON!\nContent-Type: ${contentType}\nResponse: ${text.substring(0, 300)}...`, 'error');
+                    setStatusBadge('chat-status', false, 'JSON Error');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const msg = `✅ Chat thành công!\n\n📝 Tin nhắn: ${message}\n\n💬 Phản hồi:\n${data.response}\n\n⏱️ Thời gian: ${data.response_time}ms\n\n🛍️ Sản phẩm gợi ý: ${data.suggested_products.length} sản phẩm`;
+                    showResult('chat-result', msg, 'success');
+                    setStatusBadge('chat-status', true, 'Success');
+                } else {
+                    showResult('chat-result', `❌ LỖI: ${data.message}`, 'error');
+                    setStatusBadge('chat-status', false, 'Error');
+                }
+            } catch (error) {
+                showResult('chat-result', `❌ LỖI KẾT NỐI: ${error.message}`, 'error');
+                setStatusBadge('chat-status', false, 'Error');
+            }
+        }
+
+        async function testJsonResponse() {
+            const resultEl = document.getElementById('json-result');
+            resultEl.className = 'result show info';
+            resultEl.textContent = '⏳ Đang test JSON response...';
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+                const contentType = response.headers.get('content-type');
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    showResult('json-result', `❌ LỖI: Response không phải JSON!\nContent-Type: ${contentType}\nResponse: ${text.substring(0, 300)}...`, 'error');
+                    setStatusBadge('json-status', false, 'Format Error');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const msg = `✅ JSON Response hợp lệ!\n\n📋 Chi tiết:\n- Kết quả: SUCCESS\n- Tổng FAQ: ${data.total}\n- Format: Valid JSON UTF-8\n- Character encoding: OK`;
+                    showResult('json-result', msg, 'success');
+                    setStatusBadge('json-status', true, 'Valid');
+                } else {
+                    showResult('json-result', `❌ LỖI: ${data.message}`, 'error');
+                    setStatusBadge('json-status', false, 'Error');
+                }
+            } catch (error) {
+                showResult('json-result', `❌ LỖI KẾT NỐI: ${error.message}`, 'error');
+                setStatusBadge('json-status', false, 'Error');
+            }
+        }
+
+        async function testFAQs() {
+            const resultEl = document.getElementById('faq-result');
+            resultEl.className = 'result show info';
+            resultEl.textContent = '⏳ Đang lấy FAQs...';
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+                const contentType = response.headers.get('content-type');
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    showResult('faq-result', `❌ LỖI: Response không phải JSON!`, 'error');
+                    setStatusBadge('faq-status', false, 'JSON Error');
+                    return;
+                }
+
+                const data = await response.json();
+                let msg = '';
+
+                if (data.success && data.faqs && data.faqs.length > 0) {
+                    msg = `✅ FAQs tải thành công!\n\n📊 Chi tiết:\n- Tổng FAQ: ${data.total}\n\n📝 Danh sách FAQ:\n`;
+                    data.faqs.slice(0, 3).forEach((faq, idx) => {
+                        msg += `\n${idx + 1}. Q: ${faq.question.substring(0, 50)}...\n   A: ${faq.answer.substring(0, 50)}...`;
+                    });
+                    if (data.faqs.length > 3) {
+                        msg += `\n\n... và ${data.faqs.length - 3} FAQ khác`;
+                    }
+                    showResult('faq-result', msg, 'success');
+                    setStatusBadge('faq-status', true, 'Loaded');
+                } else {
+                    showResult('faq-result', `⚠️ Không có FAQ nào hoặc API trả về: ${JSON.stringify(data)}`, 'warning');
+                    setStatusBadge('faq-status', false, 'No Data');
+                }
+            } catch (error) {
+                showResult('faq-result', `❌ LỖI: ${error.message}`, 'error');
+                setStatusBadge('faq-status', false, 'Error');
+            }
+        }
+
+        async function testCategories() {
+            const resultEl = document.getElementById('faq-result');
+            resultEl.className = 'result show info';
+            resultEl.textContent = '⏳ Đang lấy categories...';
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_categories`);
+                const contentType = response.headers.get('content-type');
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    showResult('faq-result', `❌ LỖI: Response không phải JSON!`, 'error');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let msg = `✅ Categories tải thành công!\n\n📊 Chi tiết:\n- Tổng categories: ${data.total}\n- Danh sách: ${data.categories.join(', ')}`;
+                    showResult('faq-result', msg, 'success');
+                } else {
+                    showResult('faq-result', `❌ LỖI: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('faq-result', `❌ LỖI: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run basic tests on load
+        window.addEventListener('load', function() {
+            console.log('✅ Page loaded, ready to test');
+        });
+    </script>
+</body>
+
+</html>

@@ -90,6 +90,17 @@
             </li>
             <?php endif; ?>
             
+            <!-- Chatbot FAQ - CHỈ HIỂN THỊ CHO ADMIN -->
+            <?php if(isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
+            <li><a href="#"><img style="width:20px" src="<?php echo BASE_URL; ?>assets/images/icon/options.png" alt="">Chatbot FAQ</a>
+                <ul>
+                    <li><a href="<?= BASE_URL ?>admin/chatbot">🤖 Quản lý FAQ</a></li>
+                    <li><a href="<?= BASE_URL ?>admin/chatbot/add">➕ Thêm FAQ mới</a></li>
+                    <li><a href="<?= BASE_URL ?>admin/chatbot/config">⚙️ Cấu hình Chatbot</a></li>
+                </ul>
+            </li>
+            <?php endif; ?>
+            
             <!-- Quản lý tài khoản - CHỈ HIỂN THỊ CHO ADMIN -->
             <?php if(isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
             <li class="has-sub">

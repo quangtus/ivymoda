@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Debug Tool - Raw Response Inspector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #4ec9b0;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            background: #252526;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 3px solid #0e639c;
+        }
+        
+        .section h2 {
+            color: #569cd6;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-size: 12px;
+        }
+        
+        button:hover {
+            background: #1177bb;
+        }
+        
+        input {
+            padding: 8px;
+            background: #3c3c3c;
+            color: #d4d4d4;
+            border: 1px solid #555;
+            border-radius: 3px;
+        }
+        
+        .output {
+            background: #1e1e1e;
+            border: 1px solid #444;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        
+        .success {
+            color: #4ec9b0;
+        }
+        
+        .error {
+            color: #f48771;
+        }
+        
+        .warning {
+            color: #dcdcaa;
+        }
+        
+        .info {
+            color: #9cdcfe;
+        }
+        
+        .line-number {
+            color: #858585;
+            display: inline-block;
+            width: 30px;
+            text-align: right;
+            margin-right: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+        
+        th,
+        td {
+            padding: 5px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+        
+        th {
+            background: #2d2d30;
+            color: #9cdcfe;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Chatbot Debug Tool - Raw Response Inspector</h1>
+
+        <!-- Test 1: Check Raw Response -->
+        <div class="section">
+            <h2>1. RAW RESPONSE INSPECTOR</h2>
+            <p style="margin-bottom: 10px; color: #858585; font-size: 12px;">Kiểm tra response thô từ server (trước khi JSON parse)</p>
+            <button onclick="testRawResponse()">Test Raw GET FAQs</button>
+            <button onclick="testRawResponsePost()">Test Raw POST Chat</button>
+            <div id="raw-output" class="output"></div>
+        </div>
+
+        <!-- Test 2: Response Headers -->
+        <div class="section">
+            <h2>2. RESPONSE HEADERS</h2>
+            <button onclick="testHeaders()">Check Headers</button>
+            <div id="headers-output" class="output"></div>
+        </div>
+
+        <!-- Test 3: Response Size -->
+        <div class="section">
+            <h2>3. RESPONSE SIZE & CHARACTER ENCODING</h2>
+            <button onclick="testResponseSize()">Check Size</button>
+            <div id="size-output" class="output"></div>
+        </div>
+
+        <!-- Test 4: First 500 Characters -->
+        <div class="section">
+            <h2>4. FIRST 500 CHARACTERS (HEX DUMP)</h2>
+            <p style="margin-bottom: 10px; color: #858585; font-size: 12px;">Xem các ký tự đầu tiên dưới dạng hex để phát hiện non-printable characters</p>
+            <button onclick="testHexDump()">Show Hex Dump</button>
+            <div id="hex-output" class="output"></div>
+        </div>
+
+        <!-- Test 5: Database Connection -->
+        <div class="section">
+            <h2>5. DATABASE CONNECTION TEST</h2>
+            <button onclick="testDatabaseDirect()">Test DB Direct</button>
+            <div id="db-output" class="output"></div>
+        </div>
+
+        <!-- Test 6: Config File Check -->
+        <div class="section">
+            <h2>6. CONFIG FILE CHECK</h2>
+            <button onclick="testConfigFile()">Check Config</button>
+            <div id="config-output" class="output"></div>
+        </div>
+
+        <!-- Test 7: Manual JSON Test -->
+        <div class="section">
+            <h2>7. MANUAL JSON PARSE TEST</h2>
+            <button onclick="testJsonParse()">Try JSON Parse</button>
+            <div id="json-output" class="output"></div>
+        </div>
+
+        <!-- Test 8: Full Trace -->
+        <div class="section">
+            <h2>8. FULL REQUEST TRACE</h2>
+            <input type="text" id="trace-action" placeholder="Action (e.g., get_faqs)" value="get_faqs">
+            <button onclick="testFullTrace()">Run Trace</button>
+            <div id="trace-output" class="output"></div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin + '/ivymoda/ivymoda_mvc/public/';
+
+        function formatOutput(text, type = 'info') {
+            const lines = text.split('\n');
+            return lines.map((line, idx) => {
+                const lineNum = String(idx + 1).padStart(3, '0');
+                const className = text.includes('✅') ? 'success' :
+                    text.includes('❌') ? 'error' :
+                    text.includes('⚠️') ? 'warning' : type;
+                return `<span class="line-number">${lineNum}</span><span class="${className}">${escapeHtml(line)}</span>`;
+            }).join('\n');
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function displayOutput(elementId, text, type = 'info') {
+            document.getElementById(elementId).innerHTML = formatOutput(text, type);
+        }
+
+        async function testRawResponse() {
+            const el = 'raw-output';
+            displayOutput(el, '⏳ Đang kiểm tra...', 'warning');
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+                const text = await response.text();
+
+                let output = '📋 URL: ' + response.url + '\n';
+                output += '📊 Status: ' + response.status + ' ' + response.statusText + '\n';
+                output += '📏 Content-Length: ' + text.length + ' bytes\n';
+                output += '---\n\n';
+                output += '🔍 RAW RESPONSE (first 1000 chars):\n';
+                output += text.substring(0, 1000);
+
+                if (text.includes('<')) {
+                    output += '\n\n❌ PHÁT HIỆN HTML TAG - Có PHP error!';
+                } else if (text.startsWith('{') || text.startsWith('[')) {
+                    output += '\n\n✅ Looks like valid JSON';
+                    try {
+                        const data = JSON.parse(text);
+                        output += '\n✅ JSON parse successful!';
+                    } catch (e) {
+                        output += '\n❌ JSON parse failed: ' + e.message;
+                    }
+                }
+
+                displayOutput(el, output);
+            } catch (e) {
+                displayOutput(el, '❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testRawResponsePost() {
+            const el = 'raw-output';
+            displayOutput(el, '⏳ Đang kiểm tra...', 'warning');
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'chat_with_ai',
+                        message: 'Xin chào',
+                        session_id: 'test_' + Date.now()
+                    })
+                });
+                const text = await response.text();
+
+                let output = '📋 URL: ' + response.url + '\n';
+                output += '📊 Status: ' + response.status + '\n';
+                output += '📏 Content-Length: ' + text.length + ' bytes\n';
+                output += '---\n\n';
+                output += '🔍 RAW RESPONSE:\n';
+                output += text.substring(0, 1000);
+
+                if (text.includes('<')) {
+                    output += '\n\n❌ PHÁT HIỆN HTML - Có PHP error!';
+                } else if (text.startsWith('{')) {
+                    output += '\n\n✅ Looks like JSON';
+                }
+
+                displayOutput(el, output);
+            } catch (e) {
+                displayOutput(el, '❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testHeaders() {
+            const el = 'headers-output';
+            displayOutput(el, '⏳ Đang kiểm tra...', 'warning');
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+
+                let output = '📋 RESPONSE HEADERS:\n\n';
+                for (const [key, value] of response.headers) {
+                    output += key + ': ' + value + '\n';
+                }
+
+                const contentType = response.headers.get('content-type');
+                output += '\n---\n\n';
+                if (contentType && contentType.includes('application/json')) {
+                    output += '✅ Content-Type is JSON: ' + contentType;
+                } else {
+                    output += '❌ Content-Type is NOT JSON: ' + (contentType || 'Not set');
+                }
+
+                if (contentType && contentType.includes('utf-8')) {
+                    output += '\n✅ UTF-8 encoding is set';
+                } else {
+                    output += '\n⚠️ UTF-8 encoding might not be set';
+                }
+
+                displayOutput(el, output);
+            } catch (e) {
+                displayOutput(el, '❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testResponseSize() {
+            const el = 'size-output';
+            displayOutput(el, '⏳ Đang kiểm tra...', 'warning');
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+                const text = await response.text();
+                const blob = new Blob([text]);
+
+                let output = '📏 RESPONSE SIZE:\n\n';
+                output += '- Raw bytes: ' + blob.size + ' bytes\n';
+                output += '- Text length: ' + text.length + ' characters\n';
+                output += '- Text length (UTF-8): ' + new TextEncoder().encode(text).length + ' bytes\n\n';
+
+                output += '🔤 CHARACTER ENCODING:\n\n';
+                const firstChars = text.substring(0, 100);
+                output += 'First 100 chars: ' + escapeHtml(firstChars) + '\n\n';
+
+                // Check for BOM
+                if (text.charCodeAt(0) === 0xFEFF) {
+                    output += '⚠️ WARNING: BOM (Byte Order Mark) detected at start!';
+                } else {
+                    output += '✅ No BOM detected';
+                }
+
+                displayOutput(el, output);
+            } catch (e) {
+                displayOutput(el, '❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testHexDump() {
+            const el = 'hex-output';
+            displayOutput(el, '⏳ Đang kiểm tra...', 'warning');
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+                const text = await response.text();
+                const bytes = new TextEncoder().encode(text);
+
+                let output = '📊 HEX DUMP (first 500 bytes):\n\n';
+                const limit = Math.min(500, bytes.length);
+
+                for (let i = 0; i < limit; i += 16) {
+                    const hex = Array.from(bytes.slice(i, i + 16))
+                        .map(b => b.toString(16).padStart(2, '0').toUpperCase())
+                        .join(' ');
+
+                    const ascii = Array.from(bytes.slice(i, i + 16))
+                        .map(b => (b >= 32 && b < 127) ? String.fromCharCode(b) : '.')
+                        .join('');
+
+                    output += String(i).padStart(4, '0') + ': ' + hex.padEnd(48) + ' | ' + ascii + '\n';
+                }
+
+                displayOutput(el, output);
+            } catch (e) {
+                displayOutput(el, '❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testDatabaseDirect() {
+            const el = 'db-output';
+            displayOutput(el, '⏳ Đang kiểm tra...', 'warning');
+
+            try {
+                const response = await fetch(`${baseUrl}../config/database.php`);
+                const text = await response.text();
+
+                if (response.status === 404) {
+                    displayOutput(el, '⚠️ database.php không tìm thấy\n\nThử lấy config info từ API...', 'warning');
+                    // Try via API
+                    const apiResp = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+                    const apiText = await apiResp.text();
+                    let out = 'API Response Status: ' + apiResp.status + '\n';
+                    if (apiText.includes('Database')) {
+                        out += '✅ Database connection seems OK (mentioned in response)';
+                    } else if (apiText.includes('error') || apiText.includes('Error')) {
+                        out += '❌ Database error detected in response';
+                    }
+                    displayOutput(el, out);
+                } else {
+                    displayOutput(el, '✅ database.php is accessible\n\n' + text.substring(0, 500), 'success');
+                }
+            } catch (e) {
+                displayOutput(el, '❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testConfigFile() {
+            const el = 'config-output';
+            displayOutput(el, '⏳ Đang kiểm tra...', 'warning');
+
+            try {
+                const response = await fetch(`${baseUrl}../config/config.php`);
+
+                if (response.status === 404) {
+                    displayOutput(el, '❌ config.php NOT FOUND', 'error');
+                } else if (response.status !== 200) {
+                    displayOutput(el, '⚠️ config.php returned status: ' + response.status, 'warning');
+                } else {
+                    const text = await response.text();
+
+                    let output = '✅ config.php is accessible\n\n';
+                    if (text.includes("'development'")) {
+                        output += '⚠️ ENVIRONMENT is set to development\n';
+                        output += '   → Check if display_errors is disabled for AJAX\n';
+                    }
+                    if (text.includes('display_errors')) {
+                        output += '✅ display_errors configuration found\n';
+                    }
+                    if (text.includes('error_reporting')) {
+                        output += '✅ error_reporting configuration found\n';
+                    }
+
+                    output += '\n--- Config snippet ---\n';
+                    const lines = text.split('\n').filter(l => l.includes('display_errors') || l.includes('error_reporting'));
+                    output += lines.join('\n');
+
+                    displayOutput(el, output, 'success');
+                }
+            } catch (e) {
+                displayOutput(el, '❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testJsonParse() {
+            const el = 'json-output';
+            displayOutput(el, '⏳ Đang kiểm tra...', 'warning');
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=get_faqs`);
+                const text = await response.text();
+
+                let output = '🔍 JSON PARSE TEST:\n\n';
+
+                try {
+                    const data = JSON.parse(text);
+                    output += '✅ JSON parse successful!\n\n';
+                    output += 'Data structure:\n';
+                    output += JSON.stringify(data, null, 2).substring(0, 500);
+                } catch (e) {
+                    output += '❌ JSON parse failed!\n\n';
+                    output += 'Error: ' + e.message + '\n';
+                    output += 'At position: ' + (e.message.match(/\d+/) || ['unknown'])[0] + '\n\n';
+
+                    // Show context around error
+                    const pos = parseInt(e.message.match(/\d+/) || ['0'])[0];
+                    const start = Math.max(0, pos - 50);
+                    const end = Math.min(text.length, pos + 50);
+
+                    output += 'Context (positions ' + start + '-' + end + '):\n';
+                    output += '...' + escapeHtml(text.substring(start, end)) + '...\n\n';
+
+                    if (text.includes('<')) {
+                        output += '⚠️ HTML detected in response - likely PHP error output!';
+                    }
+                }
+
+                displayOutput(el, output);
+            } catch (e) {
+                displayOutput(el, '❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testFullTrace() {
+            const el = 'trace-output';
+            const action = document.getElementById('trace-action').value || 'get_faqs';
+            displayOutput(el, '⏳ Running full trace for action: ' + action + '...', 'warning');
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(`${baseUrl}ajax/chatbot_ajax.php?action=${action}`);
+                const endTime = performance.now();
+
+                let output = '═══════════════════════════════════\n';
+                output += '  FULL REQUEST TRACE\n';
+                output += '═══════════════════════════════════\n\n';
+
+                output += '📋 REQUEST:\n';
+                output += 'URL: ' + response.url + '\n';
+                output += 'Method: GET\n';
+                output += 'Time: ' + (endTime - startTime).toFixed(2) + 'ms\n\n';
+
+                output += '📊 RESPONSE:\n';
+                output += 'Status: ' + response.status + ' ' + response.statusText + '\n';
+                output += 'Content-Type: ' + response.headers.get('content-type') + '\n\n';
+
+                const text = await response.text();
+                output += '📏 SIZE:\n';
+                output += 'Bytes: ' + text.length + '\n\n';
+
+                output += '🔍 CONTENT CHECK:\n';
+                if (text.includes('<')) {
+                    output += '❌ HTML detected - PHP error output!\n\n';
+                    const htmlStart = text.indexOf('<');
+                    output += 'First HTML at position ' + htmlStart + ':\n';
+                    output += text.substring(htmlStart, htmlStart + 200) + '\n';
+                } else if (text.startsWith('{') || text.startsWith('[')) {
+                    output += '✅ Valid JSON format\n\n';
+                    try {
+                        const data = JSON.parse(text);
+                        output += 'Success: ' + data.success + '\n';
+                        if (data.message) output += 'Message: ' + data.message + '\n';
+                        if (data.total) output += 'Total: ' + data.total + '\n';
+                    } catch (e) {
+                        output += '❌ Parse error: ' + e.message;
+                    }
+                } else {
+                    output += '⚠️ Unknown format\n';
+                    output += 'First 100 chars: ' + text.substring(0, 100);
+                }
+
+                displayOutput(el, output);
+            } catch (e) {
+                displayOutput(el, '❌ Fetch Error: ' + e.message, 'error');
+            }
+        }
+
+        // Auto run first test on load
+        window.addEventListener('load', () => {
+            setTimeout(testRawResponse, 500);
+        });
+    </script>
+</body>
+
+</html>

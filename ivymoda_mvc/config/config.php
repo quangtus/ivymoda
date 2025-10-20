@@ -116,9 +116,17 @@ if (!defined('DB_NAME')) {
 
 
 // Hiển thị lỗi dựa trên môi trường
+// LƯU Ý: AJAX endpoints sẽ ghi đè các cài đặt này
 if (ENVIRONMENT === 'development') {
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
+    // Chỉ bật display_errors nếu không phải AJAX request
+    if (strpos($_SERVER['REQUEST_URI'] ?? '', '/ajax/') === false) {
+        ini_set('display_errors', 1);
+        error_reporting(E_ALL);
+    } else {
+        // AJAX: Vô hiệu hóa display_errors để không làm hỏng JSON
+        ini_set('display_errors', 0);
+        error_reporting(0);
+    }
 } else {
     ini_set('display_errors', 0);
     error_reporting(0);

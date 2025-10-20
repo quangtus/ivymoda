@@ -1,0 +1,13 @@
+[20-Oct-2025 18:17:57 Europe/Berlin] PHP Fatal error:  Uncaught Error: Cannot use object of type stdClass as array in C:\xampp\htdocs\ivymoda\ivymoda_mvc\app\services\GeminiService.php:93
+Stack trace:
+#0 C:\xampp\htdocs\ivymoda\ivymoda_mvc\app\services\GeminiService.php(24): GeminiService->buildContextString(Array)
+#1 C:\xampp\htdocs\ivymoda\ivymoda_mvc\public\ajax\chatbot_ajax.php(314): GeminiService->generateResponse('T\xC3\xB4i mu\xE1\xBB\x91n t\xC3\xAC...', Array)
+#2 C:\xampp\htdocs\ivymoda\ivymoda_mvc\public\ajax\chatbot_ajax.php(100): chatWithAI(Object(ChatbotModel))
+#3 {main}
+  thrown in C:\xampp\htdocs\ivymoda\ivymoda_mvc\app\services\GeminiService.php on line 93
+[20-Oct-2025 18:23:16 Europe/Berlin] Exception: Cannot use object of type stdClass as array
+[20-Oct-2025 18:23:21 Europe/Berlin] Exception: Cannot use object of type stdClass as array
+[20-Oct-2025 18:25:30 Europe/Berlin] Exception: Cannot use object of type stdClass as array
+[20-Oct-2025 18:25:38 Europe/Berlin] Exception: Cannot use object of type stdClass as array
+[20-Oct-2025 18:25:38 Europe/Berlin] Exception: Cannot use object of type stdClass as array
+[20-Oct-2025 18:26:12 Europe/Berlin] Exception: Cannot use object of type stdClass as array
