@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../services/GeminiService.php';
+
 /**
  * ChatbotController - Frontend Chatbot Controller
  * UC3.47 - Chatbot tư vấn sản phẩm với Gemini AI
@@ -12,8 +14,8 @@ class ChatbotController extends Controller {
     private $geminiService;
     
     public function __construct() {
-        $this->chatbotFaqModel = new ChatbotFaqModel();
-        $this->chatbotModel = new ChatbotModel();
+        $this->chatbotFaqModel = $this->model('ChatbotFaqModel');
+        $this->chatbotModel = $this->model('ChatbotModel');
         
         // Khởi tạo Gemini Service
         $apiKey = $this->chatbotModel->getConfig('gemini_api_key');
@@ -38,7 +40,7 @@ class ChatbotController extends Controller {
             'categories' => $categories
         ];
         
-        $this->view('chatbot/index', $data);
+        $this->view('frontend/chatbot/index', $data);
     }
     
     /**

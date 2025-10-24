@@ -6,37 +6,33 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Xử lý tất cả ảnh sản phẩm
     const productImages = document.querySelectorAll('.product-image, .card-img-top');
-
+    
     productImages.forEach(function(img) {
-        // Chỉ thêm loading nếu ảnh chưa load
-        if (!img.complete) {
-            img.classList.add('image-loading');
-        }
-
+        // Thêm class loading
+        img.classList.add('image-loading');
+        
         // Xử lý khi ảnh load thành công
         img.addEventListener('load', function() {
             this.classList.remove('image-loading');
             this.classList.add('loaded');
         });
-
+        
         // Xử lý khi ảnh lỗi
         img.addEventListener('error', function() {
             this.classList.remove('image-loading');
             this.classList.add('error');
-
+            
             // Thay thế bằng ảnh placeholder
-            const onerrorAttr = this.getAttribute('onerror');
-            const onerrorMatch = onerrorAttr ? onerrorAttr.match(/'([^']+)'/) : null;
-            const placeholder = this.getAttribute('data-placeholder') ||
-                (onerrorMatch ? onerrorMatch[1] : null) ||
-                '/ivymoda/ivymoda_mvc/public/assets/images/no-image.svg';
-
+            const placeholder = this.getAttribute('data-placeholder') || 
+                              this.getAttribute('onerror')?.match(/'([^']+)'/)?.[1] ||
+                              '/ivymoda/ivymoda_mvc/public/assets/images/no-image.svg';
+            
             if (placeholder && placeholder !== this.src) {
                 this.src = placeholder;
             }
         });
     });
-
+    
     // Lazy loading cho ảnh
     if ('IntersectionObserver' in window) {
         const imageObserver = new IntersectionObserver((entries, observer) => {
@@ -51,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-
+        
         // Quan sát tất cả ảnh có data-src
         document.querySelectorAll('img[data-src]').forEach(img => {
             imageObserver.observe(img);
@@ -90,13 +86,13 @@ function addToCartWithAnimation(productId, button) {
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     button.disabled = true;
-
+    
     // Simulate API call
     setTimeout(() => {
         button.innerHTML = '<i class="fas fa-check"></i> Đã thêm';
         button.classList.remove('btn-outline-primary');
         button.classList.add('btn-success');
-
+        
         // Reset sau 2 giây
         setTimeout(() => {
             button.innerHTML = originalText;
@@ -112,7 +108,7 @@ function addToCartWithAnimation(productId, button) {
  */
 function addToWishlistWithAnimation(productId, button) {
     const heartIcon = button.querySelector('i');
-
+    
     if (heartIcon.classList.contains('fas')) {
         // Đã yêu thích, bỏ yêu thích
         heartIcon.classList.remove('fas');
@@ -125,7 +121,7 @@ function addToWishlistWithAnimation(productId, button) {
         heartIcon.classList.add('fas');
         button.classList.remove('btn-outline-danger');
         button.classList.add('btn-danger');
-
+        
         // Animation
         button.style.transform = 'scale(1.2)';
         setTimeout(() => {
@@ -161,12 +157,12 @@ function quickView(productId) {
             </div>
         </div>
     `;
-
+    
     document.body.appendChild(modal);
-
+    
     // Show modal
     $(modal).modal('show');
-
+    
     // Load product data via AJAX
     fetch(`/ivymoda/ivymoda_mvc/public/ajax/quick_view.php?id=${productId}`)
         .then(response => response.json())
@@ -204,7 +200,7 @@ function quickView(productId) {
                 </div>
             `;
         });
-
+    
     // Remove modal when hidden
     $(modal).on('hidden.bs.modal', function() {
         document.body.removeChild(modal);
@@ -231,22 +227,22 @@ function createImagePlaceholder(width = 200, height = 200, text = 'No Image') {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-
+    
     // Background
     ctx.fillStyle = '#f8f9fa';
     ctx.fillRect(0, 0, width, height);
-
+    
     // Border
     ctx.strokeStyle = '#dee2e6';
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 5]);
     ctx.strokeRect(5, 5, width - 10, height - 10);
-
+    
     // Text
     ctx.fillStyle = '#6c757d';
     ctx.font = '14px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(text, width / 2, height / 2);
-
+    
     return canvas.toDataURL();
 }

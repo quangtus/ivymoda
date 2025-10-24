@@ -292,12 +292,19 @@ class EmailHelper {
         $html .= '</tr>';
         
         foreach ($items as $item) {
+            // Xử lý cả object và array
+            $sanpham_ten = is_object($item) ? $item->sanpham_ten : $item['sanpham_ten'];
+            $sanpham_size = is_object($item) ? $item->sanpham_size : $item['sanpham_size'];
+            $sanpham_color = is_object($item) ? $item->sanpham_color : $item['sanpham_color'];
+            $sanpham_soluong = is_object($item) ? $item->sanpham_soluong : $item['sanpham_soluong'];
+            $sanpham_gia = is_object($item) ? $item->sanpham_gia : $item['sanpham_gia'];
+            
             $html .= '<tr>';
-            $html .= '<td style="border: 1px solid #ddd; padding: 12px;">' . htmlspecialchars($item['sanpham_ten']) . '</td>';
-            $html .= '<td style="border: 1px solid #ddd; padding: 12px; text-align: center;">' . htmlspecialchars($item['sanpham_size']) . '</td>';
-            $html .= '<td style="border: 1px solid #ddd; padding: 12px; text-align: center;">' . htmlspecialchars($item['sanpham_color']) . '</td>';
-            $html .= '<td style="border: 1px solid #ddd; padding: 12px; text-align: center;">' . $item['sanpham_soluong'] . '</td>';
-            $html .= '<td style="border: 1px solid #ddd; padding: 12px; text-align: right;">' . number_format($item['sanpham_gia'] * $item['sanpham_soluong'], 0, ',', '.') . ' ₫</td>';
+            $html .= '<td style="border: 1px solid #ddd; padding: 12px;">' . htmlspecialchars($sanpham_ten) . '</td>';
+            $html .= '<td style="border: 1px solid #ddd; padding: 12px; text-align: center;">' . htmlspecialchars($sanpham_size) . '</td>';
+            $html .= '<td style="border: 1px solid #ddd; padding: 12px; text-align: center;">' . htmlspecialchars($sanpham_color) . '</td>';
+            $html .= '<td style="border: 1px solid #ddd; padding: 12px; text-align: center;">' . $sanpham_soluong . '</td>';
+            $html .= '<td style="border: 1px solid #ddd; padding: 12px; text-align: right;">' . number_format($sanpham_gia * $sanpham_soluong, 0, ',', '.') . ' ₫</td>';
             $html .= '</tr>';
         }
         

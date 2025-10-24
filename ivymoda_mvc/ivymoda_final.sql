@@ -726,19 +726,161 @@ INSERT INTO `tbl_product_variant` VALUES
 (35, 5, 7, 3, 'AK-001-M-GRAY', 6, NULL, 1, NOW(), NOW()),
 (36, 5, 7, 4, 'AK-001-L-GRAY', 5, NULL, 1, NOW(), NOW());
 
--- Email template - Chỉ giữ các template cơ bản theo UC3.50
+-- ============================================
+-- EMAIL TEMPLATES - HOÀN CHỈNH THEO UC3.50
+-- ============================================
+-- Template xác nhận đăng ký
 INSERT INTO `tbl_email_template` VALUES 
-(1, 'registration_confirmation', 'Chào mừng đến với IVY Moda - Xác nhận đăng ký', 
- '<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background-color:#f8f9fa;padding:20px;text-align:center}.content{padding:20px}.button{display:inline-block;background-color:#007bff;color:white;padding:12px 24px;text-decoration:none;border-radius:5px;margin:20px 0}.footer{background-color:#f8f9fa;padding:20px;text-align:center;font-size:12px;color:#666}</style></head><body><div class="container"><div class="header"><h2>Chào mừng đến với IVY Moda!</h2></div><div class="content"><p>Xin chào <strong>{username}</strong>,</p><p>Cảm ơn bạn đã đăng ký tài khoản tại IVY Moda. Để kích hoạt tài khoản, vui lòng click vào link bên dưới:</p><p style="text-align:center"><a href="{activation_link}" class="button">Kích hoạt tài khoản</a></p><p>Link này có hiệu lực trong 24 giờ.</p><p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.</p></div><div class="footer"><p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p></div></div></body></html>', 'registration'),
+(1, 'registration_confirmation', 'Xác nhận đăng ký tài khoản - IVY Moda', 
+'<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .button { display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Chào mừng đến với IVY Moda!</h2>
+        </div>
+        <div class="content">
+            <p>Xin chào <strong>{username}</strong>,</p>
+            <p>Cảm ơn bạn đã đăng ký tài khoản tại IVY Moda. Để kích hoạt tài khoản, vui lòng click vào link bên dưới:</p>
+            <p style="text-align: center;">
+                <a href="{activation_link}" class="button">Kích hoạt tài khoản</a>
+            </p>
+            <p>Link này có hiệu lực trong 24 giờ.</p>
+            <p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.</p>
+        </div>
+        <div class="footer">
+            <p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</body>
+</html>', 'registration'),
 
+-- Template xác nhận đơn hàng
 (2, 'order_confirmation', 'Xác nhận đơn hàng #{order_code} - IVY Moda', 
- '<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background-color:#f8f9fa;padding:20px;text-align:center}.content{padding:20px}.order-info{background-color:#f8f9fa;padding:15px;border-radius:5px;margin:20px 0}.footer{background-color:#f8f9fa;padding:20px;text-align:center;font-size:12px;color:#666}table{border-collapse:collapse;width:100%;margin:20px 0}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background-color:#f5f5f5}</style></head><body><div class="container"><div class="header"><h2>Đơn hàng của bạn đã được xác nhận!</h2></div><div class="content"><p>Xin chào <strong>{customer_name}</strong>,</p><p>Cảm ơn bạn đã mua sắm tại IVY Moda. Đơn hàng của bạn đã được xác nhận và đang được xử lý.</p><div class="order-info"><h3>Thông tin đơn hàng</h3><p><strong>Mã đơn hàng:</strong> #{order_code}</p><p><strong>Ngày đặt:</strong> {order_date}</p><p><strong>Tổng tiền:</strong> {order_total}</p><p><strong>Phương thức thanh toán:</strong> {payment_method}</p><p><strong>Địa chỉ giao hàng:</strong> {customer_address}</p></div><h3>Chi tiết sản phẩm</h3>{order_items}<p>Chúng tôi sẽ thông báo cho bạn khi đơn hàng được giao.</p></div><div class="footer"><p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p></div></div></body></html>', 'order'),
+'<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .order-info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Đơn hàng của bạn đã được xác nhận!</h2>
+        </div>
+        <div class="content">
+            <p>Xin chào <strong>{customer_name}</strong>,</p>
+            <p>Cảm ơn bạn đã mua sắm tại IVY Moda. Đơn hàng của bạn đã được xác nhận và đang được xử lý.</p>
+            
+            <div class="order-info">
+                <h3>Thông tin đơn hàng</h3>
+                <p><strong>Mã đơn hàng:</strong> #{order_code}</p>
+                <p><strong>Ngày đặt:</strong> {order_date}</p>
+                <p><strong>Tổng tiền:</strong> {order_total} ₫</p>
+                <p><strong>Phương thức thanh toán:</strong> {payment_method}</p>
+                <p><strong>Địa chỉ giao hàng:</strong> {customer_address}</p>
+            </div>
+            
+            <h3>Chi tiết sản phẩm:</h3>
+            {order_items}
+            
+            <p>Chúng tôi sẽ thông báo cho bạn khi đơn hàng được giao.</p>
+        </div>
+        <div class="footer">
+            <p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</body>
+</html>', 'order'),
 
+-- Template đặt lại mật khẩu
 (3, 'password_reset', 'Đặt lại mật khẩu - IVY Moda', 
- '<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background-color:#f8f9fa;padding:20px;text-align:center}.content{padding:20px}.button{display:inline-block;background-color:#dc3545;color:white;padding:12px 24px;text-decoration:none;border-radius:5px;margin:20px 0}.footer{background-color:#f8f9fa;padding:20px;text-align:center;font-size:12px;color:#666}</style></head><body><div class="container"><div class="header"><h2>Đặt lại mật khẩu</h2></div><div class="content"><p>Xin chào <strong>{username}</strong>,</p><p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Click vào link bên dưới để đặt lại mật khẩu:</p><p style="text-align:center"><a href="{reset_link}" class="button">Đặt lại mật khẩu</a></p><p>Link này có hiệu lực trong 1 giờ.</p><p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p></div><div class="footer"><p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p></div></div></body></html>', 'password_reset'),
+'<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .button { display: inline-block; background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Đặt lại mật khẩu</h2>
+        </div>
+        <div class="content">
+            <p>Xin chào <strong>{username}</strong>,</p>
+            <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Click vào link bên dưới để đặt lại mật khẩu:</p>
+            <p style="text-align: center;">
+                <a href="{reset_link}" class="button">Đặt lại mật khẩu</a>
+            </p>
+            <p>Link này có hiệu lực trong {expiry_time}.</p>
+            <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+        </div>
+        <div class="footer">
+            <p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</body>
+</html>', 'password_reset'),
 
-(4, 'promotion', 'Khuyến mãi đặc biệt - IVY Moda', 
- '<html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background-color:#e74c3c;color:white;padding:20px;text-align:center}.content{padding:20px}.promotion-box{background-color:#f8f9fa;padding:20px;border-radius:10px;margin:20px 0;border:2px solid #e74c3c}.button{display:inline-block;background-color:#e74c3c;color:white;padding:15px 30px;text-decoration:none;border-radius:5px;margin:20px 0;font-weight:bold}.footer{background-color:#f8f9fa;padding:20px;text-align:center;font-size:12px;color:#666}</style></head><body><div class="container"><div class="header"><h2>🎉 {promotion_title}</h2></div><div class="content"><p>Xin chào <strong>{customer_name}</strong>,</p><div class="promotion-box"><h3>Chương trình khuyến mãi đặc biệt dành riêng cho bạn!</h3>{content}</div><p style="text-align:center"><a href="#" class="button">MUA NGAY</a></p><p>Đừng bỏ lỡ cơ hội mua sắm với giá tốt nhất!</p></div><div class="footer"><p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p></div></div></body></html>', 'promotion');
+-- Template khuyến mãi
+(4, 'promotion', '{promotion_title} - IVY Moda', 
+'<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #e74c3c; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .promotion-box { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; border: 2px solid #e74c3c; }
+        .button { display: inline-block; background-color: #e74c3c; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🎉 {promotion_title}</h2>
+        </div>
+        <div class="content">
+            <p>Xin chào <strong>{customer_name}</strong>,</p>
+            <div class="promotion-box">
+                <h3>Chương trình khuyến mãi đặc biệt dành riêng cho bạn!</h3>
+                {content}
+                <p><strong>Thời gian:</strong> {start_date} - {end_date}</p>
+            </div>
+            <p style="text-align: center;">
+                <a href="#" class="button">MUA NGAY</a>
+            </p>
+            <p>Đừng bỏ lỡ cơ hội mua sắm với giá tốt nhất!</p>
+        </div>
+        <div class="footer">
+            <p>© 2025 IVY Moda. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</body>
+</html>', 'promotion');
 
 -- Mã giảm giá mẫu (tích hợp từ discount_update.sql)
 INSERT INTO `tbl_ma_giam_gia` VALUES 

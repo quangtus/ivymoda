@@ -155,6 +155,9 @@ try {
         case 'get_conversation_history':
             getConversationHistory($chatbotModel);
             break;
+        case 'get_conversation_by_id':
+            getConversationById($chatbotModel);
+            break;
         case 'test_gemini':
             testGemini($chatbotModel);
             break;
@@ -524,6 +527,47 @@ function getConversationHistory($chatbotModel) {
         sendJSON([
             'success' => false,
             'message' => 'Lỗi khi lấy lịch sử'
+        ]);
+    }
+}
+
+/**
+ * GET CONVERSATION BY ID
+ */
+function getConversationById($chatbotModel) {
+    $id = $_GET['id'] ?? 0;
+    
+    if (!$id) {
+        sendJSON([
+            'success' => false,
+            'message' => 'ID hội thoại không hợp lệ'
+        ]);
+    }
+    
+    try {
+        $sql = "SELECT c.*, u.fullname, u.email 
+                FROM tbl_chatbot_conversation c
+                LEFT JOIN users u ON c.user_id = u.id
+                WHERE c.conversation_id = ?";
+        
+        $conversation = $chatbotModel->getOne($sql, [$id]);
+        
+        if (!$conversation) {
+            sendJSON([
+                'success' => false,
+                'message' => 'Không tìm thấy hội thoại'
+            ]);
+        }
+        
+        sendJSON([
+            'success' => true,
+            'conversation' => $conversation
+        ]);
+    } catch (Exception $e) {
+        error_log('Get Conversation Error: ' . $e->getMessage());
+        sendJSON([
+            'success' => false,
+            'message' => 'Lỗi khi lấy hội thoại'
         ]);
     }
 }

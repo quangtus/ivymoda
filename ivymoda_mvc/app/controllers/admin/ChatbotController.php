@@ -1,17 +1,21 @@
 <?php
+namespace admin;
+
+require_once __DIR__ . '/../../services/GeminiService.php';
+
 /**
  * ChatbotController - Admin Chatbot Controller
  * UC3.47 & UC3.48 - Quản lý chatbot AI và FAQ
  */
 
-class ChatbotController extends Controller {
+class ChatbotController extends \Controller {
     
     private $chatbotFaqModel;
     private $chatbotModel;
     
     public function __construct() {
-        $this->chatbotFaqModel = new ChatbotFaqModel();
-        $this->chatbotModel = new ChatbotModel();
+        $this->chatbotFaqModel = $this->model('ChatbotFaqModel');
+        $this->chatbotModel = $this->model('ChatbotModel');
     }
     
     /**
@@ -28,7 +32,7 @@ class ChatbotController extends Controller {
             'chatbot_stats' => $chatbotStats
         ];
         
-        $this->view('chatbot/dashboard', $data);
+        $this->view('admin/chatbot/dashboard', $data);
     }
     
     /**
@@ -42,7 +46,7 @@ class ChatbotController extends Controller {
             'faqs' => $faqs
         ];
         
-        $this->view('chatbot/faq', $data);
+        $this->view('admin/chatbot/faq', $data);
     }
     
     /**
@@ -79,7 +83,7 @@ class ChatbotController extends Controller {
             'categories' => $categories
         ];
         
-        $this->view('chatbot/add_faq', $data);
+        $this->view('admin/chatbot/add_faq', $data);
     }
     
     /**
@@ -124,7 +128,7 @@ class ChatbotController extends Controller {
             'categories' => $categories
         ];
         
-        $this->view('chatbot/edit_faq', $data);
+        $this->view('admin/chatbot/edit_faq', $data);
     }
     
     /**
@@ -217,7 +221,7 @@ class ChatbotController extends Controller {
             'configs' => $configs
         ];
         
-        $this->view('chatbot/config', $data);
+        $this->view('admin/chatbot/config', $data);
     }
     
     /**
@@ -240,7 +244,7 @@ class ChatbotController extends Controller {
             'total_conversations' => $totalConversations
         ];
         
-        $this->view('chatbot/conversations', $data);
+        $this->view('admin/chatbot/conversations', $data);
     }
     
     /**

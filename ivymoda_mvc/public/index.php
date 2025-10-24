@@ -36,7 +36,8 @@ spl_autoload_register(function($class) {
         'app/controllers/frontend/',
         'app/controllers/admin/',
         'app/models/',
-        'app/helpers/'
+        'app/helpers/',
+        'app/services/'
     ];
     
     // Tìm file trong các thư mục
