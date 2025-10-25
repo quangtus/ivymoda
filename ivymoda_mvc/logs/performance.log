@@ -108,3 +108,15 @@
 2025-10-24 05:30:38 - Execution time: 4.27ms - URL: /ivymoda/ivymoda_mvc/public//admin/order/detail/1?success=updated
 2025-10-24 05:31:01 - Execution time: 5.82ms - URL: /ivymoda/ivymoda_mvc/public/admin/order
 2025-10-24 05:31:05 - Execution time: 9.97ms - URL: /ivymoda/ivymoda_mvc/public/admin/dashboard
+2025-10-25 05:50:32 - Execution time: 262.85ms - URL: /ivymoda/ivymoda_mvc/public//admin/dashboard
+2025-10-25 05:50:43 - Execution time: 100.12ms - URL: /ivymoda/ivymoda_mvc/public/admin/order
+2025-10-25 05:50:46 - Execution time: 7.70ms - URL: /ivymoda/ivymoda_mvc/public/admin/dashboard
+2025-10-25 05:50:50 - Execution time: 110.39ms - URL: /ivymoda/ivymoda_mvc/public/admin/product
+2025-10-25 05:50:57 - Execution time: 6.86ms - URL: /ivymoda/ivymoda_mvc/public/admin/dashboard
+2025-10-25 05:51:04 - Execution time: 83.99ms - URL: /ivymoda/ivymoda_mvc/public/admin/user
+2025-10-25 05:51:12 - Execution time: 36.25ms - URL: /ivymoda/ivymoda_mvc/public/admin/user/roles
+2025-10-25 05:51:27 - Execution time: 4.55ms - URL: /ivymoda/ivymoda_mvc/public/admin/order
+2025-10-25 05:51:29 - Execution time: 16.88ms - URL: /ivymoda/ivymoda_mvc/public//admin/auth/login
+2025-10-25 05:54:32 - Execution time: 11.14ms - URL: /ivymoda/ivymoda_mvc/public//admin/dashboard
+2025-10-25 05:54:35 - Execution time: 6.84ms - URL: /ivymoda/ivymoda_mvc/public/admin/dashboard
+2025-10-25 05:54:38 - Execution time: 3.10ms - URL: /ivymoda/ivymoda_mvc/public//admin/auth/login

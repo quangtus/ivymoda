@@ -15,6 +15,11 @@
     gap: 1.5rem;
     justify-content: flex-start;
     flex: 0 0 100%; /* buộc lưới sản phẩm xuống hàng dưới thanh lọc */
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .product-index-right-content-item {
@@ -59,11 +64,15 @@
 .product-index-right-content {
     transition: all 0.3s ease;
     width: 100%;
+    max-width: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
     justify-content: flex-start;
     align-items: flex-start;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 /* Đảm bảo container có đủ không gian */
@@ -74,24 +83,30 @@
     margin: 0;
     display: flex;     /* đảm bảo các mục top bar nằm trên cùng một hàng */
     flex-wrap: wrap;   /* cho phép xuống hàng khi chật */
+    box-sizing: border-box;
 }
 
 /* Container chính */
 .produc-index-container {
     width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-}
-
-/* Row container */
-.row {
-    width: 100%;
+    max-width: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 2rem;
     margin: 0;
     padding: 0;
+}
+
+/* Row container */
+.row {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 /* Responsive cho sidebar và main content */
@@ -248,6 +263,10 @@
 /* Fixed Issues */
 .product-index{
     padding: 100px 0 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
 }
 .breadcrumb{
     margin-bottom: 50px;
@@ -281,13 +300,73 @@
 }
 .product-index-right-top-item button{
     width: 100%;
-    padding: 10px 15px;
-    display: flex;
-    justify-content: space-between;
-    background-color: #ffff;
-    border: 1px solid #ddd;
-    cursor: pointer;
-    z-index: 1;
+}
+
+/* Fix container width issues */
+.product-index .container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 15px;
+    box-sizing: border-box;
+}
+
+/* Ensure full width for product pages */
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* Ensure no overflow */
+.product-index .container.mt-4 {
+    margin-top: 1.5rem !important;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Additional fixes for whitespace */
+.product-index section {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Fix any potential Bootstrap row issues */
+.product-index .row {
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Override container padding for product pages */
+.product-index .container {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Ensure no horizontal scroll */
+.product-index {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
 }
 .product-index-right-top-item select{
     width: 100%;
