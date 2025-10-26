@@ -1,0 +1,20 @@
+{
+    "name": "ivymoda/ecommerce",
+    "description": "IVY Moda E-commerce System",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "files": [
+            "includes/functions.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
