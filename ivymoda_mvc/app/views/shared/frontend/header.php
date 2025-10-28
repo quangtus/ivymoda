@@ -20,7 +20,6 @@ $isLoggedIn = isset($_SESSION['user_id']);
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/product-detail.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/custom-product-detail.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/cart.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/chatbot.css">
     
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/54f0cb7e4a.js" crossorigin="anonymous"></script>
@@ -30,8 +29,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
     <script src="<?= BASE_URL ?>assets/js/image-handler.js"></script>
     <script src="<?= BASE_URL ?>assets/js/cart.js"></script>
     
-    <!-- Chatbot Widget -->
-    <script src="<?= BASE_URL ?>assets/js/chatbot.js"></script>
+    <!-- Legacy chatbot assets removed to avoid conflicts with unified widget -->
 </head>
 <body>
     <header>

@@ -1,6 +1,5 @@
 //------------------------------SLIDER
 // IVY Moda Banner Slider - Clean & Working Version
-console.log('🎠 Slider.js loaded - Version 5.0');
 
 (function() {
     'use strict';
@@ -10,15 +9,8 @@ console.log('🎠 Slider.js loaded - Version 5.0');
         const imgItemContainer = document.querySelector(".aspect-ratio-169");
         const dotItem = document.querySelectorAll(".dot");
 
-        console.log('🎠 Slider Init:', {
-            container: !!imgItemContainer,
-            images: imgItem.length,
-            dots: dotItem.length
-        });
-
         // Check if elements exist
         if (!imgItemContainer || imgItem.length === 0 || dotItem.length === 0) {
-            console.warn('⚠️ Slider elements not found');
             return;
         }
 
@@ -37,10 +29,7 @@ console.log('🎠 Slider.js loaded - Version 5.0');
             image.style.width = (100 / imgLength) + '%';
             image.style.maxWidth = '100%';
             image.style.objectFit = 'cover';
-            console.log('🖼️ Image ' + (idx + 1) + ' configured: width=' + (100 / imgLength) + '% of container');
         });
-
-        console.log('🎠 Slider configured: ' + imgLength + ' slides, container width: ' + (imgLength * 100) + '%');
 
         function goToSlide(index) {
             currentIndex = index;
@@ -57,8 +46,6 @@ console.log('🎠 Slider.js loaded - Version 5.0');
                     dot.classList.remove("active");
                 }
             });
-
-            console.log('🎠 Slide ' + (index + 1) + '/' + imgLength + ' | translateX: ' + translatePercent + '%');
         }
 
         function nextSlide() {
@@ -81,7 +68,6 @@ console.log('🎠 Slider.js loaded - Version 5.0');
             dot.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🖱️ Dot ' + (idx + 1) + ' clicked');
 
                 clearInterval(autoSlideInterval);
                 goToSlide(idx);
@@ -98,7 +84,6 @@ console.log('🎠 Slider.js loaded - Version 5.0');
 
         // Start
         startAutoSlide();
-        console.log('✅ Slider initialized successfully');
     }
 
     // Initialize when DOM is ready

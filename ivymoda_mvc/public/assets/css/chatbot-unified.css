@@ -1,0 +1,714 @@
+/**
+ * Unified Chatbot Widget Styles
+ * Kết hợp FAQ Chatbot (UC3.48) và AI Chatbot (UC3.47)
+ * Sử dụng tab switching để chuyển đổi giữa 2 chế độ
+ */
+
+
+/* ============================================
+   WIDGET CONTAINER
+   ============================================ */
+
+.unified-chatbot-widget {
+    position: fixed;
+    z-index: 9999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.unified-chatbot-widget.bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+.unified-chatbot-widget.bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+
+/* ============================================
+   TOGGLE BUTTON
+   ============================================ */
+
+.unified-chatbot-toggle {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    border: none;
+}
+
+.unified-chatbot-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+}
+
+.unified-chatbot-toggle i {
+    color: white;
+    font-size: 26px;
+    transition: transform 0.3s ease;
+}
+
+.unified-chatbot-toggle:hover i {
+    transform: rotate(360deg);
+}
+
+.unified-chatbot-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+}
+
+
+/* ============================================
+   CHATBOT PANEL
+   ============================================ */
+
+.unified-chatbot-panel {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 400px;
+    height: 600px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: none;
+}
+
+.unified-chatbot-widget.bottom-left .unified-chatbot-panel {
+    right: auto;
+    left: 0;
+}
+
+.unified-chatbot-panel.open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.unified-chatbot-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.unified-chatbot-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.unified-chatbot-title i {
+    font-size: 24px;
+}
+
+.unified-chatbot-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.unified-chatbot-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+
+/* ============================================
+   TAB NAVIGATION
+   ============================================ */
+
+.unified-chatbot-tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.unified-chatbot-tab {
+    flex: 1;
+    padding: 14px 20px;
+    background: transparent;
+    border: none;
+    color: #6c757d;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.unified-chatbot-tab:hover {
+    background: rgba(102, 126, 234, 0.05);
+    color: #667eea;
+}
+
+.unified-chatbot-tab.active {
+    color: #667eea;
+    background: white;
+}
+
+.unified-chatbot-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.unified-chatbot-tab i {
+    font-size: 16px;
+}
+
+
+/* ============================================
+   BODY CONTENT
+   ============================================ */
+
+.unified-chatbot-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.unified-chatbot-content {
+    display: none;
+    flex: 1;
+    overflow: hidden;
+    flex-direction: column;
+    position: relative;
+}
+
+.unified-chatbot-content.active {
+    display: flex;
+}
+
+
+/* ============================================
+   FAQ TAB STYLES
+   ============================================ */
+
+.faq-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.faq-content.hidden {
+    display: none;
+}
+
+.faq-detail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    overflow-y: auto;
+    display: none;
+    flex-direction: column;
+    background: white;
+    z-index: 10;
+}
+
+.faq-detail.active {
+    display: flex;
+}
+
+/* Fixed malformed block for .faq-search (previously broken CSS that could affect later rules) */
+.faq-search {
+    display: flex;
+    margin-bottom: 18px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.faq-search:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+.faq-search input {
+    flex: 1;
+    border: none;
+    padding: 12px 18px;
+    font-size: 14px;
+    outline: none;
+}
+.faq-search button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.faq-search button:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8a 100%);
+}
+.faq-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+.faq-category-btn {
+    padding: 8px 16px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.faq-category-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+.faq-category-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+}
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.faq-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.faq-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+}
+.faq-item-question {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.faq-item-question i {
+    color: #667eea;
+    font-size: 12px;
+}
+.faq-item-answer {
+    color: #6c757d;
+    font-size: 13px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.faq-detail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    overflow-y: auto;
+    display: none;
+    /* Ẩn mặc định */
+    
+    flex-direction: column;
+    background: white;
+    z-index: 10;
+}
+
+/* Khi hiển thị detail, dùng flex */
+.faq-detail[style*="display: flex"] {
+    display: flex !important;
+}
+.faq-detail-header {
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+.faq-back-btn {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.faq-back-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+.faq-detail-content {
+    flex: 1;
+    overflow-y: auto;
+}
+.faq-detail-content h6 {
+    color: #333;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+.faq-detail-content p,
+.faq-detail-content .faq-answer-content {
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.7;
+}
+.faq-detail-content .faq-answer-content ul,
+.faq-detail-content .faq-answer-content ol {
+    margin: 10px 0;
+    padding-left: 25px;
+}
+.faq-detail-content .faq-answer-content li {
+    margin: 5px 0;
+}
+.faq-detail-content .faq-help-link {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+.faq-detail-content .faq-help-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+.faq-detail-content .faq-help-link a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   AI TAB STYLES
+   ============================================ */
+.ai-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+}
+.ai-message {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    animation: messageSlideIn 0.3s ease;
+}
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.ai-message.user {
+    flex-direction: row-reverse;
+}
+.ai-message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.ai-message.bot .ai-message-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+.ai-message.user .ai-message-avatar {
+    background: #667eea;
+    color: white;
+}
+.ai-message-content {
+    max-width: 70%;
+}
+.ai-message-bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line; /* preserve newlines, collapse extra spaces */
+}
+.ai-message.bot .ai-message-bubble {
+    background: white;
+    color: #333;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.ai-message.user .ai-message-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+.ai-message-time {
+    font-size: 11px;
+    color: #adb5bd;
+    margin-top: 6px;
+    padding: 0 4px;
+}
+.ai-message.user .ai-message-time {
+    text-align: right;
+}
+.ai-typing {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 10px;
+    background: #f8f9fa;
+}
+.ai-typing-dots {
+    display: flex;
+    gap: 4px;
+}
+.ai-typing-dots span {
+    width: 8px;
+    height: 8px;
+    background: #667eea;
+    border-radius: 50%;
+    animation: typingDot 1.4s infinite;
+}
+.ai-typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.ai-typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+@keyframes typingDot {
+    0%,
+    60%,
+    100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+    
+    30% {
+        opacity: 1;
+        transform: translateY(-10px);
+    }
+}
+.ai-typing-text {
+    font-size: 13px;
+    color: #6c757d;
+}
+.ai-input-area {
+    border-top: 1px solid #e9ecef;
+    padding: 16px;
+    background: white;
+}
+.ai-input-container {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+.ai-input-container textarea {
+    flex: 1;
+    border: 2px solid #e9ecef;
+    border-radius: 22px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    max-height: 120px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+.ai-input-container textarea:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+.ai-send-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+.ai-send-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+.ai-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.ai-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+.ai-suggestion-btn {
+    padding: 8px 14px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    font-size: 13px;
+    color: #667eea;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+.ai-suggestion-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   LOADING & EMPTY STATES
+   ============================================ */
+.chatbot-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6c757d;
+}
+.chatbot-loading i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: #667eea;
+}
+.chatbot-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+.chatbot-empty i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: #dee2e6;
+}
+.chatbot-empty p {
+    font-size: 14px;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+.faq-content::-webkit-scrollbar,
+.ai-messages::-webkit-scrollbar {
+    width: 6px;
+}
+.faq-content::-webkit-scrollbar-track,
+.ai-messages::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+.faq-content::-webkit-scrollbar-thumb,
+.ai-messages::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+}
+.faq-content::-webkit-scrollbar-thumb:hover,
+.ai-messages::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 480px) {
+    .unified-chatbot-panel {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 120px);
+        max-height: 600px;
+    }
+    
+    .unified-chatbot-title {
+        font-size: 16px;
+    }
+    
+    .ai-message-content {
+        max-width: 80%;
+    }
+}

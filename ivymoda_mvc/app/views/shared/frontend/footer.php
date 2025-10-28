@@ -52,14 +52,8 @@
         </div>
     </footer>
     
-    <!-- Chatbot CSS -->
-    <link rel="stylesheet" href="<?= ASSETS_URL ?>css/chatbot.css">
-    
-    <!-- Include Chatbot Widget (FAQ - UC3.48) -->
-    <?php include ROOT_PATH . 'app/views/shared/frontend/chatbot.php'; ?>
-    
-    <!-- Include Chatbot AI Widget (Tư vấn sản phẩm - UC3.47) -->
-    <?php include ROOT_PATH . 'app/views/shared/frontend/chatbot-ai.php'; ?>
+    <!-- Include Unified Chatbot Widget (FAQ + AI - UC3.47 & UC3.48) -->
+    <?php include ROOT_PATH . 'app/views/shared/frontend/chatbot-unified.php'; ?>
     
     <!-- Expose base URLs to JS and verify footer inclusion -->
     <script>
@@ -70,8 +64,7 @@
 
     <!-- JavaScript -->
     <script src="<?= ASSETS_URL ?>js/script.js?v=1"></script>
-    <script src="<?= ASSETS_URL ?>js/slider.js?v=8"></script>
-    <script src="<?= ASSETS_URL ?>js/chatbot.js"></script>
+    <script src="<?= ASSETS_URL ?>js/slider.js?v=9"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Sửa tất cả các liên kết thiếu phần /public/
@@ -81,11 +74,6 @@
                 link.href = link.href.replace('/ivymoda/ivymoda_mvc/', '/ivymoda/ivymoda_mvc/public/');
             }
         });
-        
-        // Initialize chatbot
-        if (typeof window.chatbotEnabled === 'undefined' || window.chatbotEnabled) {
-            // Chatbot will auto-initialize from chatbot.js
-        }
     });
     </script>
 </body>

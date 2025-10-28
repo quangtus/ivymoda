@@ -311,9 +311,10 @@ class ChatbotAI {
                 padding: 12px 15px;
                 border-radius: 18px;
                 font-size: 14px;
-                line-height: 1.4;
+                line-height: 1.6;
                 color: #333;
                 word-wrap: break-word;
+                white-space: pre-wrap;
             }
             
             .user-message .message-text {
@@ -682,11 +683,31 @@ class ChatbotAI {
     }
     
     formatMessage(text) {
-        // Basic formatting
-        return text
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Escape HTML to prevent injection
+        const escapeHtml = (str) => str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        let safe = escapeHtml(String(text || ''));
+
+        // Basic Markdown: bold, italics
+        safe = safe
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+        // Bullet points: lines starting with - or •
+        safe = safe.replace(/(^|\n)[\-•]\s+(.*)/g, (m, p1, item) => `${p1}• ${item}`);
+
+        // Normalize newlines to <br>
+        safe = safe
+            .replace(/\r\n/g, '\n')
+            .replace(/\n{2,}/g, '\n\n')
             .replace(/\n/g, '<br>');
+
+        return safe;
     }
     
     formatPrice(price) {

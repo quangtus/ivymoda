@@ -144,9 +144,11 @@ try {
             getFaqById($chatbotFaqModel);
             break;
         case 'get_categories':
+        case 'get_faq_categories':  // Support both action names
             getCategories($chatbotFaqModel);
             break;
         case 'chat_with_ai':
+        case 'chat_ai':  // Support both action names
             chatWithAI($chatbotModel);
             break;
         case 'save_user_preferences':
@@ -312,7 +314,10 @@ function getCategories($chatbotFaqModel) {
     
     $formattedCategories = [];
     foreach ($categories as $category) {
-        $formattedCategories[] = $category->category;
+        $formattedCategories[] = [
+            'id' => $category->category,
+            'name' => $category->category
+        ];
     }
     
     sendJSON([
@@ -330,10 +335,12 @@ function chatWithAI($chatbotModel) {
         sendJSON(['success' => false, 'message' => 'Phương thức không hợp lệ']);
     }
     
-    $input = json_decode(file_get_contents('php://input'), true);
-    $userMessage = trim($input['message'] ?? '');
-    $sessionId = trim($input['session_id'] ?? session_id());
+    // Đọc từ $_POST thay vì JSON body
+    $userMessage = trim($_POST['message'] ?? '');
+    $sessionId = trim($_POST['session_id'] ?? session_id());
     $userId = $_SESSION['user_id'] ?? null;
+    
+    error_log('🤖 AI Request - Message: ' . $userMessage . ' | Session: ' . $sessionId);
     
     if (empty($userMessage)) {
         sendJSON(['success' => false, 'message' => 'Vui lòng nhập tin nhắn']);
@@ -341,6 +348,7 @@ function chatWithAI($chatbotModel) {
     
     $apiKey = $chatbotModel->getConfig('gemini_api_key');
     if (!$apiKey) {
+        error_log('❌ Gemini API key not found');
         sendJSON(['success' => false, 'message' => 'Chatbot AI tạm không khả dụng']);
     }
     
@@ -349,14 +357,21 @@ function chatWithAI($chatbotModel) {
     try {
         $geminiService = new GeminiService($apiKey);
         $context = buildContext($chatbotModel, $userId);
+        
+        error_log('📤 Sending to Gemini - Message: ' . $userMessage);
+        
         $aiResponse = $geminiService->generateResponse($userMessage, $context);
+        
+        error_log('📥 Gemini Response: ' . json_encode($aiResponse));
         
         $responseTime = round((microtime(true) - $startTime) * 1000);
         
         if (!$aiResponse['success']) {
+            error_log('❌ Gemini Error: ' . ($aiResponse['error'] ?? 'Unknown'));
             sendJSON([
                 'success' => false,
-                'message' => $aiResponse['error'] ?? 'Không thể tạo phản hồi'
+                'message' => $aiResponse['error'] ?? 'Không thể tạo phản hồi',
+                'error' => $aiResponse['error'] ?? 'Unknown error'
             ]);
         }
         
@@ -392,10 +407,12 @@ function chatWithAI($chatbotModel) {
         ]);
         
     } catch (Exception $e) {
-        error_log('Chat AI Error: ' . $e->getMessage());
+        error_log('❌ Chat AI Exception: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+        error_log('Stack trace: ' . $e->getTraceAsString());
         sendJSON([
             'success' => false,
-            'message' => 'Lỗi khi xử lý yêu cầu'
+            'message' => 'Lỗi khi xử lý yêu cầu',
+            'error' => $e->getMessage()
         ]);
     }
 }

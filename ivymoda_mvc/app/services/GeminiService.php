@@ -181,7 +181,10 @@ Hãy trả lời câu hỏi của khách hàng một cách hữu ích và gợi 
             'Content-Type: application/json',
             'User-Agent: IVY-Moda-Chatbot/1.0'
         ]);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        // Increase timeout to allow slower responses from Gemini
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        // Optional: allow more time to establish the connection
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         
         $response = curl_exec($ch);
@@ -243,8 +246,9 @@ Hãy trả lời câu hỏi của khách hàng một cách hữu ích và gợi 
             return $string;
         }
         
-        // Remove control characters
-        $string = preg_replace('/[\x00-\x1F\x80-\x9F]/u', '', $string);
+        // Remove control characters but PRESERVE newlines (\n) and carriage returns (\r)
+        // This keeps formatting from the AI while still cleaning other controls
+        $string = preg_replace('/[\x00-\x09\x0B-\x0C\x0E-\x1F\x80-\x9F]/u', '', $string);
         
         // Trim whitespace
         $string = trim($string);
