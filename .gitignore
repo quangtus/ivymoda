@@ -1,12 +1,51 @@
-# File cấu hình cá nhân
+# ===== PERSONAL CONFIG =====
+# Note: .env is NOT ignored to allow team sharing of development config
+# Make sure to use .env.example for sensitive data templates
 
-# File tạm thời
-*.txt 
-# File media upload
+# ===== TEMPORARY FILES =====
+*.txt
+*.log
+*.tmp
+
+# ===== DOCUMENTATION REPORTS (Auto-generated) =====
+# Pattern: *_REPORT.md, *_FIX*.md, DEBUG_*.md, UNIFIED_*.md
+*_REPORT.md
+*_FIX*.md
+DEBUG_*.md
+UNIFIED_*.md
+
+# ===== GITHUB INSTRUCTIONS FOLDER =====
+.github/instructions/
+
+# ===== MEDIA UPLOADS =====
 uploads/*
+!uploads/.gitkeep
 
-# File log
+# ===== LOGS =====
 logs/*
+!logs/.gitkeep
 
-# File cache
+# ===== CACHE =====
 cache/*
+!cache/.gitkeep
+
+# ===== IDE & SYSTEM =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===== DEPENDENCIES =====
+vendor/
+node_modules/
+composer.lock
+package-lock.json
+
+# ===== BUILD & COMPILED =====
+*.min.js
+*.min.css
+dist/
+build/
