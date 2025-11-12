@@ -27,13 +27,13 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
             
             <div style="margin-bottom: 15px;">
                 <label for="password" style="display: block; margin-bottom: 5px;">Mật khẩu <span style="color: red;">*</span></label>
-                <input type="password" id="password" name="password" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" required>
-                <small style="color: #6c757d; font-size: 12px;">Mật khẩu phải có ít nhất 6 ký tự</small>
+                <input type="password" id="password" name="password" minlength="8" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" required>
+                <small style="color: #6c757d; font-size: 12px;">Mật khẩu phải có ít nhất 8 ký tự</small>
             </div>
             
             <div style="margin-bottom: 15px;">
                 <label for="confirm_password" style="display: block; margin-bottom: 5px;">Xác nhận mật khẩu <span style="color: red;">*</span></label>
-                <input type="password" id="confirm_password" name="confirm_password" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" required>
+                <input type="password" id="confirm_password" name="confirm_password" minlength="8" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" required>
             </div>
             
             <div style="margin-bottom: 15px;">

@@ -42,8 +42,8 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                         <div class="form-group row">
                             <label for="password" class="col-sm-2 col-form-label">Mật khẩu <span class="text-danger">*</span></label>
                             <div class="col-sm-10">
-                                <input type="password" class="form-control" id="password" name="password" minlength="6" required>
-                                <small class="text-muted">Mật khẩu phải có ít nhất 6 ký tự</small>
+                                <input type="password" class="form-control" id="password" name="password" minlength="8" required>
+                                <small class="text-muted">Mật khẩu phải có ít nhất 8 ký tự</small>
                             </div>
                         </div>
                         

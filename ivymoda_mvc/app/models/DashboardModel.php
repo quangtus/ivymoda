@@ -14,9 +14,9 @@ class DashboardModel extends Model {
         return 0;
     }
     
-    // Đếm tổng số sản phẩm
-    public function countProducts() {
-        $query = "SELECT COUNT(*) as total FROM tbl_sanpham";
+    // Đếm tổng số đơn hàng (tất cả trạng thái)
+    public function countTotalOrders() {
+        $query = "SELECT COUNT(*) as total FROM tbl_order";
         $result = $this->getOne($query);
         
         // Kiểm tra xem $result là object hay array
@@ -26,9 +26,33 @@ class DashboardModel extends Model {
         return 0;
     }
     
-    // Đếm tổng số khách hàng
+    // Đếm tổng số sản phẩm
+    public function countProducts() {
+        $query = "SELECT COUNT(*) as total FROM tbl_sanpham WHERE sanpham_status = 1";
+        $result = $this->getOne($query);
+        
+        // Kiểm tra xem $result là object hay array
+        if($result) {
+            return is_object($result) ? $result->total : (is_array($result) ? $result['total'] : 0);
+        }
+        return 0;
+    }
+    
+    // Đếm tổng số khách hàng (role_id = 2)
     public function countCustomers() {
         $query = "SELECT COUNT(*) as total FROM users WHERE role_id = 2";
+        $result = $this->getOne($query);
+        
+        // Kiểm tra xem $result là object hay array
+        if($result) {
+            return is_object($result) ? $result->total : (is_array($result) ? $result['total'] : 0);
+        }
+        return 0;
+    }
+    
+    // Đếm tổng số người dùng (tất cả role)
+    public function countAllUsers() {
+        $query = "SELECT COUNT(*) as total FROM users";
         $result = $this->getOne($query);
         
         // Kiểm tra xem $result là object hay array

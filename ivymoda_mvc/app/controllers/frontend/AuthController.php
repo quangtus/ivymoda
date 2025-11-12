@@ -94,18 +94,27 @@ class AuthController extends Controller {
                 $data['error'] = 'Vui lòng điền đầy đủ thông tin bắt buộc';
             } elseif($password != $confirm_password) {
                 $data['error'] = 'Mật khẩu xác nhận không khớp';
-            } elseif(strlen($password) < 6) {
-                $data['error'] = 'Mật khẩu phải có ít nhất 6 ký tự';
+            } elseif(strlen($password) < 8) {
+                $data['error'] = 'Mật khẩu phải có ít nhất 8 ký tự';
             } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $data['error'] = 'Email không hợp lệ';
             } else {
+                // Gọi register và nhận token
                 $result = $this->userModel->register($username, $password, $email, $fullname, $phone, $address);
                 
-                if($result === true) {
+                // Kiểm tra kết quả
+                if(is_string($result) && strlen($result) == 64) {
+                    // Thành công - result là activation token
+                    $activationToken = $result;
+                    
                     // Gửi email xác nhận đăng ký
-                    $this->sendRegistrationConfirmationEmail($email, $fullname, $username);
-                    $data['success'] = 'Đăng ký tài khoản thành công! Vui lòng kiểm tra email để xác nhận tài khoản.';
+                    if($this->sendRegistrationConfirmationEmail($email, $fullname, $username, $activationToken)) {
+                        $data['success'] = 'Đăng ký tài khoản thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.';
+                    } else {
+                        $data['success'] = 'Đăng ký thành công! Link kích hoạt: ' . BASE_URL . 'auth/activate?token=' . $activationToken;
+                    }
                 } else {
+                    // Thất bại - result là thông báo lỗi
                     $data['error'] = $result;
                 }
             }
@@ -222,8 +231,8 @@ class AuthController extends Controller {
                 $data['error'] = 'Mật khẩu xác nhận không khớp';
                 $data['validToken'] = true;
                 $data['token'] = $token;
-            } elseif(strlen($password) < 6) {
-                $data['error'] = 'Mật khẩu phải có ít nhất 6 ký tự';
+            } elseif(strlen($password) < 8) {
+                $data['error'] = 'Mật khẩu phải có ít nhất 8 ký tự';
                 $data['validToken'] = true;
                 $data['token'] = $token;
             } else {
@@ -247,22 +256,14 @@ class AuthController extends Controller {
     }
     
     // Gửi email xác nhận đăng ký
-    private function sendRegistrationConfirmationEmail($email, $name, $username) {
+    private function sendRegistrationConfirmationEmail($email, $name, $username, $activationToken) {
         try {
             // Sử dụng EmailHelper để gửi email
             require_once ROOT_PATH . 'app/helpers/EmailHelper.php';
             $emailHelper = new EmailHelper();
             
-            // Tạo token kích hoạt và lưu vào database
-            $activationToken = $this->userModel->createActivationToken($email);
-            
-            if($activationToken) {
-                // Gửi email xác nhận đăng ký
-                return $emailHelper->sendRegistrationConfirmation($email, $username, $activationToken);
-            } else {
-                error_log("Cannot create activation token for email: $email");
-                return false;
-            }
+            // Gửi email xác nhận đăng ký với token
+            return $emailHelper->sendRegistrationConfirmation($email, $username, $activationToken);
         } catch (Exception $e) {
             error_log("Registration email error: " . $e->getMessage());
             return false;

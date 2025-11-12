@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // filepath: C:\xampp\htdocs\ivymoda\ivymoda_mvc\app\views\admin\dashboard\index.php
 
 // Load header
@@ -86,14 +86,19 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                     <p>Chào mừng <strong><?= isset($_SESSION['username']) ? $_SESSION['username'] : $_SESSION['admin_name'] ?></strong> đến với khu vực quản trị hệ thống IVY moda.</p>
                     <p>Bạn có thể quản lý:</p>
                     <ul>
-                        <li><a href="<?= ADMIN_URL ?>user">👥 Quản lý người dùng</a></li>
-                        <li><a href="<?= ADMIN_URL ?>user/roles">🔐 Quản lý vai trò</a></li>
-                        <li><a href="<?= ADMIN_URL ?>product">📦 Quản lý sản phẩm</a></li>
-                        <li><a href="<?= ADMIN_URL ?>order">📋 Quản lý đơn hàng</a></li>
-                        <li><a href="<?= ADMIN_URL ?>discount">🎁 Quản lý khuyến mãi</a></li>
-                        <li><a href="<?= ADMIN_URL ?>category">🗂️ Quản lý danh mục</a></li>
-                        <li><a href="<?= ADMIN_URL ?>color">🎨 Quản lý màu sắc</a></li>
-                        <li><a href="<?= ADMIN_URL ?>size">📏 Quản lý size</a></li>
+                        <li><a href="<?= ADMIN_URL ?>order"><i class="fas fa-clipboard-list text-primary"></i> Quản lý đơn hàng</a></li>
+                        <li><a href="<?= ADMIN_URL ?>product"><i class="fas fa-box text-warning"></i> Quản lý sản phẩm</a></li>
+                        <li><a href="<?= ADMIN_URL ?>category"><i class="fas fa-folder-open text-warning"></i> Quản lý danh mục & Phân loại</a></li>
+                        <li><a href="<?= ADMIN_URL ?>color"><i class="fas fa-palette text-purple"></i> Quản lý màu sắc</a></li>
+                        <li><a href="<?= ADMIN_URL ?>size"><i class="fas fa-ruler-combined text-secondary"></i> Quản lý size</a></li>
+                        <li><a href="<?= ADMIN_URL ?>discount"><i class="fas fa-gift text-danger"></i> Quản lý khuyến mãi</a></li>
+                        <li><a href="<?= ADMIN_URL ?>review"><i class="fas fa-star text-warning"></i> Quản lý đánh giá</a></li>
+                        <li><a href="<?= ADMIN_URL ?>report/revenue"><i class="fas fa-chart-line text-success"></i> Báo cáo doanh thu</a></li>
+                        <?php if(isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
+                        <li><a href="<?= ADMIN_URL ?>user"><i class="fas fa-users text-info"></i> Quản lý người dùng</a></li>
+                        <li><a href="<?= ADMIN_URL ?>email"><i class="fas fa-envelope text-primary"></i> Quản lý Email</a></li>
+                        <li><a href="<?= ADMIN_URL ?>chatbot"><i class="fas fa-robot text-purple"></i> Quản lý Chatbot FAQ</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>

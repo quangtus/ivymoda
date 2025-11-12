@@ -64,8 +64,8 @@ class UserController extends \Controller {
             
             if(empty($data['username']) || empty($password) || empty($data['email']) || empty($data['fullname'])) {
                 $data['error'] = 'Vui lòng điền đầy đủ thông tin bắt buộc';
-            } elseif(strlen($password) < 6) {
-                $data['error'] = 'Mật khẩu phải có ít nhất 6 ký tự';
+            } elseif(strlen($password) < 8) {
+                $data['error'] = 'Mật khẩu phải có ít nhất 8 ký tự';
             } else {
                 $result = $this->userModel->register($data['username'], $password, $data['email'], $data['fullname'], $data['phone'], $data['address']);
                 
@@ -157,8 +157,8 @@ class UserController extends \Controller {
             
             if(empty($new_password)) {
                 $data['error'] = 'Vui lòng nhập mật khẩu mới';
-            } elseif(strlen($new_password) < 6) {
-                $data['error'] = 'Mật khẩu phải có ít nhất 6 ký tự';
+            } elseif(strlen($new_password) < 8) {
+                $data['error'] = 'Mật khẩu phải có ít nhất 8 ký tự';
             } else {
                 $result = $this->userModel->adminResetPassword($id, $new_password);
                 

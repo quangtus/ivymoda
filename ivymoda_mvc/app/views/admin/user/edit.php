@@ -120,8 +120,8 @@ $user = isset($user) ? $user : (object)['status' => 1, 'role_id' => 2];
                     <div class="form-group row">
                         <label for="new_password" class="col-sm-2 col-form-label">Mật khẩu mới <span class="text-danger">*</span></label>
                         <div class="col-sm-10">
-                            <input type="password" class="form-control" id="new_password" name="new_password" minlength="6" required>
-                            <small class="text-muted">Mật khẩu phải có ít nhất 6 ký tự</small>
+                            <input type="password" class="form-control" id="new_password" name="new_password" minlength="8" required>
+                            <small class="text-muted">Mật khẩu phải có ít nhất 8 ký tự</small>
                         </div>
                     </div>
                     

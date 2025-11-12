@@ -890,25 +890,73 @@ INSERT INTO `tbl_ma_giam_gia` VALUES
 (4, 'SUMMER20', 'Giảm 20% mùa hè', 20.00, 'percent', NOW(), DATE_ADD(NOW(), INTERVAL 60 DAY), 50, 0, 1, NOW(), NOW()),
 (5, 'SAVE50K', 'Giảm 50.000₫ cho đơn hàng từ 500.000₫', 50000.00, 'fixed', NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), 200, 0, 1, NOW(), NOW());
 
--- Mẫu khuyến mãi (liên kết với mã giảm giá)
+-- Mẫu khuyến mãi (liên kết với mã giảm giá) - UPDATED: Active promotions with rich HTML content
 INSERT INTO `tbl_promotion` VALUES 
 (1, 'GIẢM GIÁ 30% TOÀN BỘ SẢN PHẨM NỮ', 
  'Chương trình giảm giá đặc biệt dành cho khách hàng nữ', 
- '<p>Giảm giá <strong>30%</strong> cho toàn bộ sản phẩm thời trang nữ. Áp dụng từ ngày 15/10 đến 31/10/2025.</p>', 
+ '<div style="font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;">
+    <h2 style="margin-top: 0; color: #FFD700;">🎉 GIẢM GIÁ ĐẶC BIỆT 30%</h2>
+    <p style="font-size: 18px;">Giảm giá <strong>30%</strong> cho toàn bộ sản phẩm thời trang nữ!</p>
+    <ul style="font-size: 16px; line-height: 1.8;">
+        <li>✅ Áo, quần, đầm, váy nữ</li>
+        <li>✅ Miễn phí vận chuyển đơn từ 500.000₫</li>
+        <li>✅ Đổi trả trong 7 ngày</li>
+    </ul>
+    <div style="background: white; color: #333; padding: 15px; border-radius: 5px; margin-top: 20px; text-align: center;">
+        <p style="margin: 0; font-size: 14px;">Sử dụng mã giảm giá:</p>
+        <p style="margin: 10px 0 0 0; font-size: 24px; font-weight: bold; color: #e74c3c;">WOMEN30</p>
+    </div>
+    <p style="margin-top: 20px; font-size: 14px; font-style: italic;">⏰ Ưu đãi có hiệu lực đến hết tháng này!</p>
+</div>', 
  'promotion_women_30.jpg', 
  1, 
- '2025-10-15 00:00:00', 
- '2025-10-31 23:59:59', 
+ NOW(), 
+ DATE_ADD(NOW(), INTERVAL 30 DAY), 
  1, 1, 1, NOW(), NOW()),
 
 (2, 'FLASH SALE CUỐI TUẦN - GIẢM 50%', 
- 'Flash sale chỉ 2 ngày cuối tuần', 
- '<p>Giảm giá <strong>50%</strong> cho một số sản phẩm chọn lọc. Nhanh tay kẻo hết!</p>', 
+ 'Flash sale chỉ diễn ra trong thời gian giới hạn', 
+ '<div style="font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 10px;">
+    <h2 style="margin-top: 0; color: #FFD700;">⚡ FLASH SALE SIÊU HOT</h2>
+    <p style="font-size: 18px;">Giảm giá <strong>50%</strong> cho các sản phẩm chọn lọc!</p>
+    <ul style="font-size: 16px; line-height: 1.8;">
+        <li>🔥 Áo thun, áo khoác</li>
+        <li>🔥 Số lượng có hạn</li>
+        <li>🔥 Nhanh tay kẻo hết!</li>
+    </ul>
+    <div style="background: white; color: #333; padding: 15px; border-radius: 5px; margin-top: 20px; text-align: center;">
+        <p style="margin: 0; font-size: 14px;">Sử dụng mã giảm giá:</p>
+        <p style="margin: 10px 0 0 0; font-size: 24px; font-weight: bold; color: #e74c3c;">FLASH50</p>
+    </div>
+    <p style="margin-top: 20px; font-size: 14px; font-style: italic;">⏰ Chỉ còn 7 ngày!</p>
+</div>', 
  'flash_sale.jpg', 
  2, 
- '2025-10-20 00:00:00', 
- '2025-10-22 23:59:59', 
- 1, 2, 1, NOW(), NOW());
+ NOW(), 
+ DATE_ADD(NOW(), INTERVAL 7 DAY), 
+ 1, 2, 1, NOW(), NOW()),
+
+(3, 'KHUYẾN MÃI MÙA HÈ - GIẢM 20%',
+ 'Chào mừng mùa hè với ưu đãi đặc biệt',
+ '<div style="font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border-radius: 10px;">
+    <h2 style="margin-top: 0; color: #FFD700;">☀️ ƯU ĐÃI MÙA HÈ</h2>
+    <p style="font-size: 18px;">Giảm giá <strong>20%</strong> toàn bộ bộ sưu tập mùa hè!</p>
+    <ul style="font-size: 16px; line-height: 1.8;">
+        <li>🌴 Áo thun, quần short</li>
+        <li>🌴 Váy, đầm mùa hè</li>
+        <li>🌴 Phụ kiện thời trang</li>
+    </ul>
+    <div style="background: white; color: #333; padding: 15px; border-radius: 5px; margin-top: 20px; text-align: center;">
+        <p style="margin: 0; font-size: 14px;">Sử dụng mã giảm giá:</p>
+        <p style="margin: 10px 0 0 0; font-size: 24px; font-weight: bold; color: #e74c3c;">SUMMER20</p>
+    </div>
+    <p style="margin-top: 20px; font-size: 14px; font-style: italic;">⏰ Ưu đãi kéo dài 2 tháng!</p>
+</div>',
+ 'summer_sale.jpg',
+ 4,
+ NOW(),
+ DATE_ADD(NOW(), INTERVAL 60 DAY),
+ 1, 3, 1, NOW(), NOW());
 
 -- Mẫu đánh giá (VERSION 2.0: Bao gồm ảnh đánh giá)
 INSERT INTO `tbl_product_review` VALUES 

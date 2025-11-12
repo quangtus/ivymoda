@@ -28,30 +28,21 @@ class DashboardController extends \Controller {
      * Trang chủ admin dashboard
      */
     public function index() {
-        $data = [
-            'title' => 'Dashboard - IVY moda Admin',
-            'total_users' => 0,
-            'total_orders' => 0,
-            'total_products' => 0,
-            'recent_orders' => []
-        ];
-        
-        // Lấy thống kê cơ bản
-        $users = $this->userModel->getAllUsers();
-        $data['total_users'] = $users ? count($users) : 0;
-        
-        // Lấy các thống kê dashboard
-        $newOrders = $this->dashboardModel->countNewOrders();
-        $totalProducts = $this->dashboardModel->countProducts();
-        $totalCustomers = $this->dashboardModel->countCustomers();
+        // Lấy thống kê từ DashboardModel
+        $totalUsers = $this->dashboardModel->countCustomers(); // Đếm khách hàng (role_id = 2)
+        $totalOrders = $this->dashboardModel->countTotalOrders(); // Đếm tất cả đơn hàng
+        $totalProducts = $this->dashboardModel->countProducts(); // Đếm tổng số sản phẩm
         
         // Lấy danh sách đơn hàng gần đây
         $recentOrders = $this->orderModel->getRecentOrders(5);
         
-        $data['newOrders'] = $newOrders;
-        $data['totalProducts'] = $totalProducts;
-        $data['totalCustomers'] = $totalCustomers;
-        $data['recentOrders'] = $recentOrders;
+        $data = [
+            'title' => 'Dashboard - IVY moda Admin',
+            'total_users' => $totalUsers,
+            'total_orders' => $totalOrders,
+            'total_products' => $totalProducts,
+            'recent_orders' => $recentOrders
+        ];
         
         $this->view('admin/dashboard/index', $data);
     }

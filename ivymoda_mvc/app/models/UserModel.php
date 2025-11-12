@@ -254,6 +254,9 @@ class UserModel extends Model {
     
     /**
      * Đăng nhập
+     * @param string $username Username
+     * @param string $password Password
+     * @return object|string User object nếu thành công, string lỗi nếu thất bại
      */
     public function login($username, $password) {
         $username = $this->escape($username);
@@ -265,11 +268,14 @@ class UserModel extends Model {
             $user_password = is_object($user) ? $user->password : (is_array($user) ? $user['password'] : null);
             $user_id = is_object($user) ? $user->id : (is_array($user) ? $user['id'] : null);
             
+            // Kiểm tra tài khoản chưa kích hoạt
+            if($status == 0) {
+                return "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt tài khoản.";
+            }
+            
             // Kiểm tra tài khoản bị khóa
             if($status == 2) {
                 return "Tài khoản đã bị khóa";
-            } elseif($status == 0) {
-                return "Tài khoản đã bị vô hiệu hóa";
             }
             
             // Kiểm tra mật khẩu
@@ -345,8 +351,16 @@ class UserModel extends Model {
     
     /**
      * Đăng ký người dùng mới
+     * @param string $username Username
+     * @param string $password Password (chưa mã hóa)
+     * @param string $email Email
+     * @param string $fullname Họ tên
+     * @param string $phone Số điện thoại
+     * @param string $address Địa chỉ
+     * @param string|null $activationToken Token kích hoạt (nếu có)
+     * @return bool|string True nếu thành công, string lỗi nếu thất bại
      */
-    public function register($username, $password, $email, $fullname, $phone = '', $address = '') {
+    public function register($username, $password, $email, $fullname, $phone = '', $address = '', $activationToken = null) {
         $username = $this->escape($username);
         $email = $this->escape($email);
         $fullname = $this->escape($fullname);
@@ -368,12 +382,31 @@ class UserModel extends Model {
         // Mã hóa mật khẩu
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
-        // Thêm người dùng mới
-        $query = "INSERT INTO {$this->table} (username, password, email, fullname, phone, address, role_id, status, login_attempts) 
-                VALUES ('$username', '$hashed_password', '$email', '$fullname', '$phone', '$address', 2, 1, 0)";
+        // Tạo activation token nếu chưa có
+        if($activationToken === null) {
+            $activationToken = bin2hex(random_bytes(32));
+        } else {
+            $activationToken = $this->escape($activationToken);
+        }
+        
+        // Token hết hạn sau 24 giờ
+        $tokenExpire = date('Y-m-d H:i:s', strtotime('+24 hours'));
+        
+        // Thêm người dùng mới với activation token
+        $query = "INSERT INTO {$this->table} (
+                    username, password, email, fullname, phone, address, 
+                    role_id, status, login_attempts, 
+                    activation_token, activation_token_expire,
+                    email_notifications, promotion_emails
+                ) VALUES (
+                    '$username', '$hashed_password', '$email', '$fullname', '$phone', '$address',
+                    2, 0, 0,
+                    '$activationToken', '$tokenExpire',
+                    1, 1
+                )";
                 
         if($this->execute($query)) {
-            return true;
+            return $activationToken; // Trả về token để gửi email
         } else {
             return "Đăng ký thất bại";
         }
@@ -602,12 +635,16 @@ class UserModel extends Model {
     
     /**
      * Kích hoạt tài khoản qua token
+     * @param string $token Activation token
+     * @return bool|string True nếu thành công, string lỗi nếu thất bại
      */
     public function activateAccount($token) {
         $token = $this->escape($token);
         
         // Tìm user có token này và chưa hết hạn
-        $query = "SELECT * FROM {$this->table} WHERE activation_token = '$token' AND activation_token_expire > NOW()";
+        $query = "SELECT * FROM {$this->table} 
+                  WHERE activation_token = '$token' 
+                  AND activation_token_expire > NOW()";
         $user = $this->getOne($query);
         
         if($user) {
@@ -615,6 +652,7 @@ class UserModel extends Model {
             $user_id = is_object($user) ? $user->id : $user['id'];
             $update_query = "UPDATE {$this->table} SET 
                             status = 1,
+                            login_attempts = 0,
                             activation_token = NULL,
                             activation_token_expire = NULL
                             WHERE id = $user_id";
@@ -626,37 +664,6 @@ class UserModel extends Model {
             }
         } else {
             return "Token không hợp lệ hoặc đã hết hạn";
-        }
-    }
-    
-    /**
-     * Tạo activation token cho user
-     */
-    public function createActivationToken($email) {
-        $email = $this->escape($email);
-        
-        // Tìm user theo email
-        $user = $this->findUserByEmail($email);
-        if(!$user) {
-            return false;
-        }
-        
-        // Tạo token mới
-        $token = bin2hex(random_bytes(32));
-        $expire_time = date('Y-m-d H:i:s', strtotime('+24 hours'));
-        
-        $user_id = is_object($user) ? $user->id : $user['id'];
-        
-        // Cập nhật token vào database
-        $query = "UPDATE {$this->table} SET 
-                activation_token = '$token',
-                activation_token_expire = '$expire_time'
-                WHERE id = $user_id";
-        
-        if($this->execute($query)) {
-            return $token;
-        } else {
-            return false;
         }
     }
 }

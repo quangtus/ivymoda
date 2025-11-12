@@ -50,6 +50,26 @@ if %PHP_MAJOR% EQU 7 if %PHP_MINOR% LSS 4 (
     exit /b 1
 )
 
+:: Check PHP Extensions
+echo Checking required PHP extensions...
+php -r "if(!extension_loaded('mysqli')) exit(1);" >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [WARNING] mysqli extension not loaded
+)
+php -r "if(!extension_loaded('pdo_mysql')) exit(1);" >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [WARNING] pdo_mysql extension not loaded
+)
+php -r "if(!extension_loaded('mbstring')) exit(1);" >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [WARNING] mbstring extension not loaded
+)
+php -r "if(!extension_loaded('openssl')) exit(1);" >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [WARNING] openssl extension not loaded - Required for email
+)
+echo.
+
 :: Step 2: Check and Install Composer
 echo [Step 2/7] Checking Composer Installation...
 echo ----------------------------------------

@@ -188,28 +188,33 @@ class EmailHelper {
         
         foreach ($recipients as $recipient) {
             try {
+                // Convert object to array if needed
+                $recipientEmail = is_object($recipient) ? $recipient->email : $recipient['email'];
+                $recipientName = is_object($recipient) ? ($recipient->fullname ?? 'Khách hàng') : ($recipient['fullname'] ?? 'Khách hàng');
+                $recipientId = is_object($recipient) ? ($recipient->id ?? null) : ($recipient['id'] ?? null);
+                
                 $subject = $this->replaceVariables($template->subject, [
-                    'customer_name' => $recipient['fullname'] ?? 'Khách hàng',
+                    'customer_name' => $recipientName,
                     'promotion_title' => $promotionData['title']
                 ]);
                 
                 $body = $this->replaceVariables($template->body, [
-                    'customer_name' => $recipient['fullname'] ?? 'Khách hàng',
+                    'customer_name' => $recipientName,
                     'promotion_title' => $promotionData['title'],
                     'content' => $promotionData['content'],
                     'start_date' => date('d/m/Y', strtotime($promotionData['start_date'])),
                     'end_date' => date('d/m/Y', strtotime($promotionData['end_date']))
                 ]);
                 
-                $success = $this->sendEmail($recipient['email'], $subject, $body);
+                $success = $this->sendEmail($recipientEmail, $subject, $body);
                 
                 if ($success) {
                     $results['sent']++;
-                    $this->emailModel->logPromotionEmail($promotionData['title'], $recipient['email'], $recipient['id'] ?? null, 'sent');
+                    $this->emailModel->logPromotionEmail($promotionData['title'], $recipientEmail, $recipientId, 'sent');
                 } else {
                     $results['failed']++;
-                    $results['errors'][] = "Failed to send to {$recipient['email']}";
-                    $this->emailModel->logPromotionEmail($promotionData['title'], $recipient['email'], $recipient['id'] ?? null, 'failed', 'Unknown error');
+                    $results['errors'][] = "Failed to send to {$recipientEmail}";
+                    $this->emailModel->logPromotionEmail($promotionData['title'], $recipientEmail, $recipientId, 'failed', 'Unknown error');
                 }
                 
                 // Giới hạn 100 email/phút
@@ -219,8 +224,10 @@ class EmailHelper {
                 
             } catch (Exception $e) {
                 $results['failed']++;
-                $results['errors'][] = "Error sending to {$recipient['email']}: " . $e->getMessage();
-                $this->emailModel->logPromotionEmail($promotionData['title'], $recipient['email'], $recipient['id'] ?? null, 'failed', $e->getMessage());
+                $recipientEmailErr = is_object($recipient) ? $recipient->email : $recipient['email'];
+                $recipientIdErr = is_object($recipient) ? ($recipient->id ?? null) : ($recipient['id'] ?? null);
+                $results['errors'][] = "Error sending to {$recipientEmailErr}: " . $e->getMessage();
+                $this->emailModel->logPromotionEmail($promotionData['title'], $recipientEmailErr, $recipientIdErr, 'failed', $e->getMessage());
             }
         }
         
@@ -229,6 +236,11 @@ class EmailHelper {
     
     /**
      * Gửi email chung
+     * @param string $to Email người nhận
+     * @param string $subject Tiêu đề email
+     * @param string $body Nội dung email
+     * @param bool $isHTML Email dạng HTML hay plain text
+     * @return bool Trạng thái gửi email
      */
     public function sendEmail($to, $subject, $body, $isHTML = true) {
         try {
@@ -254,6 +266,9 @@ class EmailHelper {
     
     /**
      * Thay thế biến trong template
+     * @param string $content Nội dung template
+     * @param array $variables Mảng biến cần thay thế
+     * @return string Nội dung sau khi thay thế
      */
     private function replaceVariables($content, $variables) {
         foreach ($variables as $key => $value) {
@@ -264,6 +279,8 @@ class EmailHelper {
     
     /**
      * Tạo link kích hoạt tài khoản
+     * @param string $token Token kích hoạt
+     * @return string URL kích hoạt
      */
     private function getActivationLink($token) {
         $baseUrl = EnvHelper::get('BASE_URL', 'http://localhost/ivymoda/ivymoda_mvc/public/');
@@ -272,6 +289,8 @@ class EmailHelper {
     
     /**
      * Tạo link đặt lại mật khẩu
+     * @param string $token Token reset mật khẩu
+     * @return string URL reset mật khẩu
      */
     private function getResetPasswordLink($token) {
         $baseUrl = EnvHelper::get('BASE_URL', 'http://localhost/ivymoda/ivymoda_mvc/public/');
@@ -314,6 +333,10 @@ class EmailHelper {
     
     /**
      * Email đăng ký mặc định
+     * @param string $email Email người nhận
+     * @param string $username Tên đăng nhập
+     * @param string $activationToken Token kích hoạt
+     * @return bool Trạng thái gửi email
      */
     private function sendDefaultRegistrationEmail($email, $username, $activationToken) {
         $subject = "Xác nhận đăng ký tài khoản - IVY Moda";
@@ -357,6 +380,9 @@ class EmailHelper {
     
     /**
      * Email đơn hàng mặc định
+     * @param string $email Email người nhận
+     * @param array $orderData Dữ liệu đơn hàng
+     * @return bool Trạng thái gửi email
      */
     private function sendDefaultOrderEmail($email, $orderData) {
         $subject = "Xác nhận đơn hàng #{$orderData['order_code']} - IVY Moda";
@@ -405,6 +431,10 @@ class EmailHelper {
     
     /**
      * Email đặt lại mật khẩu mặc định
+     * @param string $email Email người nhận
+     * @param string $username Tên đăng nhập
+     * @param string $resetToken Token reset mật khẩu
+     * @return bool Trạng thái gửi email
      */
     private function sendDefaultPasswordResetEmail($email, $username, $resetToken) {
         $subject = "Đặt lại mật khẩu - IVY Moda";
@@ -448,6 +478,9 @@ class EmailHelper {
     
     /**
      * Kiểm tra cài đặt email của user
+     * @param string $email Email người dùng
+     * @param string $settingType Loại cài đặt (promotion_emails, order_emails, etc.)
+     * @return bool Trạng thái cài đặt
      */
     private function checkUserEmailSettings($email, $settingType) {
         $sql = "SELECT {$settingType} FROM users WHERE email = ?";

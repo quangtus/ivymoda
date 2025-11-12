@@ -66,13 +66,13 @@
                 
                 <div class="form-group">
                     <label for="new_password">Mật khẩu mới <span style="color: red;">*</span></label>
-                    <input type="password" id="new_password" name="new_password" required>
-                    <small style="color: #6c757d; font-size: 12px;">Mật khẩu phải có ít nhất 6 ký tự</small>
+                    <input type="password" id="new_password" name="new_password" minlength="8" required>
+                    <small style="color: #6c757d; font-size: 12px;">Mật khẩu phải có ít nhất 8 ký tự</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="confirm_password">Xác nhận mật khẩu mới <span style="color: red;">*</span></label>
-                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <input type="password" id="confirm_password" name="confirm_password" minlength="8" required>
                 </div>
                 
                 <button type="submit" class="btn-submit">Đổi mật khẩu</button>

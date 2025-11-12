@@ -71,8 +71,8 @@ class UserController extends Controller {
                 $data['error'] = 'Vui lòng điền đầy đủ thông tin';
             } elseif($new_password !== $confirm_password) {
                 $data['error'] = 'Mật khẩu xác nhận không khớp';
-            } elseif(strlen($new_password) < 6) {
-                $data['error'] = 'Mật khẩu mới phải có ít nhất 6 ký tự';
+            } elseif(strlen($new_password) < 8) {
+                $data['error'] = 'Mật khẩu mới phải có ít nhất 8 ký tự';
             } else {
                 $result = $this->userModel->changePassword($user_id, $current_password, $new_password);
                 
