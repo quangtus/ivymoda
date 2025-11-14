@@ -1,14 +1,16 @@
 -- ============================================
--- IVYMODA DATABASE - FINAL VERSION 7.2
+-- IVYMODA DATABASE - FINAL VERSION 7.3
 -- ============================================
 -- Kế thừa từ: ivymoda_update.sql (100% tương thích code)
 -- Bổ sung: Review, Promotion (từ ivymoda_complete.sql)
 -- Bổ sung: Email Activation System (VERSION 7.0)
 -- Bổ sung: Chatbot System (VERSION 7.2 - UC3.47, UC3.48)
+-- Tối ưu: Performance Indexes cho FAQ Category (VERSION 7.3)
 -- Loại bỏ: Các bảng thừa (wishlist, notification)
 -- Tương thích: 100% với code hiện tại
 -- Ngày tạo: 2025-01-14
 -- Cập nhật: 2025-10-18 - Thêm hệ thống Chatbot
+-- Cập nhật: 2025-11-13 - Tối ưu performance FAQ Category System
 -- ============================================
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -423,7 +425,7 @@ CREATE TABLE `tbl_chatbot_faq` (
   `faq_id` int(11) NOT NULL AUTO_INCREMENT,
   `question` varchar(500) NOT NULL COMMENT 'Câu hỏi hiển thị cho người dùng',
   `answer` text NOT NULL COMMENT 'Câu trả lời chi tiết (có thể chứa HTML)',
-  `category` varchar(100) NOT NULL COMMENT 'Danh mục FAQ (Đăng ký, Đặt hàng, Thanh toán...)',
+  `category` varchar(100) NOT NULL COMMENT 'Danh mục FAQ - Tự động làm dropdown qua SELECT DISTINCT (không cần bảng riêng)',
   `display_order` int(11) DEFAULT 0 COMMENT 'Thứ tự hiển thị',
   `status` tinyint(1) DEFAULT 1 COMMENT '1: Active, 0: Inactive',
   `help_link` varchar(255) DEFAULT NULL COMMENT 'Link hướng dẫn chi tiết',
@@ -434,8 +436,11 @@ CREATE TABLE `tbl_chatbot_faq` (
   KEY `idx_category` (`category`),
   KEY `idx_status_order` (`status`, `display_order`),
   KEY `idx_created_by` (`created_by`),
+  KEY `idx_category_status` (`category`, `status`) COMMENT 'Index tối ưu cho SELECT DISTINCT category',
+  KEY `idx_display_order` (`display_order`) COMMENT 'Index tối ưu cho ORDER BY display_order',
+  KEY `idx_status_category_order` (`status`, `category`, `display_order`) COMMENT 'Composite index cho query getFaqs()',
   CONSTRAINT `fk_faq_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='FAQ cho chatbot hướng dẫn - UC3.48';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='FAQ cho chatbot hướng dẫn - UC3.48 | Tối ưu performance với indexes';
 
 -- Bảng lịch sử hội thoại chatbot (UC3.47 - Chatbot tư vấn sản phẩm)
 CREATE TABLE `tbl_chatbot_conversation` (
@@ -1008,7 +1013,7 @@ INSERT INTO `tbl_chatbot_faq` VALUES
 
 -- Cấu hình chatbot (UC3.47)
 INSERT INTO `tbl_chatbot_config` VALUES 
-(1, 'gemini_api_key', 'AIzaSyA6RZuA5V6DqAXWcdHMqXgn0Dxe_GEVIak', 'API key của Gemini AI để tư vấn sản phẩm', NOW()),
+(1, 'gemini_api_key', 'AIzaSyBajiQVKLM9Q-xKsI-ciPn2_7xgg9bptCU', 'API key của Gemini AI để tư vấn sản phẩm', NOW()),
 (2, 'max_products_suggest', '5', 'Số lượng sản phẩm gợi ý tối đa mỗi lần', NOW()),
 (3, 'context_max_length', '2000', 'Độ dài context tối đa gửi cho Gemini (ký tự)', NOW()),
 (4, 'response_timeout', '3000', 'Thời gian chờ phản hồi tối đa (milliseconds)', NOW()),

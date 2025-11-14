@@ -27,7 +27,7 @@
                 <!-- Chatbot Settings -->
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5>Cài đặt Chatbot</h5>
+                        <h5>Cài đặt Chatbot FAQ</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -60,73 +60,7 @@
                     </div>
                 </div>
 
-                <!-- FAQ Settings -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5>Cài đặt FAQ</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="max_faqs_display" class="form-label">Số FAQ hiển thị tối đa</label>
-                                <input type="number" class="form-control" id="max_faqs_display" name="max_faqs_display" 
-                                       value="10" min="1" max="50">
-                                <div class="form-text">Số lượng FAQ hiển thị tối đa mỗi lần (1-50)</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="search_min_length" class="form-label">Độ dài tối thiểu tìm kiếm</label>
-                                <input type="number" class="form-control" id="search_min_length" name="search_min_length" 
-                                       value="2" min="1" max="10">
-                                <div class="form-text">Số ký tự tối thiểu để bắt đầu tìm kiếm</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Advanced Settings -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5>Cài đặt nâng cao</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="auto_open_delay" class="form-label">Tự động mở (giây)</label>
-                                <input type="number" class="form-control" id="auto_open_delay" name="auto_open_delay" 
-                                       value="0" min="0" max="60">
-                                <div class="form-text">Tự động mở chatbot sau X giây (0 = không tự động)</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="show_categories" class="form-label">Hiển thị danh mục</label>
-                                <select class="form-select" id="show_categories" name="show_categories">
-                                    <option value="1" selected>Có</option>
-                                    <option value="0">Không</option>
-                                </select>
-                                <div class="form-text">Hiển thị danh mục FAQ trong chatbot</div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="enable_search" class="form-label">Bật tìm kiếm</label>
-                                <select class="form-select" id="enable_search" name="enable_search">
-                                    <option value="1" selected>Có</option>
-                                    <option value="0">Không</option>
-                                </select>
-                                <div class="form-text">Cho phép tìm kiếm FAQ</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="widget_theme" class="form-label">Giao diện</label>
-                                <select class="form-select" id="widget_theme" name="widget_theme">
-                                    <option value="light" selected>Sáng</option>
-                                    <option value="dark">Tối</option>
-                                    <option value="auto">Tự động</option>
-                                </select>
-                                <div class="form-text">Giao diện chatbot</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
@@ -223,18 +157,18 @@
                 </div>
                 <div class="card-body">
                     <div class="help-content">
-                        <h6>Cấu hình chatbot:</h6>
+                        <h6>Cấu hình chatbot FAQ:</h6>
                         <ul>
                             <li>Lời chào nên thân thiện và hướng dẫn rõ ràng</li>
                             <li>Vị trí góc dưới bên phải phù hợp với hầu hết website</li>
-                            <li>Không nên tự động mở quá sớm (gây khó chịu)</li>
+                            <li>Tắt FAQ mode khi cần bảo trì hoặc cập nhật hệ thống</li>
                         </ul>
 
-                        <h6>FAQ Settings:</h6>
+                        <h6>Quản lý danh mục FAQ:</h6>
                         <ul>
-                            <li>Hiển thị 10-15 FAQ là tối ưu</li>
-                            <li>Bật tìm kiếm giúp người dùng dễ tìm thông tin</li>
-                            <li>Danh mục giúp phân loại câu hỏi</li>
+                            <li>Danh mục được tự động trích xuất từ các FAQ hiện có</li>
+                            <li>Thêm FAQ mới với category mới → Dropdown tự cập nhật</li>
+                            <li>Chỉ hiển thị category có ít nhất 1 FAQ đang hoạt động</li>
                         </ul>
                     </div>
                 </div>
@@ -439,39 +373,8 @@ function resetToDefault() {
         document.getElementById('welcome_message').value = 'Xin chào! Chọn câu hỏi bạn muốn hỏi:';
         document.getElementById('enable_faq_mode').value = '1';
         document.getElementById('position').value = 'bottom-right';
-        document.getElementById('max_faqs_display').value = '10';
-        document.getElementById('search_min_length').value = '2';
-        document.getElementById('auto_open_delay').value = '0';
-        document.getElementById('show_categories').value = '1';
-        document.getElementById('enable_search').value = '1';
-        document.getElementById('widget_theme').value = 'light';
     }
 }
-
-// Form validation
-document.querySelector('form').addEventListener('submit', function(e) {
-    const maxFaqs = parseInt(document.getElementById('max_faqs_display').value);
-    const searchMinLength = parseInt(document.getElementById('search_min_length').value);
-    const autoOpenDelay = parseInt(document.getElementById('auto_open_delay').value);
-
-    if (maxFaqs < 1 || maxFaqs > 50) {
-        e.preventDefault();
-        alert('Số FAQ hiển thị tối đa phải từ 1 đến 50');
-        return;
-    }
-
-    if (searchMinLength < 1 || searchMinLength > 10) {
-        e.preventDefault();
-        alert('Độ dài tối thiểu tìm kiếm phải từ 1 đến 10');
-        return;
-    }
-
-    if (autoOpenDelay < 0 || autoOpenDelay > 60) {
-        e.preventDefault();
-        alert('Thời gian tự động mở phải từ 0 đến 60 giây');
-        return;
-    }
-});
 </script>
 
 <?php include_once __DIR__ . '/../../shared/admin/footer.php'; ?>

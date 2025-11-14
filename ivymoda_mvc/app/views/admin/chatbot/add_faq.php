@@ -40,15 +40,51 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="category" class="form-label">Danh mục <span class="text-danger">*</span></label>
-                            <select class="form-control" id="category" name="category" required>
-                                <option value="">Chọn danh mục</option>
-                                <?php foreach ($categories as $category): ?>
-                                    <option value="<?php echo htmlspecialchars($category); ?>">
-                                        <?php echo htmlspecialchars($category); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <label for="category" class="form-label">
+                                Danh mục <span class="text-danger">*</span>
+                                <button type="button" class="btn btn-sm btn-link p-0 ms-2" id="toggleCategoryMode">
+                                    <i class="fas fa-exchange-alt"></i> Đổi chế độ
+                                </button>
+                            </label>
+                            
+                            <!-- MODE 1: Chọn từ danh sách có sẵn -->
+                            <div id="selectMode" style="display: <?php echo !empty($categories) ? 'block' : 'none'; ?>;">
+                                <select class="form-control" id="categorySelect" name="category_select">
+                                    <option value="">-- Chọn danh mục có sẵn --</option>
+                                    <?php if (!empty($categories)): ?>
+                                        <?php foreach ($categories as $cat): ?>
+                                            <option value="<?php echo htmlspecialchars($cat->category); ?>">
+                                                <?php echo htmlspecialchars($cat->category); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> Chọn từ <strong><?php echo count($categories); ?> danh mục</strong> có sẵn
+                                </div>
+                            </div>
+                            
+                            <!-- MODE 2: Tạo danh mục mới -->
+                            <div id="inputMode" style="display: <?php echo empty($categories) ? 'block' : 'none'; ?>;">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-plus"></i></span>
+                                    <input type="text" class="form-control" id="categoryInput" 
+                                           name="category_input" placeholder="Nhập tên danh mục mới...">
+                                </div>
+                                <div class="form-text text-success">
+                                    <i class="fas fa-lightbulb"></i> Tạo danh mục mới (VD: Vận chuyển, Bảo hành, FAQ kỹ thuật...)
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden field chứa giá trị cuối cùng -->
+                            <input type="hidden" id="category" name="category" required>
+                            
+                            <?php if (empty($categories)): ?>
+                                <div class="alert alert-info mt-2 mb-0 py-2">
+                                    <i class="fas fa-info-circle"></i> 
+                                    <small>Chưa có danh mục nào. Hãy tạo danh mục đầu tiên!</small>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -128,10 +164,90 @@
 </style>
 
 <script>
-// Auto-resize textarea
-document.getElementById('answer').addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = this.scrollHeight + 'px';
+// ============================================
+// CATEGORY MODE TOGGLE & VALIDATION
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    const selectMode = document.getElementById('selectMode');
+    const inputMode = document.getElementById('inputMode');
+    const categorySelect = document.getElementById('categorySelect');
+    const categoryInput = document.getElementById('categoryInput');
+    const categoryHidden = document.getElementById('category');
+    const toggleBtn = document.getElementById('toggleCategoryMode');
+    const form = document.querySelector('form');
+    
+    // Chuyển đổi giữa 2 mode
+    toggleBtn.addEventListener('click', function() {
+        if (selectMode.style.display === 'none') {
+            // Chuyển sang mode SELECT
+            selectMode.style.display = 'block';
+            inputMode.style.display = 'none';
+            categoryInput.value = '';
+            categoryHidden.value = categorySelect.value;
+        } else {
+            // Chuyển sang mode INPUT
+            selectMode.style.display = 'none';
+            inputMode.style.display = 'block';
+            categorySelect.value = '';
+            categoryHidden.value = categoryInput.value;
+            categoryInput.focus();
+        }
+    });
+    
+    // Cập nhật hidden field khi chọn từ dropdown
+    categorySelect.addEventListener('change', function() {
+        categoryHidden.value = this.value;
+    });
+    
+    // Cập nhật hidden field khi nhập tay
+    categoryInput.addEventListener('input', function() {
+        categoryHidden.value = this.value;
+    });
+    
+    // Validate trước khi submit
+    form.addEventListener('submit', function(e) {
+        const categoryValue = categoryHidden.value.trim();
+        
+        if (!categoryValue) {
+            e.preventDefault();
+            alert('⚠️ Vui lòng chọn hoặc nhập danh mục!');
+            
+            // Focus vào field đang active
+            if (selectMode.style.display !== 'none') {
+                categorySelect.focus();
+            } else {
+                categoryInput.focus();
+            }
+            return false;
+        }
+        
+        // Kiểm tra độ dài
+        if (categoryValue.length > 100) {
+            e.preventDefault();
+            alert('⚠️ Tên danh mục không được quá 100 ký tự!');
+            categoryInput.focus();
+            return false;
+        }
+        
+        return true;
+    });
+    
+    // Auto-resize textarea cho answer
+    const answerTextarea = document.getElementById('answer');
+    answerTextarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+    
+    // Khởi tạo giá trị ban đầu cho hidden field
+    if (selectMode.style.display !== 'none' && categorySelect.value) {
+        categoryHidden.value = categorySelect.value;
+    } else if (inputMode.style.display !== 'none' && categoryInput.value) {
+        categoryHidden.value = categoryInput.value;
+    }
+    
+    console.log('✅ FAQ Category Manager initialized');
 });
 
 // Form validation

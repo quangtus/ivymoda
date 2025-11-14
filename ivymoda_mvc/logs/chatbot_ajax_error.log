@@ -110,3 +110,232 @@
 [09-Nov-2025 06:33:20 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1762666388640_azdnyu22r
 [09-Nov-2025 06:33:20 Europe/Berlin] 📤 Sending to Gemini - Message: Tôi muốn tìm áo sơ mi nam
 [09-Nov-2025 06:33:26 Europe/Berlin] 📥 Gemini Response: {"success":true,"response":"Ch\u00e0o b\u1ea1n! IVY Moda r\u1ea5t vui \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1ea1n.\n\nB\u1ea1n \u0111ang t\u00ecm \u00e1o s\u01a1 mi nam ph\u1ea3i kh\u00f4ng \u1ea1? IVY Moda hi\u1ec7n c\u00f3 m\u1eabu **\u00c1O S\u01a0 MI NAM TR\u1eaeNG BASIC** r\u1ea5t \u0111\u01b0\u1ee3c \u01b0a chu\u1ed9ng \u0111\u00f3 \u1ea1!\n\n\u0110\u00e2y l\u00e0 m\u1ed9t l\u1ef1a ch\u1ecdn tuy\u1ec7t v\u1eddi v\u1edbi nh\u1eefng \u01b0u \u0111i\u1ec3m sau:\n\n*   **Gi\u00e1:** 499,000\u20ab\n*   **Style:** V\u1edbi thi\u1ebft k\u1ebf basic, chi\u1ebfc \u00e1o n\u00e0y v\u00f4 c\u00f9ng \u0111a n\u0103ng. B\u1ea1n c\u00f3 th\u1ec3 d\u1ec5 d\u00e0ng ph\u1ed1i h\u1ee3p cho nhi\u1ec1u d\u1ecbp:\n    *   **C\u00f4ng s\u1edf:** K\u1ebft h\u1ee3p v\u1edbi qu\u1ea7n t\u00e2y v\u00e0 gi\u00e0y t\u00e2y \u0111\u1ec3 c\u00f3 v\u1ebb ngo\u00e0i l\u1ecbch l\u00e3m, chuy\u00ean nghi\u1ec7p.\n    *   **\u0110i ch\u01a1i\/H\u1eb9n h\u00f2:** M\u1eb7c c\u00f9ng qu\u1ea7n jeans ho\u1eb7c chinos, c\u00f3 th\u1ec3 x\u1eafn tay \u00e1o l\u00ean \u0111\u1ec3 t\u1ea1o phong c\u00e1ch n\u0103ng \u0111\u1ed9ng, tr\u1ebb trung h\u01a1n.\n    *   **Kho\u00e1c ngo\u00e0i:** Kho\u00e1c ngo\u00e0i \u00e1o thun tr\u01a1n c\u0169ng l\u00e0","usage":{"promptTokenCount":410,"candidatesTokenCount":195,"totalTokenCount":1432,"promptTokensDetails":[{"modality":"TEXT","tokenCount":410}],"thoughtsTokenCount":827}}
+[13-Nov-2025 06:08:50 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763010431079_ox85icit3
+[13-Nov-2025 06:08:50 Europe/Berlin] ❌ Gemini API key not found
+[13-Nov-2025 06:08:54 Europe/Berlin] 🤖 AI Request - Message: làm vợ anh nhé | Session: session_1763010431079_ox85icit3
+[13-Nov-2025 06:08:54 Europe/Berlin] ❌ Gemini API key not found
+[13-Nov-2025 06:09:01 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763010538965_8dyasu967
+[13-Nov-2025 06:09:01 Europe/Berlin] ❌ Gemini API key not found
+[13-Nov-2025 06:09:12 Europe/Berlin] 🤖 AI Request - Message: vãi cc | Session: session_1763010538965_8dyasu967
+[13-Nov-2025 06:09:12 Europe/Berlin] ❌ Gemini API key not found
+[13-Nov-2025 06:12:11 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763010727770_ip2pfqo9y
+[13-Nov-2025 06:12:11 Europe/Berlin] ❌ Gemini API key not found
+[13-Nov-2025 06:21:04 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763011262280_cj3cbbpps
+[13-Nov-2025 06:21:04 Europe/Berlin] ❌ Gemini API key not found
+[13-Nov-2025 06:21:50 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763011305028_ebt2vytwc
+[13-Nov-2025 06:21:50 Europe/Berlin] ❌ Gemini API key not found
+[13-Nov-2025 06:26:29 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763011587205_hc0m4ytqf
+[13-Nov-2025 06:26:29 Europe/Berlin] 📤 Sending to Gemini - Message: Tôi muốn tìm áo sơ mi nam
+[13-Nov-2025 06:26:35 Europe/Berlin] 📥 Gemini Response: {"success":true,"response":"Ch\u00e0o b\u1ea1n! R\u1ea5t vui \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1ea1n t\u00ecm \u00e1o s\u01a1 mi nam t\u1ea1i IVY Moda \u1ea1.\n\nHi\u1ec7n t\u1ea1i, IVY Moda c\u00f3 s\u1ea3n ph\u1ea9m **\u00c1O S\u01a0 MI NAM TR\u1eaeNG BASIC** v\u1edbi m\u1ee9c gi\u00e1 **499,000\u20ab**.\n\n\u0110\u00e2y l\u00e0 m\u1ed9t l\u1ef1a ch\u1ecdn tuy\u1ec7t v\u1eddi cho c\u00e1c qu\u00fd \u00f4ng b\u1edfi s\u1ef1 thanh l\u1ecbch v\u00e0 t\u00ednh linh ho\u1ea1t.\n\n*   **V\u1ec1 style:** Chi\u1ebfc \u00e1o s\u01a1 mi tr\u1eafng basic n\u00e0y l\u00e0 item kh\u00f4ng th\u1ec3 thi\u1ebfu trong t\u1ee7 \u0111\u1ed3 c\u1ee7a m\u1ecdi ch\u00e0ng trai. B\u1ea1n c\u00f3 th\u1ec3 d\u1ec5 d\u00e0ng ph\u1ed1i h\u1ee3p v\u1edbi qu\u1ea7n t\u00e2y \u0111\u1ec3 c\u00f3 v\u1ebb ngo\u00e0i c\u00f4ng s\u1edf chuy\u00ean nghi\u1ec7p, ho\u1eb7c k\u1ebft h\u1ee3p v\u1edbi qu\u1ea7n jeans \u0111\u1ec3 t\u1ea1o phong c\u00e1ch tr\u1ebb trung, n\u0103ng \u0111\u1ed9ng khi \u0111i ch\u01a1i.\n*   **V\u1ec1 m\u00e0u s\u1eafc:** S\u1ea3n ph\u1ea9m c\u00f3 m\u00e0u **Tr\u1eafng** tinh t\u1ebf, d\u1ec5 d\u00e0ng ph\u1ed1i v\u1edbi m\u1ecdi m\u00e0u s\u1eafc qu\u1ea7n v\u00e0 ph\u1ee5 ki\u1ec7n kh\u00e1c.\n*   **V\u1ec1 size:** \u00c1o c\u00f3 s\u1eb5n \u0111\u1ea7y \u0111\u1ee7 c\u00e1c size t\u1eeb **XS, S, M, L, XL, XXL, 3XL** \u0111\u1ec3 b\u1ea1n l\u1ef1a ch\u1ecdn sao cho v\u1eeba v\u1eb7n nh\u1ea5t v\u1edbi v\u00f3c d\u00e1ng c\u1ee7a m\u00ecnh.\n\nB\u1ea1n c\u00f3 mu\u1ed1n IVY Moda t\u01b0 v\u1ea5n th\u00eam v\u1ec1 c\u00e1ch ch\u1ecdn size hay g\u1ee3i \u00fd c\u00e1c s\u1ea3n ph\u1ea9m kh\u00e1c \u0111\u1ec3","usage":{"promptTokenCount":410,"candidatesTokenCount":250,"totalTokenCount":1432,"promptTokensDetails":[{"modality":"TEXT","tokenCount":410}],"thoughtsTokenCount":772}}
+[13-Nov-2025 06:27:23 Europe/Berlin] 🤖 AI Request - Message: làm vợ anh nhé | Session: session_1763011638556_c0mthbosg
+[13-Nov-2025 06:27:23 Europe/Berlin] 📤 Sending to Gemini - Message: làm vợ anh nhé
+[13-Nov-2025 06:27:23 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https:\/\/ai.google.dev\/gemini-api\/docs\/rate-limits. To monitor your current usage, head to: https:\/\/ai.dev\/usage?tab=rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com\/generate_content_free_tier_requests, limit: 250\\nPlease retry in 36.997788059s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.Help\",\n        \"links\": [\n          {\n            \"description\": \"Learn more about Gemini API quotas\",\n            \"url\": \"https:\/\/ai.google.dev\/gemini-api\/docs\/rate-limits\"\n          }\n        ]\n      },\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.QuotaFailure\",\n        \"violations\": [\n          {\n            \"quotaMetric\": \"generativelanguage.googleapis.com\/generate_content_free_tier_requests\",\n            \"quotaId\": \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\n            \"quotaDimensions\": {\n              \"location\": \"global\",\n              \"model\": \"gemini-2.5-flash\"\n            },\n            \"quotaValue\": \"250\"\n          }\n        ]\n      },\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.RetryInfo\",\n        \"retryDelay\": \"36s\"\n      }\n    ]\n  }\n}\n"}
+[13-Nov-2025 06:27:23 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 250\nPlease retry in 36.997788059s.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.5-flash"
+            },
+            "quotaValue": "250"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "36s"
+      }
+    ]
+  }
+}
+
+[13-Nov-2025 06:27:27 Europe/Berlin] 🤖 AI Request - Message: vãi ca dai | Session: session_1763011638556_c0mthbosg
+[13-Nov-2025 06:27:27 Europe/Berlin] 📤 Sending to Gemini - Message: vãi ca dai
+[13-Nov-2025 06:27:27 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https:\/\/ai.google.dev\/gemini-api\/docs\/rate-limits. To monitor your current usage, head to: https:\/\/ai.dev\/usage?tab=rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com\/generate_content_free_tier_requests, limit: 250\\nPlease retry in 32.72218894s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.Help\",\n        \"links\": [\n          {\n            \"description\": \"Learn more about Gemini API quotas\",\n            \"url\": \"https:\/\/ai.google.dev\/gemini-api\/docs\/rate-limits\"\n          }\n        ]\n      },\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.QuotaFailure\",\n        \"violations\": [\n          {\n            \"quotaMetric\": \"generativelanguage.googleapis.com\/generate_content_free_tier_requests\",\n            \"quotaId\": \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\n            \"quotaDimensions\": {\n              \"location\": \"global\",\n              \"model\": \"gemini-2.5-flash\"\n            },\n            \"quotaValue\": \"250\"\n          }\n        ]\n      },\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.RetryInfo\",\n        \"retryDelay\": \"32s\"\n      }\n    ]\n  }\n}\n"}
+[13-Nov-2025 06:27:27 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 250\nPlease retry in 32.72218894s.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.5-flash"
+            },
+            "quotaValue": "250"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "32s"
+      }
+    ]
+  }
+}
+
+[13-Nov-2025 06:27:38 Europe/Berlin] 🤖 AI Request - Message: làm vợ anh nhé | Session: session_1763011650290_zqtz66b6g
+[13-Nov-2025 06:27:38 Europe/Berlin] 📤 Sending to Gemini - Message: làm vợ anh nhé
+[13-Nov-2025 06:27:39 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https:\/\/ai.google.dev\/gemini-api\/docs\/rate-limits. To monitor your current usage, head to: https:\/\/ai.dev\/usage?tab=rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com\/generate_content_free_tier_requests, limit: 250\\nPlease retry in 21.289191008s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.Help\",\n        \"links\": [\n          {\n            \"description\": \"Learn more about Gemini API quotas\",\n            \"url\": \"https:\/\/ai.google.dev\/gemini-api\/docs\/rate-limits\"\n          }\n        ]\n      },\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.QuotaFailure\",\n        \"violations\": [\n          {\n            \"quotaMetric\": \"generativelanguage.googleapis.com\/generate_content_free_tier_requests\",\n            \"quotaId\": \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\n            \"quotaDimensions\": {\n              \"location\": \"global\",\n              \"model\": \"gemini-2.5-flash\"\n            },\n            \"quotaValue\": \"250\"\n          }\n        ]\n      },\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.RetryInfo\",\n        \"retryDelay\": \"21s\"\n      }\n    ]\n  }\n}\n"}
+[13-Nov-2025 06:27:39 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 429: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 250\nPlease retry in 21.289191008s.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.5-flash"
+            },
+            "quotaValue": "250"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "21s"
+      }
+    ]
+  }
+}
+
+[13-Nov-2025 06:31:56 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763011913376_6ckuv1ucc
+[13-Nov-2025 06:31:56 Europe/Berlin] 📤 Sending to Gemini - Message: Tôi muốn tìm áo sơ mi nam
+[13-Nov-2025 06:32:00 Europe/Berlin] 📥 Gemini Response: {"success":true,"response":"Ch\u00e0o b\u1ea1n! IVY Moda r\u1ea5t vui \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1ea1n t\u00ecm ki\u1ebfm s\u1ea3n ph\u1ea9m \u01b0ng \u00fd.\n\nD\u1ef1a tr\u00ean y\u00eau c\u1ea7u c\u1ee7a b\u1ea1n, IVY Moda hi\u1ec7n c\u00f3 m\u1ed9t m\u1eabu \u00e1o s\u01a1 mi nam r\u1ea5t \u0111\u01b0\u1ee3c \u01b0a chu\u1ed9ng \u0111\u00f3 l\u00e0:\n\n*   **\u00c1O S\u01a0 MI NAM TR\u1eaeNG BASIC**\n    *   **Gi\u00e1:** 499,000\u20ab\n    *   **M\u00f4 t\u1ea3:** \u0110\u00e2y l\u00e0 m\u1ed9t chi\u1ebfc \u00e1o s\u01a1 mi tr\u1eafng c\u01a1 b\u1ea3n, d\u1ec5 d\u00e0ng ph\u1ed1i h\u1ee3p v\u1edbi nhi\u1ec1u phong c\u00e1ch kh\u00e1c nhau, t\u1eeb c\u00f4ng s\u1edf l\u1ecbch s\u1ef1 \u0111\u1ebfn d\u1ea1o ph\u1ed1 n\u0103ng \u0111\u1ed9ng. Ch\u1ea5t li\u1ec7u cao c\u1ea5p gi\u00fap b\u1ea1n lu\u00f4n c\u1ea3m th\u1ea5y tho\u1ea3i m\u00e1i v\u00e0 t\u1ef1 tin.\n\n**L\u1eddi khuy\u00ean v\u1ec1 style:**\nV\u1edbi chi\u1ebfc \u00e1o s\u01a1 mi tr\u1eafng basic n\u00e0y, b\u1ea1n c\u00f3 th\u1ec3:\n*   Ph\u1ed1i c\u00f9ng qu\u1ea7n t\u00e2y ho\u1eb7c qu\u1ea7n kaki \u0111\u1ec3 c\u00f3 v\u1ebb ngo\u00e0i chuy\u00ean nghi\u1ec7p, l\u1ecbch l\u00e3m khi \u0111i l\u00e0m ho\u1eb7c d\u1ef1 s\u1ef1 ki\u1ec7n.\n*   M\u1eb7c c\u00f9ng qu\u1ea7n jeans v\u00e0 gi\u00e0y sneakers \u0111\u1ec3 t\u1ea1o phong c\u00e1ch tr\u1ebb trung, n\u0103ng \u0111\u1ed9ng khi \u0111i ch\u01a1i, g\u1eb7p g\u1ee1 b\u1ea1n b\u00e8.\n*   B\u1ea1n c\u0169ng c\u00f3 th\u1ec3 kho\u00e1c th\u00eam m\u1ed9t chi\u1ebfc \u00e1o kho\u00e1c blazer ho\u1eb7c \u00e1o kho\u00e1c th\u1ec3 thao \u0111\u1ec3 t\u0103ng th\u00eam \u0111i\u1ec3m nh\u1ea5n cho trang ph\u1ee5c.\n\n**V\u1ec1 m\u00e0u s\u1eafc v\u00e0 size:**\n*   Chi\u1ebfc \u00e1o n\u00e0y c\u00f3 m\u00e0u **Tr\u1eafng** tinh t\u1ebf.\n*   IVY Moda c\u00f3 s\u1eb5n \u0111\u1ea7y \u0111\u1ee7 c\u00e1c size t\u1eeb **XS, S, M, L, XL, XXL, 3XL** \u0111\u1ec3 b\u1ea1n l\u1ef1a ch\u1ecdn sao cho v\u1eeba v\u1eb7n nh\u1ea5t.\n\nB\u1ea1n c\u00f3 mu\u1ed1n IVY Moda t\u01b0 v\u1ea5n th\u00eam v\u1ec1 c\u00e1ch ph\u1ed1i \u0111\u1ed3, m\u00e0u s\u1eafc kh\u00e1c hay k\u00edch c\u1ee1 ph\u00f9 h\u1ee3p v\u1edbi v\u00f3c d\u00e1ng c\u1ee7a m\u00ecnh kh\u00f4ng? Ho\u1eb7c b\u1ea1n c\u00f3 quan t\u00e2m \u0111\u1ebfn c\u00e1c s\u1ea3n ph\u1ea9m kh\u00e1c nh\u01b0 qu\u1ea7n jeans nam, \u00e1o kho\u00e1c nam \u0111\u1ec3 ho\u00e0n thi\u1ec7n b\u1ed9 trang ph\u1ee5c kh\u00f4ng \u1ea1?","usage":{"promptTokenCount":410,"candidatesTokenCount":375,"totalTokenCount":1040,"promptTokensDetails":[{"modality":"TEXT","tokenCount":410}],"thoughtsTokenCount":255}}
+[13-Nov-2025 06:36:33 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763012191258_ohebls4bq
+[13-Nov-2025 06:36:33 Europe/Berlin] 📤 Sending to Gemini - Message: Tôi muốn tìm áo sơ mi nam
+[13-Nov-2025 06:36:39 Europe/Berlin] 📥 Gemini Response: {"success":true,"response":"Ch\u00e0o b\u1ea1n! IVY Moda r\u1ea5t vui \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1ea1n t\u00ecm ki\u1ebfm s\u1ea3n ph\u1ea9m \u01b0ng \u00fd.\n\nD\u1ef1a tr\u00ean y\u00eau c\u1ea7u c\u1ee7a b\u1ea1n, IVY Moda hi\u1ec7n c\u00f3 m\u1eabu **\u00c1O S\u01a0 MI NAM TR\u1eaeNG BASIC** r\u1ea5t \u0111\u01b0\u1ee3c \u01b0a chu\u1ed9ng \u0111\u00f3 \u1ea1!\n\n*   **Gi\u00e1:** 499,000\u20ab\n*   **M\u00e0u s\u1eafc:** Tr\u1eafng (l\u00e0 m\u00e0u c\u01a1 b\u1ea3n v\u00e0 d\u1ec5 ph\u1ed1i \u0111\u1ed3 nh\u1ea5t)\n*   **Size:** S\u1ea3n ph\u1ea9m c\u00f3 \u0111\u1ea7y \u0111\u1ee7 c\u00e1c size t\u1eeb XS \u0111\u1ebfn 3XL, b\u1ea1n c\u00f3 th\u1ec3 y\u00ean t\u00e2m l\u1ef1a ch\u1ecdn size ph\u00f9 h\u1ee3p v\u1edbi m\u00ecnh nh\u00e9.\n\n**L\u1eddi khuy\u00ean v\u1ec1 Style:**\n\u00c1o s\u01a1 mi tr\u1eafng basic l\u00e0 m\u1ed9t item \"must-have\" trong t\u1ee7 \u0111\u1ed3 c\u1ee7a m\u1ecdi qu\u00fd \u00f4ng v\u00ec t\u00ednh linh ho\u1ea1t v\u00e0 v\u1ebb ngo\u00e0i thanh l\u1ecbch m\u00e0 n\u00f3 mang l\u1ea1i.\n\n*   **Phong c\u00e1ch c\u00f4ng s\u1edf:** B\u1ea1n c\u00f3 th\u1ec3 k\u1ebft h\u1ee3p \u00e1o s\u01a1 mi tr\u1eafng v\u1edbi qu\u1ea7n \u00e2u ho\u1eb7c qu\u1ea7n kaki, th\u00eam m\u1ed9t chi\u1ebfc th\u1eaft l\u01b0ng v\u00e0 gi\u00e0y t\u00e2y \u0111\u1ec3 c\u00f3 v\u1ebb ngo\u00e0i chuy\u00ean nghi\u1ec7p, l\u1ecbch l\u00e3m.\n*   **Phong c\u00e1ch th\u01b0\u1eddng ng\u00e0y\/d\u1ea1o ph\u1ed1:** \u0110\u1ec3 t\u1ea1o s\u1ef1 tr\u1ebb trung v\u00e0 n\u0103ng \u0111\u1ed9ng h\u01a1n, b\u1ea1n c\u00f3 th\u1ec3 ph\u1ed1i \u00e1o s\u01a1 mi tr\u1eafng v\u1edbi qu\u1ea7n jeans, qu\u1ea7n shorts ho\u1eb7c qu\u1ea7n chinos. C\u00f3 th\u1ec3 m\u1eb7c \u0111\u00f3ng th\u00f9ng ho\u1eb7c th\u1ea3 ngo\u00e0i \u0111\u1ec1u \u0111\u1eb9p, t\u00f9y theo s\u1edf th\u00edch v\u00e0 d\u00e1ng ng\u01b0\u1eddi.\n*   **Ph\u1ed1i l\u1edbp (layering):** \u00c1o s\u01a1 mi tr\u1eafng c\u0169ng r\u1ea5t h\u1ee3p khi m\u1eb7c kho\u00e1c ngo\u00e0i \u00e1o thun nam c\u1ed5 tr\u00f2n, t\u1ea1o n\u00ean phong c\u00e1ch casual v\u00e0 c\u00e1 t\u00ednh.\n\nB\u1ea1n c\u00f3 mu\u1ed1n IVY Moda t\u01b0 v\u1ea5n th\u00eam v\u1ec1 c\u00e1ch ch\u1ecdn size ho\u1eb7c g\u1ee3i \u00fd c\u00e1c s\u1ea3n ph\u1ea9m kh\u00e1c \u0111\u1ec3 ph\u1ed1i c\u00f9ng chi\u1ebfc \u00e1o s\u01a1 mi n\u00e0y kh\u00f4ng \u1ea1? V\u00ed d\u1ee5 nh\u01b0 qu\u1ea7n jeans ho\u1eb7c \u00e1o kho\u00e1c th\u1ec3 thao ch\u1eb3ng h\u1ea1n?","usage":{"promptTokenCount":410,"candidatesTokenCount":362,"totalTokenCount":1265,"promptTokensDetails":[{"modality":"TEXT","tokenCount":410}],"thoughtsTokenCount":493}}
+[13-Nov-2025 09:06:05 Europe/Berlin] 🤖 AI Request - Message: Tôi muốn tìm áo sơ mi nam | Session: session_1763021158126_zmk8d5490
+[13-Nov-2025 09:06:05 Europe/Berlin] 📤 Sending to Gemini - Message: Tôi muốn tìm áo sơ mi nam
+[13-Nov-2025 09:06:12 Europe/Berlin] 📥 Gemini Response: {"success":true,"response":"Ch\u00e0o b\u1ea1n! IVY Moda r\u1ea5t vui \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1ea1n t\u00ecm ki\u1ebfm s\u1ea3n ph\u1ea9m \u01b0ng \u00fd.\n\nB\u1ea1n \u0111ang t\u00ecm **\u00e1o s\u01a1 mi nam** ph\u1ea3i kh\u00f4ng \u1ea1? IVY Moda hi\u1ec7n c\u00f3 m\u1ed9t m\u1eabu \u00e1o s\u01a1 mi r\u1ea5t \u0111\u01b0\u1ee3c \u01b0a chu\u1ed9ng v\u00e0 d\u1ec5 ph\u1ed1i \u0111\u1ed3:\n\n*   **\u00c1O S\u01a0 MI NAM TR\u1eaeNG BASIC**\n    *   **Gi\u00e1:** 499,000\u20ab\n    *   **M\u00e0u s\u1eafc:** Tr\u1eafng (m\u1ed9t gam m\u00e0u kinh \u0111i\u1ec3n, kh\u00f4ng bao gi\u1edd l\u1ed7i m\u1ed1t)\n    *   **Size:** Hi\u1ec7n c\u00f3 \u0111\u1ee7 c\u00e1c size t\u1eeb XS \u0111\u1ebfn 3XL \u0111\u1ec3 b\u1ea1n l\u1ef1a ch\u1ecdn sao cho ph\u00f9 h\u1ee3p nh\u1ea5t v\u1edbi v\u00f3c d\u00e1ng c\u1ee7a m\u00ecnh.\n\n**L\u1eddi khuy\u00ean v\u1ec1 style v\u00e0 c\u00e1ch ph\u1ed1i \u0111\u1ed3:**\nChi\u1ebfc \u00c1o S\u01a1 Mi Nam Tr\u1eafng Basic n\u00e0y l\u00e0 m\u1ed9t item \"must-have\" trong t\u1ee7 \u0111\u1ed3 c\u1ee7a m\u1ecdi qu\u00fd \u00f4ng b\u1edfi s\u1ef1 thanh l\u1ecbch v\u00e0 \u0111a n\u0103ng.\n\n*   **Phong c\u00e1ch c\u00f4ng s\u1edf:** B\u1ea1n c\u00f3 th\u1ec3 k\u1ebft h\u1ee3p \u00e1o s\u01a1 mi tr\u1eafng v\u1edbi qu\u1ea7n t\u00e2y m\u00e0u \u0111en, xanh navy ho\u1eb7c x\u00e1m, c\u00f9ng m\u1ed9t \u0111\u00f4i gi\u00e0y da v\u00e0 th\u1eaft l\u01b0ng \u0111\u1ed3ng \u0111i\u1ec7u \u0111\u1ec3 t\u1ea1o n\u00ean v\u1ebb ngo\u00e0i chuy\u00ean nghi\u1ec7p, l\u1ecbch l\u00e3m.\n*   **Phong c\u00e1ch casual\/\u0111i ch\u01a1i:** \u0110\u1ec3 tr\u1ebb trung v\u00e0 n\u0103ng \u0111\u1ed9ng h\u01a1n","usage":{"promptTokenCount":410,"candidatesTokenCount":264,"totalTokenCount":1432,"promptTokensDetails":[{"modality":"TEXT","tokenCount":410}],"thoughtsTokenCount":758}}
+[13-Nov-2025 09:06:35 Europe/Berlin] 🤖 AI Request - Message: shop mình có đồ nam nào đẹp để thể thao không | Session: session_1763021158126_zmk8d5490
+[13-Nov-2025 09:06:35 Europe/Berlin] 📤 Sending to Gemini - Message: shop mình có đồ nam nào đẹp để thể thao không
+[13-Nov-2025 09:06:38 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"The model is overloaded. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"}
+[13-Nov-2025 09:06:38 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 503: {
+  "error": {
+    "code": 503,
+    "message": "The model is overloaded. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[13-Nov-2025 09:07:24 Europe/Berlin] 🤖 AI Request - Message: gợi ý tôi đồ thể thao của shop mình cho nam | Session: session_1763021158126_zmk8d5490
+[13-Nov-2025 09:07:24 Europe/Berlin] 📤 Sending to Gemini - Message: gợi ý tôi đồ thể thao của shop mình cho nam
+[13-Nov-2025 09:07:25 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"The model is overloaded. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"}
+[13-Nov-2025 09:07:25 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 503: {
+  "error": {
+    "code": 503,
+    "message": "The model is overloaded. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[13-Nov-2025 09:07:42 Europe/Berlin] 🤖 AI Request - Message: gợi ý đồ thể thao cho nam ở shop mình | Session: session_1763021158126_zmk8d5490
+[13-Nov-2025 09:07:42 Europe/Berlin] 📤 Sending to Gemini - Message: gợi ý đồ thể thao cho nam ở shop mình
+[13-Nov-2025 09:07:43 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"The model is overloaded. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"}
+[13-Nov-2025 09:07:43 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 503: {
+  "error": {
+    "code": 503,
+    "message": "The model is overloaded. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[13-Nov-2025 09:08:19 Europe/Berlin] 🤖 AI Request - Message: shop mình có đồ gì đẹp cho nam không để thể thao | Session: session_1763021283556_4u7ijn0aw
+[13-Nov-2025 09:08:19 Europe/Berlin] 📤 Sending to Gemini - Message: shop mình có đồ gì đẹp cho nam không để thể thao
+[13-Nov-2025 09:08:23 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"The model is overloaded. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"}
+[13-Nov-2025 09:08:23 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 503: {
+  "error": {
+    "code": 503,
+    "message": "The model is overloaded. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[13-Nov-2025 09:15:37 Europe/Berlin] 🤖 AI Request - Message: shop mình có đồ nam nào đẹp không | Session: session_1763021727328_hov7qah1g
+[13-Nov-2025 09:15:37 Europe/Berlin] 📤 Sending to Gemini - Message: shop mình có đồ nam nào đẹp không
+[13-Nov-2025 09:15:44 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"The model is overloaded. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"}
+[13-Nov-2025 09:15:44 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 503: {
+  "error": {
+    "code": 503,
+    "message": "The model is overloaded. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[13-Nov-2025 09:15:53 Europe/Berlin] 🤖 AI Request - Message: làm vợ anh nhé | Session: session_1763021727328_hov7qah1g
+[13-Nov-2025 09:15:53 Europe/Berlin] 📤 Sending to Gemini - Message: làm vợ anh nhé
+[13-Nov-2025 09:15:59 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"The model is overloaded. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"}
+[13-Nov-2025 09:15:59 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 503: {
+  "error": {
+    "code": 503,
+    "message": "The model is overloaded. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[13-Nov-2025 09:19:16 Europe/Berlin] 🤖 AI Request - Message: shop mình có đồ nam nào rẻ đẹp | Session: session_1763021948300_i0acozkak
+[13-Nov-2025 09:19:16 Europe/Berlin] 📤 Sending to Gemini - Message: shop mình có đồ nam nào rẻ đẹp
+[13-Nov-2025 09:19:18 Europe/Berlin] 📥 Gemini Response: {"success":false,"error":"L\u1ed7i khi g\u1ecdi Gemini AI: HTTP Error 503: {\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"The model is overloaded. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"}
+[13-Nov-2025 09:19:18 Europe/Berlin] ❌ Gemini Error: Lỗi khi gọi Gemini AI: HTTP Error 503: {
+  "error": {
+    "code": 503,
+    "message": "The model is overloaded. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[13-Nov-2025 09:19:27 Europe/Berlin] 🤖 AI Request - Message: shop mình có đồ nam nào không | Session: session_1763021961598_tybkhhupq
+[13-Nov-2025 09:19:27 Europe/Berlin] 📤 Sending to Gemini - Message: shop mình có đồ nam nào không
+[13-Nov-2025 09:19:32 Europe/Berlin] 📥 Gemini Response: {"success":true,"response":"Ch\u00e0o b\u1ea1n, r\u1ea5t vui \u0111\u01b0\u1ee3c t\u01b0 v\u1ea5n cho b\u1ea1n \u1ea1!\n\nD\u1ea1, IVY Moda c\u00f3 r\u1ea5t nhi\u1ec1u s\u1ea3n ph\u1ea9m th\u1eddi trang d\u00e0nh cho nam gi\u1edbi \u0111\u1ec3 b\u1ea1n l\u1ef1a ch\u1ecdn \u0111\u00f3 \u1ea1. Hi\u1ec7n t\u1ea1i, shop em \u0111ang c\u00f3 nh\u1eefng m\u1eabu sau r\u1ea5t \u0111\u01b0\u1ee3c \u01b0a chu\u1ed9ng:\n\n*   **\u00c1O THUN NAM C\u1ed4 TR\u00d2N** - Gi\u00e1: 299,000\u20ab (M\u1eabu \u00e1o thun c\u01a1 b\u1ea3n, d\u1ec5 ph\u1ed1i \u0111\u1ed3, ph\u00f9 h\u1ee3p m\u1eb7c h\u00e0ng ng\u00e0y)\n*   **\u00c1O KHO\u00c1C NAM TH\u1ec2 THAO** - Gi\u00e1: 799,000\u20ab (Thi\u1ebft k\u1ebf n\u0103ng \u0111\u1ed9ng, tho\u1ea3i m\u00e1i, l\u00fd t\u01b0\u1edfng cho c\u00e1c ho\u1ea1t \u0111\u1ed9ng th\u1ec3 thao ho\u1eb7c d\u1ea1o ph\u1ed1)\n*   **\u00c1O S\u01a0 MI NAM TR\u1eaeNG BASIC** - Gi\u00e1: 499,000\u20ab (Item kh\u00f4ng th\u1ec3 thi\u1ebfu trong t\u1ee7 \u0111\u1ed3 c\u1ee7a c\u00e1c qu\u00fd \u00f4ng, l\u1ecbch l\u00e3m v\u00e0 d\u1ec5 ph\u1ed1i v\u1edbi nhi\u1ec1u phong c\u00e1ch)\n\nC\u00e1c s\u1ea3n ph\u1ea9m n\u00e0y \u0111\u1ec1u c\u00f3 \u0111\u1ee7 c\u00e1c size t\u1eeb **XS \u0111\u1ebfn 3XL** v\u00e0 nhi\u1ec1u m\u00e0u s\u1eafc \u0111a d\u1ea1ng nh\u01b0 **Be, Tr\u1eafng, X\u00e1m, Xanh D\u01b0\u01a1ng, Xanh Navy, \u0110en, \u0110\u1ecf** \u0111\u1ec3 b\u1ea1n l\u1ef1a ch\u1ecdn theo s\u1edf th\u00edch v\u00e0 phong c\u00e1ch ri\u00eang.\n\nB\u1ea1n \u0111ang t\u00ecm ki\u1ebfm \u0111\u1ed3 nam cho d\u1ecbp n\u00e0o hay c\u00f3 phong c\u00e1ch y\u00eau th\u00edch n\u00e0o kh\u00f4ng \u1ea1? H\u00e3y chia s\u1ebb th\u00eam \u0111\u1ec3 IVY Moda c\u00f3 th\u1ec3 g\u1ee3i \u00fd s\u1ea3n ph\u1ea9m ph\u00f9 h\u1ee3p nh\u1ea5t cho b\u1ea1n nh\u00e9!","usage":{"promptTokenCount":410,"candidatesTokenCount":302,"totalTokenCount":977,"promptTokensDetails":[{"modality":"TEXT","tokenCount":410}],"thoughtsTokenCount":265}}
+[13-Nov-2025 09:19:50 Europe/Berlin] 🤖 AI Request - Message: có đồ thể thao không? | Session: session_1763021961598_tybkhhupq
+[13-Nov-2025 09:19:50 Europe/Berlin] 📤 Sending to Gemini - Message: có đồ thể thao không?
+[13-Nov-2025 09:19:56 Europe/Berlin] 📥 Gemini Response: {"success":true,"response":"Ch\u00e0o b\u1ea1n! IVY Moda r\u1ea5t vui \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1ea1n \u1ea1.\n\nD\u1ea1 c\u00f3 ch\u1ee9 \u1ea1! Hi\u1ec7n t\u1ea1i, IVY Moda c\u00f3 m\u1eabu **\u00c1O KHO\u00c1C NAM TH\u1ec2 THAO** r\u1ea5t n\u0103ng \u0111\u1ed9ng v\u00e0 c\u00e1 t\u00ednh, ph\u00f9 h\u1ee3p cho nhi\u1ec1u ho\u1ea1t \u0111\u1ed9ng th\u1ec3 thao ho\u1eb7c m\u1eb7c h\u00e0ng ng\u00e0y \u0111\u00f3 \u1ea1.\n\n*   **S\u1ea3n ph\u1ea9m:** \u00c1O KHO\u00c1C NAM TH\u1ec2 THAO\n*   **Gi\u00e1:** 799,000\u20ab\n\n**L\u1eddi khuy\u00ean v\u1ec1 Style & M\u00e0u s\u1eafc:**\nV\u1edbi \u00e1o kho\u00e1c th\u1ec3 thao, b\u1ea1n c\u00f3 th\u1ec3 ch\u1ecdn c\u00e1c gam m\u00e0u c\u01a1 b\u1ea3n nh\u01b0 **\u0110en, X\u00e1m, Xanh D\u01b0\u01a1ng** ho\u1eb7c **Xanh Navy** \u0111\u1ec3 d\u1ec5 d\u00e0ng ph\u1ed1i \u0111\u1ed3 v\u1edbi qu\u1ea7n jogger, qu\u1ea7n shorts hay qu\u1ea7n jeans \u0111\u1ec1u r\u1ea5t \u0111\u1eb9p v\u00e0 n\u0103ng \u0111\u1ed9ng. Ki\u1ec3u d\u00e1ng th\u1ec3 thao th\u01b0\u1eddng \u01b0u ti\u00ean s\u1ef1 tho\u1ea3i m\u00e1i v\u00e0 linh ho\u1ea1t, n\u00ean b\u1ea1n c\u00f3 th\u1ec3 ch\u1ecdn size v\u1eeba v\u1eb7n ho\u1eb7c l\u1edbn h\u01a1n m\u1ed9t ch\u00fat \u0111\u1ec3 d\u1ec5 v\u1eadn \u0111\u1ed9ng nh\u00e9.\n\nB\u1ea1n c\u00f3 quan t\u00e2m \u0111\u1ebfn s\u1ea3n ph\u1ea9m n\u00e0y kh\u00f4ng \u1ea1? Hay b\u1ea1n \u0111ang t\u00ecm ki\u1ebfm \u0111\u1ed3 th\u1ec3 thao cho nam hay n\u1eef, v\u00e0 cho ho\u1ea1t \u0111\u1ed9ng c\u1ee5 th\u1ec3 n\u00e0o \u0111\u1ec3 IVY Moda c\u00f3 th\u1ec3 t\u01b0 v\u1ea5n chi ti\u1ebft h\u01a1n \u1ea1?","usage":{"promptTokenCount":409,"candidatesTokenCount":246,"totalTokenCount":1128,"promptTokensDetails":[{"modality":"TEXT","tokenCount":409}],"thoughtsTokenCount":473}}

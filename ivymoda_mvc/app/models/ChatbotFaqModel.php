@@ -13,12 +13,18 @@ class ChatbotFaqModel extends Model {
     /**
      * Lấy danh sách FAQ theo category và status
      * @param string $category Danh mục FAQ (optional)
-     * @param int $status Trạng thái (1: Active, 0: Inactive)
+     * @param int $status Trạng thái (1: Active, 0: Inactive, null: Tất cả)
      * @return array
      */
-    public function getFaqs($category = null, $status = 1) {
-        $sql = "SELECT * FROM tbl_chatbot_faq WHERE status = ?";
-        $params = [$status];
+    public function getFaqs($category = null, $status = null) {
+        $sql = "SELECT * FROM tbl_chatbot_faq WHERE 1=1";
+        $params = [];
+        
+        // Chỉ filter theo status nếu status không phải null
+        if ($status !== null) {
+            $sql .= " AND status = ?";
+            $params[] = $status;
+        }
         
         if ($category) {
             $sql .= " AND category = ?";
@@ -41,12 +47,17 @@ class ChatbotFaqModel extends Model {
     }
     
     /**
-     * Lấy danh sách categories
-     * @return array
+     * Lấy danh sách categories (DISTINCT từ database)
+     * Sử dụng cho autocomplete/datalist trong form
+     * @return array Mảng các object {category: "Tên danh mục"}
      */
     public function getCategories() {
         $sql = "SELECT DISTINCT category FROM tbl_chatbot_faq WHERE status = 1 ORDER BY category";
-        return $this->getAll($sql);
+        $result = $this->getAll($sql);
+        
+        // Trả về mảng rỗng nếu chưa có FAQ nào
+        // View sẽ hiển thị thông báo cho admin nhập category đầu tiên
+        return $result;
     }
     
     /**

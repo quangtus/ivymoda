@@ -335,9 +335,10 @@ function chatWithAI($chatbotModel) {
         sendJSON(['success' => false, 'message' => 'Phương thức không hợp lệ']);
     }
     
-    // Đọc từ $_POST thay vì JSON body
-    $userMessage = trim($_POST['message'] ?? '');
-    $sessionId = trim($_POST['session_id'] ?? session_id());
+    // Đọc từ cả $_POST và JSON body
+    $input = json_decode(file_get_contents('php://input'), true);
+    $userMessage = trim($input['message'] ?? $_POST['message'] ?? '');
+    $sessionId = trim($input['session_id'] ?? $_POST['session_id'] ?? session_id());
     $userId = $_SESSION['user_id'] ?? null;
     
     error_log('🤖 AI Request - Message: ' . $userMessage . ' | Session: ' . $sessionId);
