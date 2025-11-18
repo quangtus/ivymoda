@@ -38,7 +38,7 @@ class ProductImageController extends \Controller {
         
         $selectedColorId = isset($_GET['color_id']) && $_GET['color_id'] !== '' ? (int)$_GET['color_id'] : null;
         $productImages = $this->productModel->getProductImages($product_id, $selectedColorId);
-        $availableColors = $this->productModel->getProductAvailableColors($product_id);
+        $availableColors = $this->productModel->getProductColors($product_id);
         
         $this->view('admin/product/images', [
             'title' => 'Quản lý ảnh sản phẩm - ' . $product->sanpham_tieude,
@@ -67,18 +67,21 @@ class ProductImageController extends \Controller {
             if(isset($_POST['color_group']) && is_array($_POST['color_group'])) {
                 $groupResult = $this->handleGroupedImageUploads($product_id);
                 if($groupResult['success']) {
-                    $_SESSION['success'] = 'Upload ảnh thành công!';
+                    $_SESSION['success'] = 'Upload ảnh thành công! Đã tạo ' . count($groupResult['colors']) . ' nhóm màu.';
+                    
+                    // Redirect về màu cuối cùng (mới nhất) đã upload
+                    $redirectUrl = 'admin/productimage/' . $product_id;
+                    if (!empty($groupResult['colors'])) {
+                        $lastColorId = end($groupResult['colors']);
+                        if ($lastColorId !== null && $lastColorId !== '') {
+                            $redirectUrl .= '?color_id=' . (int)$lastColorId;
+                        }
+                    }
+                    $this->redirect($redirectUrl);
                 } else {
                     $_SESSION['error'] = $groupResult['error'];
+                    $this->redirect('admin/productimage/' . $product_id);
                 }
-                $redirectUrl = 'admin/productimage/' . $product_id;
-                if (!empty($_POST['color_group'])) {
-                    $firstColor = reset($_POST['color_group']);
-                    if ($firstColor !== null && $firstColor !== '') {
-                        $redirectUrl .= '?color_id=' . (int)$firstColor;
-                    }
-                }
-                $this->redirect($redirectUrl);
                 return;
             }
 
@@ -129,6 +132,7 @@ class ProductImageController extends \Controller {
         $uploadDir = ROOT_PATH . 'public/assets/uploads/';
         if(!is_dir($uploadDir)) { mkdir($uploadDir, 0755, true); }
         $uploadedFiles = [];
+        $uploadedColors = []; // Track uploaded colors
         foreach ($_POST['color_group'] as $idx => $colorValue) {
             $colorId = ($colorValue !== '' && $colorValue !== null) ? (int)$colorValue : null;
             // get group file lists for this index
@@ -153,13 +157,57 @@ class ProductImageController extends \Controller {
                 }
             }
             if(!empty($groupFilenames)) {
-                // Convert color_id to sanpham_color_id if color is selected
+                // TỰ ĐỘNG TẠO MÀU + VARIANT NẾU CHƯA CÓ
                 $sanphamColorId = null;
                 if($colorId !== null) {
+                    $uploadedColors[] = $colorId; // Track màu này
                     $sanphamColorId = $this->productModel->getSanphamColorId($productId, $colorId);
+                    
+                    // Nếu màu chưa được gán cho sản phẩm → Tự động tạo
                     if ($sanphamColorId === null) {
-                        // Skip this group if color not linked to product
-                        continue;
+                        // 1. Thêm màu vào sản phẩm (tbl_sanpham_color)
+                        $result = $this->productModel->query(
+                            "INSERT INTO tbl_sanpham_color (sanpham_id, color_id, created_at) VALUES (?, ?, NOW())",
+                            [$productId, $colorId]
+                        );
+                        
+                        if($result) {
+                            $sanphamColorId = $this->productModel->getLastInsertId();
+                            
+                            // 2. Tự động tạo variant mặc định (Size S, tồn kho 0)
+                            $defaultSizeId = $this->productModel->getOne(
+                                "SELECT size_id FROM tbl_size WHERE size_ten = 'S' LIMIT 1"
+                            );
+                            
+                            if($defaultSizeId) {
+                                $sizeId = is_object($defaultSizeId) ? $defaultSizeId->size_id : $defaultSizeId['size_id'];
+                                
+                                // Lấy thông tin sản phẩm
+                                $product = $this->productModel->getOne(
+                                    "SELECT sanpham_ma FROM tbl_sanpham WHERE sanpham_id = ?",
+                                    [$productId]
+                                );
+                                
+                                $productCode = is_object($product) ? $product->sanpham_ma : $product['sanpham_ma'];
+                                
+                                // Lấy tên màu
+                                $colorInfo = $this->productModel->getOne(
+                                    "SELECT color_ten FROM tbl_color WHERE color_id = ?",
+                                    [$colorId]
+                                );
+                                $colorName = is_object($colorInfo) ? $colorInfo->color_ten : $colorInfo['color_ten'];
+                                
+                                // Tạo SKU: MA_SAN_PHAM-SIZE-COLOR (ví dụ: AK-001-S-XANH)
+                                $sku = strtoupper($productCode) . '-S-' . strtoupper(substr($colorName, 0, 5));
+                                
+                                // Thêm variant
+                                $this->productModel->query(
+                                    "INSERT INTO tbl_product_variant (sanpham_id, color_id, size_id, sku, ton_kho, trang_thai, created_at) 
+                                     VALUES (?, ?, ?, ?, 0, 1, NOW())",
+                                    [$productId, $colorId, $sizeId, $sku]
+                                );
+                            }
+                        }
                     }
                 }
                 
@@ -176,7 +224,11 @@ class ProductImageController extends \Controller {
         if(empty($uploadedFiles)) {
             return ['success' => false, 'error' => 'Không có ảnh hợp lệ được upload'];
         }
-        return ['success' => true, 'filenames' => $uploadedFiles];
+        return [
+            'success' => true, 
+            'filenames' => $uploadedFiles,
+            'colors' => array_unique($uploadedColors) // Danh sách màu đã upload (loại trùng)
+        ];
     }
     
     /**
@@ -230,6 +282,75 @@ class ProductImageController extends \Controller {
         }
     }
 
+    /**
+     * AJAX: Thêm variant mới (size + màu)
+     */
+    public function addVariantAjax() {
+        header('Content-Type: application/json');
+        
+        if($_SERVER['REQUEST_METHOD'] != 'POST') {
+            echo json_encode(['success' => false, 'error' => 'Invalid request']);
+            exit;
+        }
+        
+        $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+        $colorId = isset($_POST['color_id']) ? (int)$_POST['color_id'] : 0;
+        $sizeId = isset($_POST['size_id']) ? (int)$_POST['size_id'] : 0;
+        $stock = isset($_POST['stock']) ? (int)$_POST['stock'] : 0;
+        
+        if(!$productId || !$colorId || !$sizeId) {
+            echo json_encode(['success' => false, 'error' => 'Thiếu thông tin bắt buộc']);
+            exit;
+        }
+        
+        // Kiểm tra variant đã tồn tại chưa
+        $existing = $this->productModel->getOne(
+            "SELECT variant_id FROM tbl_product_variant WHERE sanpham_id = ? AND color_id = ? AND size_id = ?",
+            [$productId, $colorId, $sizeId]
+        );
+        
+        if($existing) {
+            echo json_encode(['success' => false, 'error' => 'Variant này đã tồn tại']);
+            exit;
+        }
+        
+        // Lấy thông tin để tạo SKU
+        $product = $this->productModel->getOne(
+            "SELECT sanpham_ma FROM tbl_sanpham WHERE sanpham_id = ?",
+            [$productId]
+        );
+        $productCode = is_object($product) ? $product->sanpham_ma : $product['sanpham_ma'];
+        
+        $colorInfo = $this->productModel->getOne(
+            "SELECT color_ten FROM tbl_color WHERE color_id = ?",
+            [$colorId]
+        );
+        $colorName = is_object($colorInfo) ? $colorInfo->color_ten : $colorInfo['color_ten'];
+        
+        $sizeInfo = $this->productModel->getOne(
+            "SELECT size_ten FROM tbl_size WHERE size_id = ?",
+            [$sizeId]
+        );
+        $sizeName = is_object($sizeInfo) ? $sizeInfo->size_ten : $sizeInfo['size_ten'];
+        
+        // Tạo SKU: MA_SAN_PHAM-SIZE-COLOR
+        $sku = strtoupper($productCode) . '-' . strtoupper($sizeName) . '-' . strtoupper(substr($colorName, 0, 5));
+        
+        // Thêm variant
+        $result = $this->productModel->execute(
+            "INSERT INTO tbl_product_variant (sanpham_id, color_id, size_id, sku, ton_kho, trang_thai, created_at) 
+             VALUES (?, ?, ?, ?, ?, 1, NOW())",
+            [$productId, $colorId, $sizeId, $sku, $stock]
+        );
+        
+        if($result) {
+            echo json_encode(['success' => true, 'message' => 'Thêm variant thành công']);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Lỗi khi thêm variant vào database']);
+        }
+        exit;
+    }
+    
     /**
      * Xóa toàn bộ ảnh theo nhóm màu
      */

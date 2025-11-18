@@ -13,8 +13,8 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
         <div class="container-fluid">
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
                 <h1 class="h3 mb-0 text-gray-800">Sửa sản phẩm</h1>
-                <a href="<?= ADMIN_URL ?>product" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
-                    <i class="fas fa-arrow-left fa-sm text-white-50"></i> Quay lại
+                <a href="<?= ADMIN_URL ?>product" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm ml-3">
+                    ← Quay lại
                 </a>
             </div>
 
@@ -327,14 +327,16 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                                                             <button type="button" 
                                                                     class="btn btn-sm btn-primary update-variant-btn" 
                                                                     data-variant-id="<?= $variant->variant_id ?>"
-                                                                    title="Cập nhật tồn kho">
-                                                                <i class="fas fa-save"></i> Lưu
+                                                                    title="Cập nhật tồn kho"
+                                                                    style="padding: 6px 12px;">
+                                                                <i class="fas fa-save" style="font-size: 14px;"></i> Lưu
                                                             </button>
                                                             <button type="button" 
                                                                     class="btn btn-sm btn-danger delete-variant-btn" 
                                                                     data-variant-id="<?= $variant->variant_id ?>"
-                                                                    title="Xóa variant">
-                                                                <i class="fas fa-trash"></i>
+                                                                    title="Xóa variant"
+                                                                    style="padding: 6px 12px;">
+                                                                <i class="fas fa-trash" style="font-size: 14px;"></i> Xóa
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -354,18 +356,98 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                                             </table>
                                         </div>
                                         <?php else: ?>
-                                        <div class="alert alert-warning">
-                                            <i class="fas fa-exclamation-triangle"></i> 
-                                            <strong>Chưa có variant:</strong> Sản phẩm này chưa có tồn kho chi tiết. Thêm màu và nhập tồn kho bên dưới.
+                                        <div class="alert alert-info">
+                                            <strong>💡 Chưa có tồn kho chi tiết</strong><br>
+                                            Để thêm variant cho sản phẩm:
+                                            <ol class="mb-0 mt-2">
+                                                <li>Vào <a href="<?= BASE_URL ?>admin/productimage/<?= $product->sanpham_id ?>" class="alert-link"><strong>Quản lý ảnh sản phẩm</strong></a></li>
+                                                <li>Chọn màu bất kỳ từ dropdown (hệ thống hiển tất cả màu)</li>
+                                                <li>Upload ảnh → Màu và variant sẽ tự động được tạo</li>
+                                                <li>Quay lại đây để cập nhật tồn kho và thêm size khác</li>
+                                            </ol>
                                         </div>
                                         <?php endif; ?>
 
                                         <hr class="my-4">
 
-                                        <!-- Form thêm variant mới -->
-                                        <h6 class="font-weight-bold mb-3">➕ Thêm variant mới:</h6>
-                                        <div id="variant-form-container">
-                                            <p class="text-muted">Chọn màu ở phần "Màu sắc bổ sung" phía trên để hiển thị form thêm variant...</p>
+                                        <!-- Form thêm variant mới (Size + Màu) -->
+                                        <div class="card border-success mb-3">
+                                            <div class="card-header bg-success text-white">
+                                                <h6 class="mb-0">➕ Thêm variant mới (Size + Màu)</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label for="new_variant_color">Chọn màu:</label>
+                                                            <select class="form-control" id="new_variant_color">
+                                                                <option value="">-- Chọn màu --</option>
+                                                                <?php 
+                                                                // Chỉ hiển thị màu CÓ ẢNH thực sự
+                                                                if(isset($productColorsWithImages) && !empty($productColorsWithImages)):
+                                                                    foreach($productColorsWithImages as $pc):
+                                                                ?>
+                                                                    <option value="<?= $pc->color_id ?>"><?= htmlspecialchars($pc->color_ten) ?></option>
+                                                                <?php 
+                                                                    endforeach;
+                                                                else:
+                                                                ?>
+                                                                    <option value="" disabled>Không có màu nào có ảnh</option>
+                                                                <?php
+                                                                endif;
+                                                                ?>
+                                                            </select>
+                                                            <small class="text-muted">
+                                                                <?php if(isset($productColorsWithImages) && !empty($productColorsWithImages)): ?>
+                                                                    Chỉ hiển thị màu đã có ảnh. Vào <a href="<?= BASE_URL ?>admin/productimage/<?= $product->sanpham_id ?>">Quản lý ảnh</a> để thêm màu mới.
+                                                                <?php else: ?>
+                                                                    <span class="text-warning">⚠️ Chưa có màu nào có ảnh. Hãy vào <a href="<?= BASE_URL ?>admin/productimage/<?= $product->sanpham_id ?>">Quản lý ảnh</a> upload ảnh trước.</span>
+                                                                <?php endif; ?>
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label for="new_variant_size">Chọn size:</label>
+                                                            <select class="form-control" id="new_variant_size">
+                                                                <option value="">-- Chọn size --</option>
+                                                                <?php 
+                                                                if(!empty($sizes)):
+                                                                    foreach($sizes as $size):
+                                                                ?>
+                                                                    <option value="<?= $size->size_id ?>"><?= htmlspecialchars($size->size_ten) ?></option>
+                                                                <?php 
+                                                                    endforeach;
+                                                                endif;
+                                                                ?>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label for="new_variant_stock">Tồn kho:</label>
+                                                            <input type="number" class="form-control" id="new_variant_stock" value="0" min="0">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label>&nbsp;</label>
+                                                        <button type="button" class="btn btn-success btn-block" onclick="addNewVariant()">
+                                                            ➕ Thêm
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="alert alert-info mb-0">
+                                                    <small>
+                                                        <strong>💡 Hướng dẫn:</strong>
+                                                        <ol class="mb-0">
+                                                            <li>Chọn màu + size chưa có trong danh sách trên</li>
+                                                            <li>Nhập số lượng tồn kho</li>
+                                                            <li>Nhấn nút ➕ để thêm → Trang sẽ tự động reload</li>
+                                                            <li>Nếu màu chưa có ảnh: Vào <a href="<?= BASE_URL ?>admin/productimage/<?= $product->sanpham_id ?>" class="alert-link">Quản lý ảnh</a> để upload ảnh cho màu đó trước</li>
+                                                        </ol>
+                                                    </small>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -476,9 +558,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Preview ảnh mới
-document.getElementById('sanpham_anh').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    const preview = document.getElementById('imagePreview');
+const sanphamAnhInput = document.getElementById('sanpham_anh');
+if(sanphamAnhInput) {
+    sanphamAnhInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('imagePreview');
     
     if (file) {
         const reader = new FileReader();
@@ -495,7 +579,8 @@ document.getElementById('sanpham_anh').addEventListener('change', function(e) {
         };
         reader.readAsDataURL(file);
     }
-});
+    });
+}
 
 // Validation form
 document.querySelector('form').addEventListener('submit', function(e) {
@@ -732,97 +817,86 @@ function updateTotalStock() {
     }
 }
 
-// Render form thêm variant mới dựa trên màu đã chọn
-function renderVariantForm() {
-    const colorCheckboxes = document.querySelectorAll('input[name="colors[]"]:checked');
-    const container = document.getElementById('variant-form-container');
+// Thêm variant mới qua AJAX
+function addNewVariant() {
+    const colorId = document.getElementById('new_variant_color').value;
+    const sizeId = document.getElementById('new_variant_size').value;
+    const stock = document.getElementById('new_variant_stock').value;
+    const productId = <?= $product->sanpham_id ?>;
     
-    if (colorCheckboxes.length === 0) {
-        container.innerHTML = '<p class="text-muted">Chọn màu ở phần "Màu sắc bổ sung" phía trên để hiển thị form thêm variant...</p>';
+    console.log('Adding variant:', { productId, colorId, sizeId, stock });
+    
+    if(!colorId || !sizeId) {
+        alert('❌ Vui lòng chọn màu và size');
         return;
     }
     
-    // Get existing variants to avoid duplicates
-    const existingVariants = new Set();
-    document.querySelectorAll('tbody tr[data-variant-id]').forEach(row => {
-        const colorBadge = row.querySelector('td:nth-child(3) .badge').textContent.trim();
-        const sizeBadge = row.querySelector('td:nth-child(4) .badge').textContent.trim();
-        existingVariants.add(`${colorBadge}_${sizeBadge}`);
-    });
+    // Kiểm tra trùng lặp
+    const colorText = document.getElementById('new_variant_color').options[document.getElementById('new_variant_color').selectedIndex].text;
+    const sizeText = document.getElementById('new_variant_size').options[document.getElementById('new_variant_size').selectedIndex].text;
     
-    // Get sizes from PHP
-    const sizes = <?= json_encode(array_map(function($size) {
-        return ['size_id' => $size->size_id, 'size_ten' => $size->size_ten];
-    }, $sizes ?? [])) ?>;
-    
-    // Get colors info
-    const colorsData = <?= json_encode(array_map(function($color) {
-        return ['color_id' => $color->color_id, 'color_ten' => $color->color_ten];
-    }, $colors ?? [])) ?>;
-    
-    let html = '<div class="alert alert-success"><i class="fas fa-plus-circle"></i> Chọn size để thêm vào tồn kho:</div>';
-    
-    colorCheckboxes.forEach(checkbox => {
-        const colorId = checkbox.value;
-        const colorData = colorsData.find(c => c.color_id == colorId);
-        if (!colorData) return;
-        
-        const colorName = colorData.color_ten;
-        
-        html += `
-            <div class="card mb-3 border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="m-0">Màu: ${colorName}</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-        `;
-        
-        sizes.forEach(size => {
-            const key = `${colorName}_${size.size_ten}`;
-            const exists = existingVariants.has(key);
-            
-            if (!exists) {
-                html += `
-                    <div class="col-md-3 mb-3">
-                        <div class="card border-secondary">
-                            <div class="card-body text-center p-2">
-                                <h6 class="mb-2">${size.size_ten}</h6>
-                                <label class="small text-muted">Tồn kho:</label>
-                                <input type="number" 
-                                       name="new_variants[${colorId}][${size.size_id}][ton_kho]" 
-                                       class="form-control form-control-sm text-center" 
-                                       value="0" 
-                                       min="0"
-                                       placeholder="0">
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        });
-        
-        html += `
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-}
-
-// Lắng nghe thay đổi color checkboxes
-document.addEventListener('change', function(e) {
-    if (e.target.matches('input[name="colors[]"]')) {
-        renderVariantForm();
+    const rows = document.querySelectorAll('tbody tr[data-variant-id]');
+    for(let row of rows) {
+        const existingColor = row.querySelector('td:nth-child(3) .badge')?.textContent.trim();
+        const existingSize = row.querySelector('td:nth-child(4) .badge')?.textContent.trim();
+        if(existingColor === colorText && existingSize === sizeText) {
+            alert(`❌ Variant màu ${colorText} - size ${sizeText} đã tồn tại!`);
+            return;
+        }
     }
-});
-
-// Render form on page load
-document.addEventListener('DOMContentLoaded', function() {
-    renderVariantForm();
-});
+    
+    // Hiển thị loading
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang thêm...';
+    
+    // Gửi AJAX
+    const url = '<?= BASE_URL ?>admin/productimage/addVariantAjax';
+    const body = `product_id=${productId}&color_id=${colorId}&size_id=${sizeId}&stock=${stock}`;
+    
+    console.log('Sending to:', url);
+    console.log('Body:', body);
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if(data.success) {
+            alert('✅ Thêm variant thành công!');
+            // Reload trang để hiển thị variant mới
+            location.reload();
+        } else {
+            // Hiển thị thông báo lỗi chi tiết
+            let errorMsg = data.error || 'Không thể thêm variant';
+            
+            if(errorMsg.includes('đã tồn tại')) {
+                const colorText = document.getElementById('new_variant_color').options[document.getElementById('new_variant_color').selectedIndex].text;
+                const sizeText = document.getElementById('new_variant_size').options[document.getElementById('new_variant_size').selectedIndex].text;
+                errorMsg = `❌ Variant màu ${colorText} - size ${sizeText} đã tồn tại!\n\n💡 Gợi ý:\n- Kiểm tra bảng "Tồn kho hiện tại" ở trên\n- Hoặc chọn màu/size khác để thêm variant mới`;
+            }
+            
+            alert(errorMsg);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('❌ Có lỗi xảy ra khi thêm variant: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
 </script>
 
 <?php require_once ROOT_PATH . 'app/views/shared/admin/footer.php'; ?>

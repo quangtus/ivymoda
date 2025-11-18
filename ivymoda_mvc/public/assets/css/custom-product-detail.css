@@ -23,7 +23,7 @@
     vertical-align: top;
     min-width: 80px;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .color-option:hover:not(:disabled) {
@@ -45,7 +45,9 @@
     background: #f5f5f5;
 }
 
+
 /* Color swatch styles removed - now using background color directly on button */
+
 
 /* Color name styles are now handled by the button itself */
 
@@ -69,16 +71,20 @@
 }
 
 .size-option:hover:not(:disabled) {
-    border-color: #007bff;
+    border-color: #dc3545;
     transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
 }
 
 .size-option.active {
-    border-color: #007bff;
-    background: #007bff;
-    color: white;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    border-color: #dc3545;
+    background: #fff;
+    color: #dc3545;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.size-option.active div {
+    color: #dc3545 !important;
 }
 
 .size-option.disabled,

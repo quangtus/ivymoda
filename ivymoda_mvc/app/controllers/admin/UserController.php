@@ -197,6 +197,47 @@ class UserController extends \Controller {
     }
     
     /**
+     * Thay đổi trạng thái người dùng (Kích hoạt/Vô hiệu hóa)
+     * @param int $id ID của người dùng
+     * @param int $status Trạng thái mới (0: vô hiệu hóa, 1: kích hoạt)
+     */
+    public function status($id = null, $status = null) {
+        // Validate input
+        if(!$id || $status === null) {
+            $_SESSION['error'] = 'Thiếu thông tin người dùng hoặc trạng thái';
+            $this->redirect('admin/user');
+            exit;
+        }
+        
+        // Không cho phép thay đổi trạng thái tài khoản đang đăng nhập
+        if($id == $_SESSION['user_id']) {
+            $_SESSION['error'] = 'Không thể thay đổi trạng thái tài khoản đang đăng nhập';
+            $this->redirect('admin/user');
+            exit;
+        }
+        
+        // Validate status (chỉ cho phép 0 hoặc 1)
+        $status = (int)$status;
+        if($status !== 0 && $status !== 1) {
+            $_SESSION['error'] = 'Trạng thái không hợp lệ';
+            $this->redirect('admin/user');
+            exit;
+        }
+        
+        // Cập nhật trạng thái
+        $result = $this->userModel->updateUserStatus($id, $status);
+        
+        if($result == "success") {
+            $statusText = $status == 1 ? 'kích hoạt' : 'vô hiệu hóa';
+            $_SESSION['success'] = "Đã {$statusText} người dùng thành công";
+        } else {
+            $_SESSION['error'] = $result;
+        }
+        
+        $this->redirect('admin/user');
+    }
+    
+    /**
      * Quản lý vai trò người dùng
      */
     public function roles() {

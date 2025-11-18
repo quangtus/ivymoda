@@ -317,6 +317,7 @@ class ProductController extends \Controller {
         // Lấy thông tin hiện tại
         $productImages = $this->productModel->getProductImages((int)$id);
         $productColors = $this->productModel->getProductColors((int)$id);
+        $productColorsWithImages = $this->productModel->getProductColorsWithImages((int)$id); // Chỉ màu có ảnh
         $variants = $this->productModel->getProductVariants($id); // *** THÊM MỚI ***
 
         // *** EXTRACT BIẾN TỪ PRODUCT OBJECT ***
@@ -350,6 +351,7 @@ class ProductController extends \Controller {
             'subcategories' => $subcategories,
             'colors' => $allColors,
             'productColors' => $productColors,
+            'productColorsWithImages' => $productColorsWithImages, // *** MỚI ***
             'productColorIds' => $this->productModel->getProductColorIds((int)$id),
             'productImages' => $productImages,
             'sizes' => $sizes, // *** THÊM MỚI ***

@@ -183,6 +183,16 @@ function getContrastColor($hexColor) {
                         <div><?= nl2br(htmlspecialchars($product->sanpham_chitiet)) ?></div>
                     </div>
                     <?php endif; ?>
+
+                    <!-- Hướng dẫn bảo quản -->
+                    <?php if(!empty($product->sanpham_baoquan)): ?>
+                    <div class="product-care-guide mt-4">
+                        <h5 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; border-bottom: 2px solid #28a745; padding-bottom: 10px;">
+                            <i class="fas fa-shield-alt"></i> Hướng dẫn bảo quản
+                        </h5>
+                        <div><?= nl2br(htmlspecialchars($product->sanpham_baoquan)) ?></div>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -700,6 +710,19 @@ function addToCart(productId) {
     padding: 20px;
     border-radius: 8px;
     line-height: 1.6;
+}
+
+.product-care-guide {
+    background: #f0f8f5;
+    padding: 20px;
+    border-radius: 8px;
+    line-height: 1.6;
+    border-left: 4px solid #28a745;
+}
+
+.product-care-guide h5 i {
+    color: #28a745;
+    margin-right: 8px;
 }
 
 .main-product-image {

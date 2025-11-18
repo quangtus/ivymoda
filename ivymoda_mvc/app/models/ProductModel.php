@@ -68,13 +68,15 @@ class ProductModel extends Model {
         if ($colorId !== null) {
             $query .= " AND sc.color_id = ?";
             $params[] = (int)$colorId;
+            // Nếu lọc theo màu, KHÔNG hiển thị ảnh fallback
+            $includeDefault = false;
         }
         
         $query .= " ORDER BY ap.is_primary DESC, ap.anh_id ASC";
         
         $images = $this->getAll($query, $params);
         
-        // Nếu không có ảnh và yêu cầu ảnh mặc định
+        // Nếu không có ảnh và yêu cầu ảnh mặc định (CHỈ KHI XEM TẤT CẢ MÀU)
         if (empty($images) && $includeDefault) {
             // Lấy thông tin sản phẩm để lấy ảnh chính
             $product = $this->getOne("SELECT sanpham_anh FROM tbl_sanpham WHERE sanpham_id = ?", [$productId]);
@@ -144,6 +146,20 @@ class ProductModel extends Model {
                   FROM tbl_sanpham_color spc
                   INNER JOIN tbl_color c ON spc.color_id = c.color_id
                   WHERE spc.sanpham_id = ?
+                  ORDER BY c.color_ten";
+        return $this->getAll($query, [$productId]);
+    }
+    
+    /**
+     * Lấy danh sách màu CÓ ẢNH thực sự (không chỉ gán màu mà chưa upload ảnh)
+     * Dùng cho dropdown thêm variant trong trang edit - chỉ cho phép thêm variant cho màu đã có ảnh
+     */
+    public function getProductColorsWithImages(int $productId) {
+        $query = "SELECT DISTINCT c.color_id, c.color_ten, c.color_ma
+                  FROM tbl_anhsanpham ap
+                  INNER JOIN tbl_sanpham_color sc ON ap.sanpham_color_id = sc.sanpham_color_id
+                  INNER JOIN tbl_color c ON sc.color_id = c.color_id
+                  WHERE sc.sanpham_id = ?
                   ORDER BY c.color_ten";
         return $this->getAll($query, [$productId]);
     }

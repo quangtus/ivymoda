@@ -8,11 +8,11 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
             <div class="card">
                 <div class="card-header">
                     <h4 class="card-title">
-                        <i class="fas fa-images"></i> Quản lý ảnh sản phẩm
+                        📸 Quản lý ảnh sản phẩm
                     </h4>
                     <div class="card-tools">
                         <a href="<?= BASE_URL ?>admin/product" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Quay lại
+                            ← Quay lại
                         </a>
                     </div>
                 </div>
@@ -31,6 +31,13 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
                                 <h6 class="mb-0">Thêm ảnh mới</h6>
                             </div>
                             <div class="card-body">
+                                <?php if(empty($availableColors)): ?>
+                                <div class="alert alert-info">
+                                    <strong>🎉 Không sao!</strong><br>
+                                    Bạn có thể chọn màu bất kỳ từ dropdown phía trên để upload ảnh.<br>
+                                    Màu sẽ tự động được thêm vào sản phẩm này.
+                                </div>
+                                <?php else: ?>
                                 <form action="<?= BASE_URL ?>admin/productimage/upload" method="POST" enctype="multipart/form-data" id="upload-form">
                                     <input type="hidden" name="product_id" value="<?= $product->sanpham_id ?>">
                                     <div id="upload-group-container">
@@ -39,16 +46,44 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label for="color_group_0">Chọn màu (nhóm ảnh):</label>
-                                                        <select class="form-control" id="color_group_0" name="color_group[0]">
+                                                        <select class="form-control color-select" id="color_group_0" name="color_group[0]">
                                                             <option value="">-- Không gán màu --</option>
-                                                            <?php if(isset($availableColors) && !empty($availableColors)): ?>
-                                                                <?php foreach($availableColors as $color): ?>
-                                                                    <option value="<?= $color->color_id ?>" <?= (isset($selectedColorId) && $selectedColorId == $color->color_id) ? 'selected' : '' ?>>
-                                                                        <?= htmlspecialchars($color->color_ten) ?>
-                                                                    </option>
-                                                                <?php endforeach; ?>
-                                                            <?php endif; ?>
+                                                            <?php 
+                                                            // Hiển thị TẤT CẢ màu trong hệ thống
+                                                            $colorModel = new \ColorModel();
+                                                            $allColors = $colorModel->getAllColors();
+                                                            
+                                                            if(!empty($allColors)):
+                                                                foreach($allColors as $color):
+                                                                    // Kiểm tra màu đã được gán chưa
+                                                                    $isAssigned = false;
+                                                                    if(!empty($availableColors)) {
+                                                                        foreach($availableColors as $assignedColor) {
+                                                                            if($assignedColor->color_id == $color->color_id) {
+                                                                                $isAssigned = true;
+                                                                                break;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    
+                                                                    $label = htmlspecialchars($color->color_ten);
+                                                                    if(!$isAssigned) {
+                                                                        $label .= ' (➕ Mới)';
+                                                                    }
+                                                            ?>
+                                                                <option value="<?= $color->color_id ?>" 
+                                                                        data-is-new="<?= !$isAssigned ? '1' : '0' ?>" 
+                                                                        <?= (isset($selectedColorId) && $selectedColorId == $color->color_id) ? 'selected' : '' ?>>
+                                                                    <?= $label ?>
+                                                                </option>
+                                                            <?php 
+                                                                endforeach;
+                                                            endif;
+                                                            ?>
                                                         </select>
+                                                        <small class="form-text text-success">
+                                                            <strong>✨ Mới:</strong> Bạn có thể chọn bất kỳ màu nào. Màu mới sẽ tự động được gán vào sản phẩm.
+                                                        </small>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3">
@@ -67,49 +102,86 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
                                             </div>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-secondary" id="btn-add-group"><i class="fas fa-plus"></i> Thêm nhóm màu</button>
-                                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload ảnh</button>
+                                    <button type="button" class="btn btn-secondary" id="btn-add-group">➕ Thêm nhóm màu</button>
+                                    <button type="submit" class="btn btn-primary">📤 Upload ảnh</button>
                                 </form>
+                                <?php endif; ?>
+                                
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <strong>💡 Mẹo:</strong> 
+                                    <ul class="mb-0">
+                                        <li><strong>Màu mới (➕):</strong> Màu chưa được gán cho sản phẩm. Khi upload ảnh, màu sẽ tự động được thêm.</li>
+                                        <li><strong>Variant:</strong> Hệ thống tự động tạo variant mặc định (size S, tồn kho 0) cho màu mới.</li>
+                                        <li><strong>Cập nhật tồn kho:</strong> Vào <a href="<?= BASE_URL ?>admin/product/edit/<?= $product->sanpham_id ?>" class="alert-link">Sửa sản phẩm</a> để quản lý chi tiết variant.</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Filter by color -->
                     <div class="mb-3">
-                        <form method="GET" action="">
-                            <input type="hidden" name="route" value="admin/productimage/<?= $product->sanpham_id ?>">
-                            <div class="form-row align-items-end">
-                                <div class="col-md-4">
-                                    <label for="filter_color_id">Lọc theo màu:</label>
-                                    <select class="form-control" id="filter_color_id" name="color_id" onchange="submitFilterForm()">
-                                        <option value="">Tất cả màu</option>
-                                        <?php if(isset($availableColors) && !empty($availableColors)): ?>
-                                            <?php foreach($availableColors as $color): ?>
-                                                <option value="<?= $color->color_id ?>" <?= (isset($selectedColorId) && $selectedColorId == $color->color_id) ? 'selected' : '' ?>>
-                                                    <?= htmlspecialchars($color->color_ten) ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </select>
-                                </div>
-                                <?php if(isset($selectedColorId) && $selectedColorId): ?>
-                                <div class="col-md-4">
-                                    <form method="POST" action="<?= BASE_URL ?>admin/productimage/deleteColorGroup" onsubmit="return confirm('Xóa toàn bộ ảnh của màu đã chọn?');">
-                                        <input type="hidden" name="product_id" value="<?= $product->sanpham_id ?>">
-                                        <input type="hidden" name="color_id" value="<?= (int)$selectedColorId ?>">
-                                        <button type="submit" class="btn btn-outline-danger mt-4">
-                                            <i class="fas fa-times"></i> Xóa toàn bộ ảnh theo màu
-                                        </button>
-                                    </form>
-                                </div>
-                                <?php endif; ?>
+                        <div class="form-row align-items-end">
+                            <div class="col-md-4">
+                                <label for="filter_color_id">Lọc theo màu:</label>
+                                <select class="form-control" id="filter_color_id" name="color_id" onchange="filterByColor(this.value)">
+                                    <option value="">Tất cả màu</option>
+                                    <?php if(isset($availableColors) && !empty($availableColors)): ?>
+                                        <?php foreach($availableColors as $color): ?>
+                                            <option value="<?= $color->color_id ?>" <?= (isset($selectedColorId) && $selectedColorId == $color->color_id) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($color->color_ten) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
                             </div>
-                        </form>
+                            <?php if(isset($selectedColorId) && $selectedColorId): ?>
+                            <div class="col-md-4">
+                                <form method="POST" action="<?= BASE_URL ?>admin/productimage/deleteColorGroup" onsubmit="return confirm('Xóa toàn bộ ảnh của màu đã chọn?');">
+                                    <input type="hidden" name="product_id" value="<?= $product->sanpham_id ?>">
+                                    <input type="hidden" name="color_id" value="<?= (int)$selectedColorId ?>">
+                                    <button type="submit" class="btn btn-outline-danger mt-4">
+                                        ❌ Xóa toàn bộ ảnh theo màu
+                                    </button>
+                                </form>
+                            </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
+                    
+                    <script>
+                    // Hàm lọc theo màu - Control URL chính xác
+                    function filterByColor(colorId) {
+                        const productId = <?= $product->sanpham_id ?>;
+                        const baseUrl = '<?= BASE_URL ?>admin/productimage/' + productId;
+                        
+                        if(colorId && colorId !== '') {
+                            // Redirect với color_id mới
+                            window.location.href = baseUrl + '?color_id=' + colorId;
+                        } else {
+                            // Hiển thị tất cả màu (không có query string)
+                            window.location.href = baseUrl;
+                        }
+                    }
+                    </script>
 
                     <!-- Danh sách ảnh -->
                     <div class="images-section">
-                        <h6 class="mb-3">Danh sách ảnh (<?= count($productImages) ?> ảnh<?= isset($selectedColorId) && $selectedColorId !== null ? ' - Màu: ' : '' ?><?= isset($selectedColorId) && $selectedColorId !== null && isset($availableColors) ? htmlspecialchars(array_values(array_filter($availableColors, function($c){return true;}))[0]->color_ten ?? '') : '' ?>)</h6>
+                        <?php 
+                        // Lấy tên màu đang lọc
+                        $selectedColorName = '';
+                        if(isset($selectedColorId) && $selectedColorId && !empty($availableColors)) {
+                            foreach($availableColors as $c) {
+                                if($c->color_id == $selectedColorId) {
+                                    $selectedColorName = $c->color_ten;
+                                    break;
+                                }
+                            }
+                        }
+                        ?>
+                        <h6 class="mb-3">
+                            Danh sách ảnh (<?= count($productImages) ?> ảnh<?= $selectedColorName ? ' - Màu: ' . htmlspecialchars($selectedColorName) : '' ?>)
+                        </h6>
                         
                         <?php if(!empty($productImages)): ?>
                             <div class="row">
@@ -124,12 +196,12 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
                                                 
                                                 <?php if($image->is_primary): ?>
                                                     <div class="primary-badge">
-                                                        <i class="fas fa-star"></i> Ảnh chính
+                                                        ⭐ Ảnh chính
                                                     </div>
                                                 <?php endif; ?>
                                                 
                                                 <div class="hover-overlay">
-                                                    <i class="fas fa-search-plus"></i>
+                                                    🔍
                                                 </div>
                                                 
                                                 <div class="image-actions">
@@ -137,8 +209,8 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
                                                         <form action="<?= BASE_URL ?>admin/productimage/setPrimary" method="POST" class="d-inline" onsubmit="return confirmSetPrimary('<?= $image->anh_path ?>')">
                                                             <input type="hidden" name="image_id" value="<?= $image->anh_id ?>">
                                                             <input type="hidden" name="product_id" value="<?= $product->sanpham_id ?>">
-                                                            <button type="submit" class="btn btn-sm btn-warning" title="Đặt làm ảnh chính">
-                                                                <i class="fas fa-star"></i>
+                                                            <button type="submit" class="btn btn-sm btn-warning" title="Đặt làm ảnh chính" style="padding: 8px 14px; font-size: 16px;">
+                                                                ⭐
                                                             </button>
                                                         </form>
                                                     <?php endif; ?>
@@ -147,8 +219,8 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
                                                           onsubmit="return confirmDelete('<?= $image->anh_path ?>')">
                                                         <input type="hidden" name="image_id" value="<?= $image->anh_id ?>">
                                                         <input type="hidden" name="product_id" value="<?= $product->sanpham_id ?>">
-                                                        <button type="submit" class="btn btn-sm btn-danger" title="Xóa ảnh">
-                                                            <i class="fas fa-trash"></i>
+                                                        <button type="submit" class="btn btn-sm btn-danger" title="Xóa ảnh" style="padding: 8px 14px; font-size: 16px;">
+                                                            🗑️
                                                         </button>
                                                     </form>
                                                 </div>
@@ -168,7 +240,7 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
                             </div>
                         <?php else: ?>
                             <div class="text-center py-5">
-                                <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                                <div style="font-size: 72px; margin-bottom: 20px;">📷</div>
                                 <h5 class="text-muted">Chưa có ảnh nào</h5>
                                 <p class="text-muted">Hãy upload ảnh đầu tiên cho sản phẩm này</p>
                             </div>
@@ -318,14 +390,6 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
 </style>
 
 <script>
-// Submit filter form
-function submitFilterForm() {
-    const form = document.querySelector('form[method="GET"]');
-    if (form) {
-        form.submit();
-    }
-}
-
 // Xem ảnh lớn
 function showImagePreview(imageSrc, productName) {
     $('#previewImage').attr('src', imageSrc);
