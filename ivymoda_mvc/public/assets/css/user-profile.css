@@ -64,6 +64,7 @@
 /* Ensure form elements are visible */
 .profile-info-form {
     max-width: 600px;
+    margin: 0 auto;
 }
 
 .profile-info-form .form-group {
