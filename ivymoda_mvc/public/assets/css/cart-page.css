@@ -37,10 +37,27 @@
 .discount-badge {
     background: #ff4757;
     color: white;
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: 4px;
     font-size: 12px;
     font-weight: 600;
+    display: inline-block;
+    line-height: 1.2;
+    min-height: 24px;
+    min-width: 50px;
+    width: auto;
+    vertical-align: middle;
+    white-space: nowrap;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Ensure discount column has enough width */
+.cart-content-left table td:nth-child(3) {
+    min-width: 80px;
+    width: auto;
+    white-space: nowrap;
+    text-align: center;
 }
 
 /* Quantity Controls - FIXED */

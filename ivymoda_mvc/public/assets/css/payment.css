@@ -299,3 +299,80 @@
     font-size: 16px;
     font-weight: 500;
 }
+
+/* Product info in order summary */
+.product-info {
+    display: flex;
+    align-items: center;
+}
+
+.product-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 10px;
+    transform: none !important;
+    image-orientation: 0deg !important;
+    -webkit-transform: none !important;
+    -moz-transform: none !important;
+    -ms-transform: none !important;
+    -o-transform: none !important;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.product-details h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.product-details p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Order summary table styles */
+.order-summary {
+    margin-top: 20px;
+}
+
+.order-summary table {
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    border-collapse: collapse;
+}
+
+.order-summary table tr th:first-child {
+    text-align: left;
+}
+
+.order-summary table tr th {
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dddddd;
+}
+
+.order-summary table tr th:last-child {
+    text-align: right;
+}
+
+.order-summary table tr td {
+    padding: 6px 0;
+}
+
+.order-summary table tr td:last-child {
+    text-align: right;
+}
+
+.order-summary table tr td:first-child {
+    text-align: left;
+}
+
+.order-summary .total-row {
+    border-top: 2px solid #dddddd;
+    font-weight: bold;
+}

@@ -86,6 +86,22 @@ class UserController extends Controller {
             }
         }
         
+        // Xử lý cập nhật cài đặt email
+        if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_email_settings'])) {
+            $email_notifications = isset($_POST['email_notifications']) ? 1 : 0;
+            $promotion_emails = isset($_POST['promotion_emails']) ? 1 : 0;
+            
+            $result = $this->userModel->updateEmailSettings($user_id, $email_notifications, $promotion_emails);
+            
+            if($result == "success") {
+                $data['success'] = 'Cập nhật cài đặt email thành công!';
+                // Cập nhật lại thông tin hiển thị
+                $data['user_info'] = $this->userModel->getUserById($user_id);
+            } else {
+                $data['error'] = $result;
+            }
+        }
+        
         $this->view('frontend/user/profile', $data);
     }
     

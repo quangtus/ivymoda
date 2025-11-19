@@ -59,7 +59,7 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                                 <input type="checkbox" id="selectAll" checked>
                             </th>
                             <th>Tên sản phẩm</th>
-                            <th>Chiết khấu</th>
+                            <th>Giảm giá</th>
                             <th>Số lượng</th>
                             <th>Tổng tiền</th>
                         </tr>

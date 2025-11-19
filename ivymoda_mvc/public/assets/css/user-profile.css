@@ -58,7 +58,32 @@
 }
 
 .tab-content.active {
-    display: block;
+    display: block !important;
+}
+
+/* Ensure form elements are visible */
+.profile-info-form {
+    max-width: 600px;
+}
+
+.profile-info-form .form-group {
+    margin-bottom: 20px;
+}
+
+.profile-info-form label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.profile-info-form input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-top: 2px;
+    flex-shrink: 0;
 }
 
 .form-group {

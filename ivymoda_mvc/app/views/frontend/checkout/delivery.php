@@ -129,9 +129,10 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                             <tr>
                                 <td>
                                     <div class="product-info">
-                                        <img src="<?= BASE_URL ?>assets/images/products/<?= htmlspecialchars($item->sanpham_anh) ?>" 
+                                        <img src="<?= BASE_URL ?>assets/uploads/<?= htmlspecialchars($item->sanpham_anh) ?>" 
                                              alt="<?= htmlspecialchars($item->sanpham_tieude) ?>" 
-                                             class="product-image">
+                                             class="product-image"
+                                             onerror="this.src='<?= BASE_URL ?>assets/images/no-image.svg'">
                                         <div class="product-details">
                                             <h4><?= htmlspecialchars($item->sanpham_tieude) ?></h4>
                                             <p>Màu: <?= htmlspecialchars($item->color_ten) ?> | Size: <?= htmlspecialchars($item->size_ten) ?></p>

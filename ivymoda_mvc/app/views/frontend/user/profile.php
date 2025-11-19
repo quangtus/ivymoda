@@ -38,8 +38,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="email">Email <span style="color: red;">*</span></label>
-                    <input type="email" id="email" name="email" value="<?php echo isset($user_info->email) ? htmlspecialchars($user_info->email) : ''; ?>" required>
+                    <label for="user_email">Email <span style="color: red;">*</span></label>
+                    <input type="email" id="user_email" name="email" value="<?php echo isset($user_info->email) ? htmlspecialchars($user_info->email) : ''; ?>" required>
                 </div>
                 
                 <div class="form-group">
@@ -121,48 +121,51 @@
         
         <div id="email" class="tab-content">
             <h2>Quản lý Email</h2>
-            <div class="email-settings-info">
-                <p>Quản lý các thông báo email bạn muốn nhận từ IVY Moda</p>
-                <div class="email-info-card">
-                    <div class="email-info-item">
+            <p style="color: #666; margin-bottom: 20px;">Quản lý các thông báo email bạn muốn nhận từ IVY Moda</p>
+            
+            <form action="<?= BASE_URL ?>user/profile" method="post" class="profile-info-form">
+                <input type="hidden" name="update_email_settings" value="1">
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" 
+                               name="email_notifications" 
+                               value="1" 
+                               <?= (isset($user_info->email_notifications) && $user_info->email_notifications == 1) ? 'checked' : '' ?>
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                        <div>
+                            <strong>Thông báo đơn hàng</strong>
+                            <small style="display: block; color: #666; font-size: 12px; margin-top: 5px;">
+                                Nhận email xác nhận đơn hàng, cập nhật trạng thái giao hàng
+                            </small>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" 
+                               name="promotion_emails" 
+                               value="1" 
+                               <?= (isset($user_info->promotion_emails) && $user_info->promotion_emails == 1) ? 'checked' : '' ?>
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                        <div>
+                            <strong>Email khuyến mãi</strong>
+                            <small style="display: block; color: #666; font-size: 12px; margin-top: 5px;">
+                                Nhận thông tin về các chương trình khuyến mãi đặc biệt
+                            </small>
+                        </div>
+                    </label>
+                </div>
+                
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <small style="color: #666;">
                         <strong>Địa chỉ Email:</strong> <?php echo htmlspecialchars($user_info->email); ?>
-                    </div>
-                    <div class="email-info-item">
-                        <strong>Trạng thái:</strong> <span class="status-active">Hoạt động</span>
-                    </div>
+                    </small>
                 </div>
-            </div>
-            
-            <div class="email-actions">
-                <a href="<?php echo BASE_URL; ?>user/emailSettings" class="btn btn-primary">
-                    <i class="fas fa-cog"></i> Cài đặt Email Chi tiết
-                </a>
-                <a href="<?php echo BASE_URL; ?>user/emailSettings" class="btn btn-outline-secondary">
-                    <i class="fas fa-history"></i> Xem Lịch sử Email
-                </a>
-            </div>
-            
-            <div class="email-features">
-                <h3>Các tính năng Email</h3>
-                <div class="feature-list">
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle text-success"></i>
-                        <span>Email xác nhận đăng ký tài khoản</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle text-success"></i>
-                        <span>Email xác nhận đơn hàng</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle text-success"></i>
-                        <span>Email thông báo đổi mật khẩu</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle text-success"></i>
-                        <span>Email khuyến mãi đặc biệt</span>
-                    </div>
-                </div>
-            </div>
+                
+                <button type="submit" class="btn-submit" style="margin-top: 20px;">Lưu cài đặt</button>
+            </form>
         </div>
         
         <script>
@@ -170,6 +173,15 @@
                 // Tab switching
                 const tabs = document.querySelectorAll('.profile-tab');
                 const tabContents = document.querySelectorAll('.tab-content');
+                
+                // Initialize: Hide all tab contents except the active one
+                tabContents.forEach(function(content) {
+                    if (!content.classList.contains('active')) {
+                        content.style.display = 'none';
+                    } else {
+                        content.style.display = 'block';
+                    }
+                });
                 
                 tabs.forEach(function(tab) {
                     tab.addEventListener('click', function() {
@@ -186,8 +198,12 @@
                         
                         // Add active class to current tab and content
                         this.classList.add('active');
-                        document.getElementById(tabId).classList.add('active');
-                        document.getElementById(tabId).style.display = 'block';
+                        const targetContent = document.getElementById(tabId);
+                        
+                        if (targetContent) {
+                            targetContent.classList.add('active');
+                            targetContent.style.display = 'block';
+                        }
                     });
                 });
             });
