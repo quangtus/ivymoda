@@ -58,9 +58,8 @@ class HomeController extends Controller {
                 // Lấy sản phẩm theo danh mục
                 $products = $this->productModel->getProductsByCategory($category_id, $limit, $offset);
                 
-                // Đếm tổng số sản phẩm (cần implement method này)
-                $allProducts = $this->productModel->getProductsByCategory($category_id, 1000, 0);
-                $totalProducts = count($allProducts);
+                // Đếm tổng số sản phẩm (tối ưu)
+                $totalProducts = $this->productModel->countProductsByCategory($category_id);
                 $totalPages = ceil($totalProducts / $limit);
             }
             
@@ -157,58 +156,4 @@ class HomeController extends Controller {
         $this->view('frontend/product/detail', $data);
     }
     
-    /**
-     * Tìm kiếm sản phẩm
-     */
-    public function search() {
-        $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
-        $category_id = isset($_GET['category']) ? (int)$_GET['category'] : null;
-        $min_price = isset($_GET['min_price']) ? (float)$_GET['min_price'] : null;
-        $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
-        
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = 12;
-        $offset = ($page - 1) * $limit;
-        
-        $products = [];
-        $categories = [];
-        $totalProducts = 0;
-        $totalPages = 0;
-        
-        try {
-            if ($keyword && $this->productModel) {
-                $products = $this->productModel->searchProducts($keyword, $category_id, $min_price, $max_price, $limit, $offset);
-                
-                // Đếm tổng số kết quả
-                $allResults = $this->productModel->searchProducts($keyword, $category_id, $min_price, $max_price, 1000, 0);
-                $totalProducts = count($allResults);
-                $totalPages = ceil($totalProducts / $limit);
-            }
-            
-            // Lấy danh mục cho filter
-            if ($this->categoryModel) {
-                $categories = $this->categoryModel->getAllCategories();
-            }
-            
-        } catch (Exception $e) {
-            error_log("SearchController Error: " . $e->getMessage());
-        }
-        
-        $data = [
-            'title' => 'Tìm kiếm: ' . $keyword . ' - IVY moda',
-            'keyword' => $keyword,
-            'products' => $products,
-            'categories' => $categories,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'totalProducts' => $totalProducts,
-            'filters' => [
-                'category_id' => $category_id,
-                'min_price' => $min_price,
-                'max_price' => $max_price
-            ]
-        ];
-        
-        $this->view('frontend/product/search', $data);
-    }
 }

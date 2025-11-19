@@ -19,7 +19,7 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
             <div class="card">
                 <div class="card-body">
                     <form method="GET" action="<?= BASE_URL ?>product/search" class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-8">
                             <input type="text" name="q" class="form-control" 
                                    placeholder="Tìm kiếm sản phẩm..." 
                                    value="<?= htmlspecialchars($keyword) ?>" required>
@@ -37,19 +37,9 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                                 <?php endif; ?>
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <input type="number" name="min_price" class="form-control" 
-                                   placeholder="Giá từ" 
-                                   value="<?= $filters['min_price'] ?? '' ?>">
-                        </div>
-                        <div class="col-md-2">
-                            <input type="number" name="max_price" class="form-control" 
-                                   placeholder="Giá đến" 
-                                   value="<?= $filters['max_price'] ?? '' ?>">
-                        </div>
                         <div class="col-md-1">
                             <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-search"></i>
+                                <i class="fas fa-search"></i> Tìm
                             </button>
                         </div>
                     </form>
@@ -69,22 +59,27 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
     </div>
 
     <!-- Results -->
-    <div class="row">
+    <div class="row" style="margin-left: -10px; margin-right: -10px;">
         <?php if(isset($products) && count($products) > 0): ?>
             <?php foreach($products as $product): ?>
-                <div class="col-lg-4 col-md-6 mb-4">
+                <div class="col-lg-4 col-md-6 mb-4" style="padding-left: 10px; padding-right: 10px;">
                     <div class="card h-100">
                         <a href="<?= BASE_URL ?>product/detail/<?= $product->sanpham_id ?>">
                             <div class="product-image">
-                                <?php if(!empty($product->sanpham_anh)): ?>
-                                    <img src="<?= BASE_URL ?>assets/uploads/<?= $product->sanpham_anh ?>" 
+                                <?php 
+                                $imageToShow = $product->first_image ?? $product->sanpham_anh ?? '';
+                                if(!empty($imageToShow)): 
+                                ?>
+                                    <img src="<?= BASE_URL ?>assets/uploads/<?= $imageToShow ?>" 
                                          alt="<?= htmlspecialchars($product->sanpham_tieude) ?>" 
                                          class="card-img-top"
-                                         onerror="this.src='<?= BASE_URL ?>assets/images/no-image.jpg'">
+                                         loading="lazy"
+                                         onerror="this.onerror=null; this.src='<?= BASE_URL ?>assets/images/no-image.svg'">
                                 <?php else: ?>
-                                    <img src="<?= BASE_URL ?>assets/images/no-image.jpg" 
+                                    <img src="<?= BASE_URL ?>assets/images/no-image.svg" 
                                          alt="No image" 
-                                         class="card-img-top">
+                                         class="card-img-top"
+                                         loading="lazy">
                                 <?php endif; ?>
                             </div>
                         </a>
@@ -103,9 +98,6 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                                     <span class="badge badge-light"><?= htmlspecialchars($product->danhmuc_ten ?? 'N/A') ?></span>
                                     <?php if(!empty($product->loaisanpham_ten)): ?>
                                         <span class="badge badge-light"><?= htmlspecialchars($product->loaisanpham_ten) ?></span>
-                                    <?php endif; ?>
-                                    <?php if(!empty($product->color_ten)): ?>
-                                        <span class="badge badge-light"><?= htmlspecialchars($product->color_ten) ?></span>
                                     <?php endif; ?>
                                 </small>
                             </div>
@@ -127,19 +119,19 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                         <ul class="pagination justify-content-center">
                             <?php if($currentPage > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= BASE_URL ?>product/search?q=<?= urlencode($keyword) ?>&category=<?= $filters['category_id'] ?? '' ?>&min_price=<?= $filters['min_price'] ?? '' ?>&max_price=<?= $filters['max_price'] ?? '' ?>&page=<?= $currentPage - 1 ?>">Trước</a>
+                                    <a class="page-link" href="<?= BASE_URL ?>product/search?q=<?= urlencode($keyword) ?>&category=<?= $filters['category_id'] ?? '' ?>&page=<?= $currentPage - 1 ?>">Trước</a>
                                 </li>
                             <?php endif; ?>
                             
                             <?php for($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i == $currentPage ? 'active' : '' ?>">
-                                    <a class="page-link" href="<?= BASE_URL ?>product/search?q=<?= urlencode($keyword) ?>&category=<?= $filters['category_id'] ?? '' ?>&min_price=<?= $filters['min_price'] ?? '' ?>&max_price=<?= $filters['max_price'] ?? '' ?>&page=<?= $i ?>"><?= $i ?></a>
+                                    <a class="page-link" href="<?= BASE_URL ?>product/search?q=<?= urlencode($keyword) ?>&category=<?= $filters['category_id'] ?? '' ?>&page=<?= $i ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
                             
                             <?php if($currentPage < $totalPages): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= BASE_URL ?>product/search?q=<?= urlencode($keyword) ?>&category=<?= $filters['category_id'] ?? '' ?>&min_price=<?= $filters['min_price'] ?? '' ?>&max_price=<?= $filters['max_price'] ?? '' ?>&page=<?= $currentPage + 1 ?>">Sau</a>
+                                    <a class="page-link" href="<?= BASE_URL ?>product/search?q=<?= urlencode($keyword) ?>&category=<?= $filters['category_id'] ?? '' ?>&page=<?= $currentPage + 1 ?>">Sau</a>
                                 </li>
                             <?php endif; ?>
                         </ul>
@@ -180,10 +172,16 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
 
 .card {
     transition: box-shadow 0.3s ease;
+    margin-bottom: 20px;
 }
 
 .card:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Tăng khoảng cách giữa các sản phẩm */
+.product-search-item {
+    margin-bottom: 30px;
 }
 
 .badge {

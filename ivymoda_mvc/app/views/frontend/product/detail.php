@@ -187,7 +187,7 @@ function getContrastColor($hexColor) {
                     <!-- Hướng dẫn bảo quản -->
                     <?php if(!empty($product->sanpham_baoquan)): ?>
                     <div class="product-care-guide mt-4">
-                        <h5 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; border-bottom: 2px solid #28a745; padding-bottom: 10px;">
+                        <h5 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
                             <i class="fas fa-shield-alt"></i> Hướng dẫn bảo quản
                         </h5>
                         <div><?= nl2br(htmlspecialchars($product->sanpham_baoquan)) ?></div>
@@ -713,15 +713,15 @@ function addToCart(productId) {
 }
 
 .product-care-guide {
-    background: #f0f8f5;
+    background: #f0f8ff;
     padding: 20px;
     border-radius: 8px;
     line-height: 1.6;
-    border-left: 4px solid #28a745;
+    border-left: 4px solid #007bff;
 }
 
 .product-care-guide h5 i {
-    color: #28a745;
+    color: #007bff;
     margin-right: 8px;
 }
 

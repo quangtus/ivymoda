@@ -47,14 +47,16 @@ ul {
 /* Header Styles */
 
 header {
-    border-bottom: 1px solid var(--border-color);
-    background-color: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(165, 216, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(3px);
     align-items: center;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 1000;
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease, border-bottom-color 0.3s ease;
     /* Tăng z-index để header luôn ở trên */
 }
 
@@ -64,8 +66,9 @@ header.sticky {
 }
 
 header:hover {
-    background: rgba(255, 255, 255, 0.9);
-    transition: 0.3s;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 
 .header-top {

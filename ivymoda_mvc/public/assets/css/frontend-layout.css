@@ -47,12 +47,21 @@ ul {
 /* Header */
 
 header {
-    border-bottom: 1px solid #a5d8ff;
-    background-color: #fff;
+    border-bottom: 1px solid rgba(165, 216, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(3px);
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease, border-bottom-color 0.3s ease;
+}
+
+header:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border-bottom-color: #a5d8ff;
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease, border-bottom-color 0.3s ease;
 }
 
 .header-top {

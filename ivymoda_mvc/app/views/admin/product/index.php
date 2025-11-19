@@ -6,6 +6,16 @@ require_once ROOT_PATH . 'app/views/shared/admin/header.php';
 
 // Load sidebar
 require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
+
+// Helper function để build query string giữ các tham số lọc
+function buildQueryString($page, $filters, $sort) {
+    $params = ['page' => $page];
+    if (!empty($filters['search'])) $params['search'] = $filters['search'];
+    if (!empty($filters['category'])) $params['category'] = $filters['category'];
+    if (isset($filters['status']) && $filters['status'] !== '') $params['status'] = $filters['status'];
+    if (!empty($sort) && $sort !== 'newest') $params['sort'] = $sort;
+    return http_build_query($params);
+}
 ?>
 
 <div class="admin-content-right">
@@ -90,7 +100,17 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
             <!-- Danh sách sản phẩm dạng card -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Danh sách sản phẩm</h6>
+                    <div>
+                        <h6 class="m-0 font-weight-bold text-primary">Danh sách sản phẩm</h6>
+                        <?php if(!empty($filters['search']) || !empty($filters['category']) || isset($filters['status']) && $filters['status'] !== ''): ?>
+                            <small class="text-muted">
+                                Tìm thấy <strong><?= $totalProducts ?></strong> sản phẩm
+                                <?php if(!empty($filters['search'])): ?>
+                                    với từ khóa "<strong><?= htmlspecialchars($filters['search']) ?></strong>"
+                                <?php endif; ?>
+                            </small>
+                        <?php endif; ?>
+                    </div>
                     <div class="d-flex">
                         <div class="btn-group mr-2" role="group">
                             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleView('grid')">
@@ -324,19 +344,19 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                         <ul class="pagination justify-content-center">
                             <?php if($currentPage > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= ADMIN_URL ?>product?page=<?= $currentPage - 1 ?>">Trước</a>
+                                    <a class="page-link" href="<?= ADMIN_URL ?>product?<?= buildQueryString($currentPage - 1, $filters, $sort) ?>">Trước</a>
                                 </li>
                             <?php endif; ?>
                             
                             <?php for($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i == $currentPage ? 'active' : '' ?>">
-                                    <a class="page-link" href="<?= ADMIN_URL ?>product?page=<?= $i ?>"><?= $i ?></a>
+                                    <a class="page-link" href="<?= ADMIN_URL ?>product?<?= buildQueryString($i, $filters, $sort) ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
                             
                             <?php if($currentPage < $totalPages): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= ADMIN_URL ?>product?page=<?= $currentPage + 1 ?>">Sau</a>
+                                    <a class="page-link" href="<?= ADMIN_URL ?>product?<?= buildQueryString($currentPage + 1, $filters, $sort) ?>">Sau</a>
                                 </li>
                             <?php endif; ?>
                         </ul>

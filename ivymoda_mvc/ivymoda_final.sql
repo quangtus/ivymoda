@@ -268,7 +268,7 @@ COMMENT='VERSION 2.0: Lưu variant_id + snapshot để giữ history. ĐÃ SỬA
 
 -- Bảng log giao dịch MoMo (UC23)
 CREATE TABLE `tbl_momo_transaction` (
-  `momo_id` bigint NOT NULL AUTO_INCREMENT,
+  `momo_id` bigint(20) NOT NULL AUTO_INCREMENT,
   `order_id` int(11) DEFAULT NULL,
   `request_id` varchar(100) NOT NULL,
   `order_code` varchar(50) NOT NULL,
@@ -606,32 +606,32 @@ INSERT INTO `tbl_size` VALUES
 (6, 'XXL', 6, NOW()),
 (7, '3XL', 7, NOW());
 
--- Sản phẩm mẫu
+-- Sản phẩm mẫu (Sử dụng file ảnh thực tế từ thư mục uploads)
 INSERT INTO `tbl_sanpham` VALUES 
 (1, 'ÁO SƠ MI NAM TRẮNG BASIC', 'ASM-001', 2, 4, 499000, 599000, 16.69, 
  'Áo sơ mi nam trắng basic, chất liệu cotton cao cấp, thấm hút mồ hôi tốt, form dáng regular fit phù hợp mọi vóc dáng', 
  'Giặt máy ở nhiệt độ thường, không tẩy, không vắt mạnh', 
- 'ao_somi_trang.jpg', 1, NOW(), NOW()),
+ 'ivy1_1.webp', 1, NOW(), NOW()), 
  
 (2, 'QUẦN JEANS NỮ ỐNG RỘNG HÀN QUỐC', 'QJ-001', 1, 2, 699000, 899000, 22.25,
  'Quần jeans nữ ống rộng phong cách Hàn Quốc, chất liệu denim cao cấp, thiết kế trẻ trung năng động', 
  'Giặt lộn trái, không dùng nước nóng, phơi nơi thoáng mát', 
- 'quan_jeans.jpg', 1, NOW(), NOW()),
+ 'ivy2_1.webp', 1, NOW(), NOW()), 
  
 (3, 'ÁO THUN NAM CỔ TRÒN', 'AT-001', 2, 4, 299000, 399000, 25.06,
  'Áo thun nam cổ tròn basic, chất liệu cotton 100%, co giãn tốt, thoáng mát', 
  'Giặt máy, không ngâm lâu', 
- 'ao_thun.jpg', 1, NOW(), NOW()),
+ 'ivy3_1.webp', 1, NOW(), NOW()), 
  
 (4, 'ĐẦM CÔNG SỞ NỮ THANH LỊCH', 'DCN-001', 1, 3, 899000, 1299000, 30.79,
  'Đầm công sở nữ thiết kế thanh lịch, chất liệu vải thoáng mát, phù hợp đi làm và dự tiệc', 
  'Giặt tay, không vắt mạnh', 
- 'dam_congso.jpg', 1, NOW(), NOW()),
+ 'ivy4_1.webp', 1, NOW(), NOW()),
 
 (5, 'ÁO KHOÁC NAM THỂ THAO', 'AK-001', 2, 4, 799000, 999000, 20.02,
  'Áo khoác nam thể thao, chất liệu polyester thoáng khí, phù hợp đi chơi và tập gym', 
  'Giặt máy, không dùng chất tẩy', 
- 'ao_khoac_nam.jpg', 1, NOW(), NOW());
+ 'ivy5_1.webp', 1, NOW(), NOW());
 
 -- Liên kết sản phẩm - màu
 INSERT INTO `tbl_sanpham_color` VALUES 
@@ -654,28 +654,55 @@ INSERT INTO `tbl_sanpham_color` VALUES
 (12, 5, 2, 1, NOW()), -- Đen (mặc định)
 (13, 5, 7, 0, NOW()); -- Xám
 
--- Ảnh sản phẩm theo màu
+-- Ảnh sản phẩm theo màu (Sử dụng file ảnh thực tế: ivy1_X.webp, ivy2_X.webp, ...)
 INSERT INTO `tbl_anhsanpham` VALUES 
--- Áo sơ mi
-(1, 1, 1, 'ao_somi_trang_1.jpg', 1, NOW()),
-(2, 1, 1, 'ao_somi_trang_2.jpg', 0, NOW()),
-(3, 1, 2, 'ao_somi_den_1.jpg', 1, NOW()),
-(4, 1, 3, 'ao_somi_xanh_1.jpg', 1, NOW()),
--- Quần jeans
-(5, 2, 4, 'quan_jeans_den_1.jpg', 1, NOW()),
-(6, 2, 4, 'quan_jeans_den_2.jpg', 0, NOW()),
-(7, 2, 5, 'quan_jeans_xanh_1.jpg', 1, NOW()),
--- Áo thun
-(8, 3, 6, 'ao_thun_trang_1.jpg', 1, NOW()),
-(9, 3, 7, 'ao_thun_den_1.jpg', 1, NOW()),
-(10, 3, 8, 'ao_thun_xam_1.jpg', 1, NOW()),
--- Đầm công sở
-(11, 4, 9, 'dam_den_1.jpg', 1, NOW()),
-(12, 4, 10, 'dam_xanh_1.jpg', 1, NOW()),
-(13, 4, 11, 'dam_be_1.jpg', 1, NOW()),
--- Áo khoác
-(14, 5, 12, 'ao_khoac_den_1.jpg', 1, NOW()),
-(15, 5, 13, 'ao_khoac_xam_1.jpg', 1, NOW());
+-- Áo sơ mi (ID=1) - Màu trắng (sanpham_color_id=1)
+(1, 1, 1, 'ivy1_1.webp', 1, NOW()),
+(2, 1, 1, 'ivy1_2.webp', 0, NOW()),
+(3, 1, 1, 'ivy1_3.webp', 0, NOW()),
+(4, 1, 1, 'ivy1_4.webp', 0, NOW()),
+-- Áo sơ mi - Màu đen (sanpham_color_id=2) - Dùng lại ảnh sản phẩm
+(5, 1, 2, 'ivy1_1.webp', 1, NOW()),
+(6, 1, 2, 'ivy1_2.webp', 0, NOW()),
+-- Áo sơ mi - Màu xanh navy (sanpham_color_id=3) - Dùng lại ảnh sản phẩm
+(7, 1, 3, 'ivy1_1.webp', 1, NOW()),
+(8, 1, 3, 'ivy1_3.webp', 0, NOW()),
+-- Quần jeans (ID=2) - Màu đen (sanpham_color_id=4)
+(9, 2, 4, 'ivy2_1.webp', 1, NOW()),
+(10, 2, 4, 'ivy2_2.webp', 0, NOW()),
+(11, 2, 4, 'ivy2_3.webp', 0, NOW()),
+(12, 2, 4, 'ivy2_4.webp', 0, NOW()),
+-- Quần jeans - Màu xanh navy (sanpham_color_id=5) - Dùng lại ảnh sản phẩm
+(13, 2, 5, 'ivy2_1.webp', 1, NOW()),
+(14, 2, 5, 'ivy2_2.webp', 0, NOW()),
+-- Áo thun (ID=3) - Màu trắng (sanpham_color_id=6)
+(15, 3, 6, 'ivy3_1.webp', 1, NOW()),
+(16, 3, 6, 'ivy3_2.webp', 0, NOW()),
+(17, 3, 6, 'ivy3_3.webp', 0, NOW()),
+(18, 3, 6, 'ivy3_4.webp', 0, NOW()),
+-- Áo thun - Màu đen (sanpham_color_id=7) - Dùng lại ảnh sản phẩm
+(19, 3, 7, 'ivy3_1.webp', 1, NOW()),
+(20, 3, 7, 'ivy3_2.webp', 0, NOW()),
+-- Áo thun - Màu xám (sanpham_color_id=8) - Dùng lại ảnh sản phẩm
+(21, 3, 8, 'ivy3_1.webp', 1, NOW()),
+(22, 3, 8, 'ivy3_3.webp', 0, NOW()),
+-- Đầm công sở (ID=4) - Màu đen (sanpham_color_id=9)
+(23, 4, 9, 'ivy4_1.webp', 1, NOW()),
+(24, 4, 9, 'ivy4_2.webp', 0, NOW()),
+(25, 4, 9, 'ivy4_3.webp', 0, NOW()),
+-- Đầm công sở - Màu xanh navy (sanpham_color_id=10) - Dùng lại ảnh sản phẩm
+(26, 4, 10, 'ivy4_1.webp', 1, NOW()),
+(27, 4, 10, 'ivy4_2.webp', 0, NOW()),
+-- Đầm công sở - Màu be (sanpham_color_id=11) - Dùng lại ảnh sản phẩm
+(28, 4, 11, 'ivy4_1.webp', 1, NOW()),
+(29, 4, 11, 'ivy4_3.webp', 0, NOW()),
+-- Áo khoác (ID=5) - Màu đen (sanpham_color_id=12)
+(30, 5, 12, 'ivy5_1.webp', 1, NOW()),
+(31, 5, 12, 'ivy5_2.webp', 0, NOW()),
+(32, 5, 12, 'ivy5_3.webp', 0, NOW()),
+-- Áo khoác - Màu xám (sanpham_color_id=13) - Dùng lại ảnh sản phẩm
+(33, 5, 13, 'ivy5_1.webp', 1, NOW()),
+(34, 5, 13, 'ivy5_2.webp', 0, NOW());
 
 -- Dữ liệu Variant (Tồn kho chi tiết)
 INSERT INTO `tbl_product_variant` VALUES 
@@ -895,7 +922,7 @@ INSERT INTO `tbl_ma_giam_gia` VALUES
 (4, 'SUMMER20', 'Giảm 20% mùa hè', 20.00, 'percent', NOW(), DATE_ADD(NOW(), INTERVAL 60 DAY), 50, 0, 1, NOW(), NOW()),
 (5, 'SAVE50K', 'Giảm 50.000₫ cho đơn hàng từ 500.000₫', 50000.00, 'fixed', NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), 200, 0, 1, NOW(), NOW());
 
--- Mẫu khuyến mãi (liên kết với mã giảm giá) - UPDATED: Active promotions with rich HTML content
+-- Mẫu khuyến mãi (liên kết với mã giảm giá) - Sử dụng banner thực tế: banner1.jpg, banner2.webp, banner3.jpg
 INSERT INTO `tbl_promotion` VALUES 
 (1, 'GIẢM GIÁ 30% TOÀN BỘ SẢN PHẨM NỮ', 
  'Chương trình giảm giá đặc biệt dành cho khách hàng nữ', 
@@ -913,7 +940,7 @@ INSERT INTO `tbl_promotion` VALUES
     </div>
     <p style="margin-top: 20px; font-size: 14px; font-style: italic;">⏰ Ưu đãi có hiệu lực đến hết tháng này!</p>
 </div>', 
- 'promotion_women_30.jpg', 
+ 'banner1.jpg', 
  1, 
  NOW(), 
  DATE_ADD(NOW(), INTERVAL 30 DAY), 
@@ -935,7 +962,7 @@ INSERT INTO `tbl_promotion` VALUES
     </div>
     <p style="margin-top: 20px; font-size: 14px; font-style: italic;">⏰ Chỉ còn 7 ngày!</p>
 </div>', 
- 'flash_sale.jpg', 
+ 'banner2.webp', 
  2, 
  NOW(), 
  DATE_ADD(NOW(), INTERVAL 7 DAY), 
@@ -957,17 +984,17 @@ INSERT INTO `tbl_promotion` VALUES
     </div>
     <p style="margin-top: 20px; font-size: 14px; font-style: italic;">⏰ Ưu đãi kéo dài 2 tháng!</p>
 </div>',
- 'summer_sale.jpg',
+ 'banner3.jpg',
  4,
  NOW(),
  DATE_ADD(NOW(), INTERVAL 60 DAY),
  1, 3, 1, NOW(), NOW());
 
--- Mẫu đánh giá (VERSION 2.0: Bao gồm ảnh đánh giá)
+-- Mẫu đánh giá (VERSION 2.0: Bao gồm ảnh đánh giá - Sử dụng ảnh sản phẩm để demo)
 INSERT INTO `tbl_product_review` VALUES 
-(1, 1, 2, NULL, 5, 'Áo rất đẹp, chất liệu tốt, mặc thoải mái', '["reviews/ao_somi_review_1.jpg", "reviews/ao_somi_review_2.jpg"]', 1, 1, 'Cảm ơn bạn đã tin tưởng IVY moda!', NOW(), NOW()),
-(2, 2, 2, NULL, 4, 'Quần đẹp nhưng hơi dài, phải cắt gấu', '["reviews/quan_jeans_review_1.jpg"]', 1, 1, NULL, NOW(), NOW()),
-(3, 3, 2, NULL, 5, 'Áo thun basic nhưng rất chất lượng', NULL, 1, 1, NULL, NOW(), NOW());
+(1, 1, 2, NULL, 5, 'Áo rất đẹp, chất liệu tốt, mặc thoải mái', '["ivy1_1.webp", "ivy1_2.webp"]', 1, 1, 'Cảm ơn bạn đã tin tưởng IVY moda!', NOW(), NOW()),
+(2, 2, 2, NULL, 4, 'Quần đẹp nhưng hơi dài, phải cắt gấu', '["ivy2_1.webp", "ivy2_2.webp"]', 1, 1, NULL, NOW(), NOW()),
+(3, 3, 2, NULL, 5, 'Áo thun basic nhưng rất chất lượng', '["ivy3_1.webp", "ivy3_2.webp"]', 1, 1, NULL, NOW(), NOW());
 
 -- Dữ liệu FAQ cho chatbot (UC3.48)
 INSERT INTO `tbl_chatbot_faq` VALUES 

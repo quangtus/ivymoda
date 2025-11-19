@@ -272,6 +272,21 @@ class ProductModel extends Model {
     }
 
     /**
+     * Đếm số lượng sản phẩm theo danh mục (tối ưu)
+     */
+    public function countProductsByCategory($category_id) {
+        $category_id = (int)$category_id;
+        
+        $query = "SELECT COUNT(*) as total 
+                  FROM {$this->table} p
+                  WHERE p.danhmuc_id = $category_id 
+                  AND p.sanpham_status = 1";
+        
+        $result = $this->getOne($query);
+        return $result ? (int)$result->total : 0;
+    }
+
+    /**
      * Lấy sản phẩm theo bộ lọc trong một danh mục
      * $filters = [
      *   'subcategory_id' => int|null,
@@ -614,9 +629,9 @@ class ProductModel extends Model {
     }
     
     /**
-     * Tìm kiếm sản phẩm
+     * Tìm kiếm sản phẩm (đơn giản hóa - chỉ tìm theo từ khóa)
      */
-    public function searchProducts($keyword, $category_id = null, $min_price = null, $max_price = null, $limit = 12, $offset = 0) {
+    public function searchProducts($keyword, $category_id = null, $limit = 12, $offset = 0) {
         $keyword = $this->escape($keyword);
         $limit = (int)$limit;
         $offset = (int)$offset;
@@ -631,26 +646,37 @@ class ProductModel extends Model {
                   FROM {$this->table} p
                   LEFT JOIN tbl_danhmuc c ON p.danhmuc_id = c.danhmuc_id
                   LEFT JOIN tbl_loaisanpham b ON p.loaisanpham_id = b.loaisanpham_id
-                  WHERE (p.sanpham_tieude LIKE '%$keyword%' OR p.sanpham_chitiet LIKE '%$keyword%')";
+                  WHERE p.sanpham_status = 1 
+                  AND (p.sanpham_tieude LIKE '%$keyword%' OR p.sanpham_chitiet LIKE '%$keyword%')";
         
         if($category_id) {
             $category_id = (int)$category_id;
             $query .= " AND p.danhmuc_id = $category_id";
         }
         
-        if($min_price) {
-            $min_price = (float)$min_price;
-            $query .= " AND CAST(p.sanpham_gia AS DECIMAL) >= $min_price";
-        }
-        
-        if($max_price) {
-            $max_price = (float)$max_price;
-            $query .= " AND CAST(p.sanpham_gia AS DECIMAL) <= $max_price";
-        }
-        
         $query .= " ORDER BY p.sanpham_id DESC LIMIT $offset, $limit";
         
         return $this->getAll($query);
+    }
+    
+    /**
+     * Đếm số lượng kết quả tìm kiếm (hiệu quả hơn)
+     */
+    public function countSearchProducts($keyword, $category_id = null) {
+        $keyword = $this->escape($keyword);
+        
+        $query = "SELECT COUNT(*) as total 
+                  FROM {$this->table} p
+                  WHERE p.sanpham_status = 1 
+                  AND (p.sanpham_tieude LIKE '%$keyword%' OR p.sanpham_chitiet LIKE '%$keyword%')";
+        
+        if($category_id) {
+            $category_id = (int)$category_id;
+            $query .= " AND p.danhmuc_id = $category_id";
+        }
+        
+        $result = $this->getOne($query);
+        return $result ? (int)$result->total : 0;
     }
     
     /**
@@ -696,6 +722,103 @@ class ProductModel extends Model {
                   LIMIT $limit OFFSET $offset";
         
         return $this->getAll($query);
+    }
+    
+    /**
+     * Lấy sản phẩm với bộ lọc (Admin)
+     * @param array $filters Mảng điều kiện lọc ['search', 'category', 'status']
+     * @param string $sort Sắp xếp
+     * @param int $limit Số lượng
+     * @param int $offset Vị trí bắt đầu
+     * @return array Danh sách sản phẩm
+     */
+    public function getProductsWithFilters($filters = [], $sort = 'newest', $limit = 10, $offset = 0) {
+        $query = "SELECT p.*, c.danhmuc_ten, l.loaisanpham_ten,
+                  COALESCE(
+                      (SELECT ap.anh_path FROM tbl_anhsanpham ap 
+                       WHERE ap.sanpham_id = p.sanpham_id 
+                       ORDER BY ap.is_primary DESC, ap.anh_id ASC LIMIT 1),
+                      p.sanpham_anh
+                  ) as first_image
+                  FROM tbl_sanpham p
+                  LEFT JOIN tbl_danhmuc c ON p.danhmuc_id = c.danhmuc_id
+                  LEFT JOIN tbl_loaisanpham l ON p.loaisanpham_id = l.loaisanpham_id
+                  WHERE 1=1";
+        
+        // Tìm kiếm theo tên hoặc mã sản phẩm
+        if (!empty($filters['search'])) {
+            $search = $this->escape($filters['search']);
+            $query .= " AND (p.sanpham_tieude LIKE '%{$search}%' OR p.sanpham_ma LIKE '%{$search}%')";
+        }
+        
+        // Lọc theo danh mục
+        if (!empty($filters['category'])) {
+            $category = (int)$filters['category'];
+            $query .= " AND p.danhmuc_id = {$category}";
+        }
+        
+        // Lọc theo trạng thái
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $status = (int)$filters['status'];
+            $query .= " AND p.sanpham_status = {$status}";
+        }
+        
+        // Sắp xếp
+        switch ($sort) {
+            case 'oldest':
+                $query .= " ORDER BY p.sanpham_id ASC";
+                break;
+            case 'price_asc':
+                $query .= " ORDER BY p.sanpham_gia ASC";
+                break;
+            case 'price_desc':
+                $query .= " ORDER BY p.sanpham_gia DESC";
+                break;
+            case 'name_asc':
+                $query .= " ORDER BY p.sanpham_tieude ASC";
+                break;
+            case 'name_desc':
+                $query .= " ORDER BY p.sanpham_tieude DESC";
+                break;
+            case 'newest':
+            default:
+                $query .= " ORDER BY p.sanpham_id DESC";
+                break;
+        }
+        
+        $query .= " LIMIT {$limit} OFFSET {$offset}";
+        
+        return $this->getAll($query);
+    }
+    
+    /**
+     * Đếm số sản phẩm với bộ lọc
+     * @param array $filters Mảng điều kiện lọc
+     * @return int Tổng số sản phẩm
+     */
+    public function countProductsWithFilters($filters = []) {
+        $query = "SELECT COUNT(*) as total FROM tbl_sanpham p WHERE 1=1";
+        
+        // Tìm kiếm
+        if (!empty($filters['search'])) {
+            $search = $this->escape($filters['search']);
+            $query .= " AND (p.sanpham_tieude LIKE '%{$search}%' OR p.sanpham_ma LIKE '%{$search}%')";
+        }
+        
+        // Lọc danh mục
+        if (!empty($filters['category'])) {
+            $category = (int)$filters['category'];
+            $query .= " AND p.danhmuc_id = {$category}";
+        }
+        
+        // Lọc trạng thái
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $status = (int)$filters['status'];
+            $query .= " AND p.sanpham_status = {$status}";
+        }
+        
+        $result = $this->getOne($query);
+        return $result ? (int)$result->total : 0;
     }
     
     /**

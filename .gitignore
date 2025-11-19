@@ -18,8 +18,8 @@ UNIFIED_*.md
 .github/instructions/
 
 # ===== MEDIA UPLOADS =====
-uploads/*
-!uploads/.gitkeep
+# uploads/*
+# !uploads/.gitkeep
 
 # ===== LOGS =====
 logs/*

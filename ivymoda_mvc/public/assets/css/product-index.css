@@ -302,6 +302,49 @@
     width: 100%;
 }
 
+/* Style cho nút Áp dụng ở top bar */
+.product-index-right-top-item #apply-filters,
+.product-index-right-top-item #apply-filters-top {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.25);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+}
+
+.product-index-right-top-item #apply-filters:hover,
+.product-index-right-top-item #apply-filters-top:hover {
+    background: linear-gradient(45deg, #0056b3, #004085);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+.product-index-right-top-item #apply-filters:active,
+.product-index-right-top-item #apply-filters-top:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+}
+
+/* Responsive cho nút Áp dụng */
+@media (max-width: 768px) {
+    .product-index-right-top-item #apply-filters,
+    .product-index-right-top-item #apply-filters-top {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        min-height: 38px;
+    }
+}
+
 /* Fix container width issues */
 .product-index .container {
     width: 100%;

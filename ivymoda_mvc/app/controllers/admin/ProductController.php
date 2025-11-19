@@ -25,16 +25,25 @@ class ProductController extends \Controller {
      * Hiển thị danh sách sản phẩm
      */
     public function index() {
-        // Kiểm tra phân trang
+        // Lấy các tham số lọc từ GET
+        $filters = [
+            'search' => isset($_GET['search']) ? trim($_GET['search']) : '',
+            'category' => isset($_GET['category']) ? $_GET['category'] : '',
+            'status' => isset($_GET['status']) ? $_GET['status'] : ''
+        ];
+        
+        $sort = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
+        
+        // Phân trang
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = 10; // Số sản phẩm mỗi trang
+        $limit = 10;
         $offset = ($page - 1) * $limit;
         
-        // Lấy danh sách sản phẩm với thông tin chi tiết
-        $products = $this->productModel->getProductsWithDetails($limit, $offset);
+        // Lấy sản phẩm với bộ lọc
+        $products = $this->productModel->getProductsWithFilters($filters, $sort, $limit, $offset);
         
-        // Đếm tổng số sản phẩm để tính phân trang
-        $totalProducts = $this->productModel->countAll();
+        // Đếm tổng số sản phẩm theo bộ lọc
+        $totalProducts = $this->productModel->countProductsWithFilters($filters);
         $totalPages = ceil($totalProducts / $limit);
         
         $this->view('admin/product/index', [
@@ -43,6 +52,8 @@ class ProductController extends \Controller {
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalProducts' => $totalProducts,
+            'filters' => $filters,
+            'sort' => $sort,
             'success' => $_SESSION['success'] ?? '',
             'error' => $_SESSION['error'] ?? ''
         ]);

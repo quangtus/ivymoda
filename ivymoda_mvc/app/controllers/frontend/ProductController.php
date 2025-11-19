@@ -107,8 +107,7 @@ class ProductController extends Controller {
                 } else {
                     // Fallback
                     $products = $this->productModel->getProductsByCategory($category_id, $limit, $offset);
-                    $allProducts = $this->productModel->getProductsByCategory($category_id, 1000, 0);
-                    $totalProducts = count($allProducts);
+                    $totalProducts = $this->productModel->countProductsByCategory($category_id);
                     $totalPages = ceil($totalProducts / $limit);
                 }
             }
@@ -300,13 +299,11 @@ class ProductController extends Controller {
     }
     
     /**
-     * Tìm kiếm sản phẩm
+     * Tìm kiếm sản phẩm (đơn giản hóa như admin)
      */
     public function search() {
         $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
         $category_id = isset($_GET['category']) ? (int)$_GET['category'] : null;
-        $min_price = isset($_GET['min_price']) ? (float)$_GET['min_price'] : null;
-        $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
         
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = 12;
@@ -319,11 +316,11 @@ class ProductController extends Controller {
         
         try {
             if ($keyword && $this->productModel) {
-                $products = $this->productModel->searchProducts($keyword, $category_id, $min_price, $max_price, $limit, $offset);
+                // Lấy sản phẩm với phân trang
+                $products = $this->productModel->searchProducts($keyword, $category_id, $limit, $offset);
                 
-                // Đếm tổng số kết quả
-                $allResults = $this->productModel->searchProducts($keyword, $category_id, $min_price, $max_price, 1000, 0);
-                $totalProducts = count($allResults);
+                // Đếm tổng số kết quả (hiệu quả hơn)
+                $totalProducts = $this->productModel->countSearchProducts($keyword, $category_id);
                 $totalPages = ceil($totalProducts / $limit);
             }
             
@@ -345,9 +342,7 @@ class ProductController extends Controller {
             'totalPages' => $totalPages,
             'totalProducts' => $totalProducts,
             'filters' => [
-                'category_id' => $category_id,
-                'min_price' => $min_price,
-                'max_price' => $max_price
+                'category_id' => $category_id
             ]
         ];
         
