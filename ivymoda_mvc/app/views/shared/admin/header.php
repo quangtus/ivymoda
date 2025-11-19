@@ -34,6 +34,7 @@
         </div>
         <ul class="header-top-right">
             <li>Xin chào: <strong><?= isset($_SESSION['username']) ? $_SESSION['username'] : (isset($_SESSION['admin_name']) ? $_SESSION['admin_name'] : 'Admin') ?></strong></li>
+            <li><a href="<?= BASE_URL ?>" target="_blank"><i class="fas fa-external-link-alt"></i> Xem trang ngoài</a></li>
             <li><a href="<?= BASE_URL ?>admin/auth/logout">Đăng xuất</a></li>
         </ul>
     </section>

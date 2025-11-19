@@ -39,10 +39,7 @@ cache/*
 Thumbs.db
 
 # ===== DEPENDENCIES =====
-vendor/
 node_modules/
-composer.lock
-package-lock.json
 
 # ===== BUILD & COMPILED =====
 *.min.js
