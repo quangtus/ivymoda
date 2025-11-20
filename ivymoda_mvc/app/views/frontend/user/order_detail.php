@@ -30,9 +30,11 @@
         <?php endif; ?>
 
         <?php if ((int)(is_object($order) ? $order->order_status : $order['order_status']) === 0): ?>
-            <form action="<?= BASE_URL ?>user/cancelOrder/<?= (int)(is_object($order) ? $order->order_id : $order['order_id']) ?>" method="post" onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');">
-                <button type="submit" class="btn btn-danger">Hủy đơn hàng</button>
-            </form>
+            <div class="order-cancel-wrapper">
+                <form action="<?= BASE_URL ?>user/cancelOrder/<?= (int)(is_object($order) ? $order->order_id : $order['order_id']) ?>" method="post" onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');">
+                    <button type="submit" class="btn btn-cancel-order">Hủy đơn hàng</button>
+                </form>
+            </div>
             <hr>
         <?php endif; ?>
 
