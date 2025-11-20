@@ -67,9 +67,25 @@ class UserController extends \Controller {
             } elseif(strlen($password) < 8) {
                 $data['error'] = 'Mật khẩu phải có ít nhất 8 ký tự';
             } else {
-                $result = $this->userModel->register($data['username'], $password, $data['email'], $data['fullname'], $data['phone'], $data['address']);
+                $result = $this->userModel->register(
+                    $data['username'],
+                    $password,
+                    $data['email'],
+                    $data['fullname'],
+                    $data['phone'],
+                    $data['address']
+                );
                 
-                if($result === true) {
+                $isToken = is_string($result) && strlen($result) === 64 && ctype_xdigit($result);
+                
+                if($result === true || $isToken) {
+                    $activationToken = $isToken ? $result : null;
+                    
+                    // Nếu có token (đăng ký mới), kích hoạt luôn để user có thể dùng ngay
+                    if($activationToken) {
+                        $this->userModel->activateAccount($activationToken);
+                    }
+                    
                     // Cập nhật vai trò nếu không phải khách hàng (role_id = 2)
                     if($role_id != 2) {
                         $user = $this->userModel->getUserByUsername($data['username']);
