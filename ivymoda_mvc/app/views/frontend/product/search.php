@@ -3,29 +3,22 @@
 require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
 ?>
 
-<div class="container mt-4">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>home">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>product">Sản phẩm</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Tìm kiếm: "<?= htmlspecialchars($keyword) ?>"</li>
-        </ol>
-    </nav>
-
+<div class="container mt-4 product-search-page">
     <!-- Search form -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <form method="GET" action="<?= BASE_URL ?>product/search" class="row">
-                        <div class="col-md-8">
-                            <input type="text" name="q" class="form-control" 
-                                   placeholder="Tìm kiếm sản phẩm..." 
+                    <form method="GET" action="<?= BASE_URL ?>product/search" class="row g-3 align-items-end search-form-row">
+                        <div class="col-lg-6 col-md-6">
+                            <label for="searchKeyword" class="form-label search-label">Từ khóa</label>
+                            <input type="text" id="searchKeyword" name="q" class="form-control search-input" 
+                                   placeholder="Nhập từ khóa..." 
                                    value="<?= htmlspecialchars($keyword) ?>" required>
                         </div>
-                        <div class="col-md-3">
-                            <select name="category" class="form-control">
+                        <div class="col-lg-4 col-md-4">
+                            <label for="searchCategory" class="form-label search-label">Danh mục</label>
+                            <select id="searchCategory" name="category" class="form-select search-select">
                                 <option value="">Tất cả danh mục</option>
                                 <?php if(isset($categories) && count($categories) > 0): ?>
                                     <?php foreach($categories as $category): ?>
@@ -37,9 +30,10 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                                 <?php endif; ?>
                             </select>
                         </div>
-                        <div class="col-md-1">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-search"></i> Tìm
+                        <div class="col-lg-2 col-md-2">
+                            <button type="submit" class="btn search-submit w-100">
+                                <i class="fas fa-search"></i>
+                                <span>Tìm</span>
                             </button>
                         </div>
                     </form>
@@ -73,13 +67,11 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                                     <img src="<?= BASE_URL ?>assets/uploads/<?= $imageToShow ?>" 
                                          alt="<?= htmlspecialchars($product->sanpham_tieude) ?>" 
                                          class="card-img-top"
-                                         loading="lazy"
                                          onerror="this.onerror=null; this.src='<?= BASE_URL ?>assets/images/no-image.svg'">
                                 <?php else: ?>
                                     <img src="<?= BASE_URL ?>assets/images/no-image.svg" 
                                          alt="No image" 
-                                         class="card-img-top"
-                                         loading="lazy">
+                                         class="card-img-top">
                                 <?php endif; ?>
                             </div>
                         </a>
@@ -170,6 +162,66 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
     transform: scale(1.05);
 }
 
+.product-search-page {
+    padding-top: 100px;
+}
+
+.search-form-row {
+    gap: 15px;
+}
+
+.search-label {
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.search-input,
+.search-select {
+    min-height: 48px;
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+    padding: 0.6rem 0.85rem;
+}
+
+.search-input:focus,
+.search-select:focus {
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.25);
+}
+
+.search-submit {
+    min-height: 48px;
+    min-width: 120px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    border: none;
+    color: #fff;
+    box-shadow: 0 6px 15px rgba(255, 94, 98, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(255, 94, 98, 0.45);
+}
+
+.search-form-row .col-lg-6,
+.search-form-row .col-lg-4,
+.search-form-row .col-lg-2,
+.search-form-row .col-md-6,
+.search-form-row .col-md-4,
+.search-form-row .col-md-2 {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
 .card {
     transition: box-shadow 0.3s ease;
     margin-bottom: 20px;
@@ -177,11 +229,6 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
 
 .card:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-/* Tăng khoảng cách giữa các sản phẩm */
-.product-search-item {
-    margin-bottom: 30px;
 }
 
 .badge {
