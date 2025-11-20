@@ -25,9 +25,9 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                             <thead>
                                 <tr>
                                     <th style="width:80px">ID</th>
-                                    <th>Tên màu</th>
+                                    <th style="width:180px">Tên màu</th>
                                     <th style="width:140px">Mã màu</th>
-                                    <th style="width:120px">Thao tác</th>
+                                    <th style="width:200px">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -47,14 +47,16 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <a href="<?= BASE_URL ?>admin/color/edit/<?= $color->color_id ?>" class="btn btn-sm btn-warning">
-                                                    <i class="fas fa-edit"></i> Sửa
-                                                </a>
-                                                <a href="<?= BASE_URL ?>admin/color/delete/<?= $color->color_id ?>" 
-                                                   class="btn btn-sm btn-danger" 
-                                                   onclick="return confirm('Bạn có chắc muốn xóa màu này?')">
-                                                    <i class="fas fa-trash"></i> Xóa
-                                                </a>
+                                                <div style="display: flex; gap: 8px; align-items: center;">
+                                                    <a href="<?= BASE_URL ?>admin/color/edit/<?= $color->color_id ?>" class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-edit"></i> Sửa
+                                                    </a>
+                                                    <a href="<?= BASE_URL ?>admin/color/delete/<?= $color->color_id ?>" 
+                                                       class="btn btn-sm btn-danger" 
+                                                       onclick="return confirm('Bạn có chắc muốn xóa màu này?')">
+                                                        <i class="fas fa-trash"></i> Xóa
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

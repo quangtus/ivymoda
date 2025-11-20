@@ -33,21 +33,25 @@ class AuthController extends Controller {
                 $result = $this->userModel->login($username, $password);
                 
                 if(is_object($result)) {
-                    // Đăng nhập thành công, lưu session
-                    session_regenerate_id(true);
-                    $_SESSION['user_id'] = $result->id;
-                    $_SESSION['username'] = $result->username;
-                    $_SESSION['role_id'] = $result->role_id;
-
-                    // Đồng bộ giỏ hàng hiện tại về user sau khi có session_id mới
+                    // QUAN TRỌNG: Lưu session_id CŨ trước khi regenerate
+                    $oldSessionId = session_id();
+                    
+                    // Đồng bộ giỏ hàng TRƯỚC KHI regenerate session
+                    // (vì giỏ hàng khách vãng lai lưu với session_id cũ)
                     try {
                         $cartModel = $this->model('CartModel');
                         if ($cartModel) {
-                            $cartModel->syncCartToUser(session_id(), $result->id);
+                            $cartModel->syncCartToUser($oldSessionId, $result->id);
                         }
                     } catch (Exception $e) {
                         error_log('AuthController login sync cart error: ' . $e->getMessage());
                     }
+                    
+                    // SAU ĐÓ mới regenerate session để bảo mật
+                    session_regenerate_id(true);
+                    $_SESSION['user_id'] = $result->id;
+                    $_SESSION['username'] = $result->username;
+                    $_SESSION['role_id'] = $result->role_id;
                     
                     // Chuyển hướng tới trang chủ hoặc admin
                     if($result->role_id == 1) {

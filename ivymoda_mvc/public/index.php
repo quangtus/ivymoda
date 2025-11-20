@@ -2,7 +2,7 @@
 // filepath: ivymoda_mvc/public/index.php
 
 // Định nghĩa đường dẫn gốc
-if (!defined('ROOT_PATH')) {
+if(!defined('ROOT_PATH')){
     define('ROOT_PATH', dirname(__DIR__) . '/');
 }
 

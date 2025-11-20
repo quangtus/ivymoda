@@ -326,16 +326,76 @@ class CartModel extends Model {
     
     /**
      * Sync giỏ hàng từ session sang user khi đăng nhập
+     * LOGIC: Gộp giỏ hàng session với giỏ hàng đã lưu trong DB của user
      * 
-     * @param string $sessionId Session ID
-     * @param int $userId User ID
+     * @param string $sessionId Session ID của khách vãng lai
+     * @param int $userId User ID vừa đăng nhập
      * @return bool Success or failure
      */
     public function syncCartToUser($sessionId, $userId) {
         try {
-            // Cập nhật tất cả cart items từ session_id sang user_id
-            $sql = "UPDATE tbl_cart SET user_id = ? WHERE session_id = ? AND user_id IS NULL";
-            return $this->execute($sql, [$userId, $sessionId]);
+            if (!$sessionId || !$userId) {
+                error_log("CartModel::syncCartToUser - Invalid params: sessionId=$sessionId, userId=$userId");
+                return false;
+            }
+
+            // 1. Lấy tất cả items trong giỏ hàng session (khách vãng lai)
+            $sessionCartSql = "SELECT variant_id, quantity FROM tbl_cart 
+                              WHERE session_id = ? AND (user_id IS NULL OR user_id = 0)";
+            $sessionItems = $this->getAll($sessionCartSql, [$sessionId]);
+
+            if (empty($sessionItems)) {
+                // Không có gì trong giỏ session, không cần đồng bộ
+                error_log("CartModel::syncCartToUser - No session cart items to sync for sessionId=$sessionId");
+                return true;
+            }
+
+            // 2. Duyệt qua từng item trong giỏ session
+            foreach ($sessionItems as $item) {
+                $variantId = $item->variant_id;
+                $sessionQty = $item->quantity;
+
+                // 2.1. Kiểm tra xem variant này đã có trong giỏ của user chưa
+                $userCartSql = "SELECT cart_id, quantity FROM tbl_cart 
+                               WHERE user_id = ? AND variant_id = ?";
+                $userCartItem = $this->getOne($userCartSql, [$userId, $variantId]);
+
+                if (is_object($userCartItem)) {
+                    // 2.2. ĐÃ CÓ → Cộng dồn số lượng
+                    $newQty = $userCartItem->quantity + $sessionQty;
+                    
+                    // Validate tồn kho trước khi cộng dồn
+                    $stockSql = "SELECT ton_kho FROM tbl_product_variant WHERE variant_id = ?";
+                    $stock = $this->getOne($stockSql, [$variantId]);
+                    
+                    if (is_object($stock)) {
+                        // Đảm bảo không vượt quá tồn kho
+                        $newQty = min($newQty, $stock->ton_kho);
+                    }
+                    
+                    $updateSql = "UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?";
+                    $this->execute($updateSql, [$newQty, $userCartItem->cart_id]);
+                    
+                    error_log("CartModel::syncCartToUser - Merged variant_id=$variantId: oldQty={$userCartItem->quantity} + sessionQty=$sessionQty = newQty=$newQty");
+                } else {
+                    // 2.3. CHƯA CÓ → Chuyển item từ session sang user
+                    $updateSql = "UPDATE tbl_cart 
+                                 SET user_id = ? 
+                                 WHERE session_id = ? AND variant_id = ? AND (user_id IS NULL OR user_id = 0)";
+                    $this->execute($updateSql, [$userId, $sessionId, $variantId]);
+                    
+                    error_log("CartModel::syncCartToUser - Transferred variant_id=$variantId to userId=$userId");
+                }
+            }
+
+            // 3. Xóa các item session còn lại (đã được merge hoặc transfer)
+            $cleanupSql = "DELETE FROM tbl_cart 
+                          WHERE session_id = ? AND (user_id IS NULL OR user_id = 0)";
+            $this->execute($cleanupSql, [$sessionId]);
+
+            error_log("CartModel::syncCartToUser - Sync completed successfully for userId=$userId");
+            return true;
+
         } catch (Exception $e) {
             error_log("CartModel::syncCartToUser - Exception: " . $e->getMessage());
             return false;
