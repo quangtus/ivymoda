@@ -48,6 +48,8 @@ class UserController extends Controller {
             
             if(empty($fullname) || empty($email)) {
                 $data['error'] = 'Vui lòng điền đầy đủ thông tin bắt buộc';
+            } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $data['error'] = 'Định dạng email không hợp lệ. Vui lòng nhập đúng (ví dụ: ten@example.com)';
             } else {
                 $result = $this->userModel->updateProfile($user_id, $fullname, $email, $phone, $address);
                 

@@ -32,10 +32,14 @@ class ColorController extends \Controller {
     public function add() {
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name = trim($_POST['color_ten'] ?? '');
-            $hex = trim($_POST['color_ma'] ?? '');
+            $hex = strtoupper(trim($_POST['color_ma'] ?? ''));
             
             if(empty($name)) {
                 $_SESSION['error'] = 'Vui lòng nhập tên màu';
+            } elseif(empty($hex)) {
+                $_SESSION['error'] = 'Vui lòng chọn mã màu';
+            } elseif(!preg_match('/^#([A-Fa-f0-9]{6})$/', $hex)) {
+                $_SESSION['error'] = 'Mã màu không hợp lệ. Định dạng đúng: #RRGGBB';
             } else {
                 if($this->colorModel->addColor($name, $hex)) {
                     $_SESSION['success'] = 'Thêm màu thành công';
@@ -68,10 +72,14 @@ class ColorController extends \Controller {
 
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name = trim($_POST['color_ten'] ?? '');
-            $hex = trim($_POST['color_ma'] ?? '');
+            $hex = strtoupper(trim($_POST['color_ma'] ?? ''));
             
             if(empty($name)) {
                 $_SESSION['error'] = 'Vui lòng nhập tên màu';
+            } elseif(empty($hex)) {
+                $_SESSION['error'] = 'Vui lòng chọn mã màu';
+            } elseif(!preg_match('/^#([A-Fa-f0-9]{6})$/', $hex)) {
+                $_SESSION['error'] = 'Mã màu không hợp lệ. Định dạng đúng: #RRGGBB';
             } else {
                 if($this->colorModel->updateColor($id, $name, $hex)) {
                     $_SESSION['success'] = 'Cập nhật màu thành công';

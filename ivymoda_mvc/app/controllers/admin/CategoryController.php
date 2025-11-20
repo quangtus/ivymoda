@@ -198,8 +198,18 @@ class CategoryController extends \Controller {
                 }
             }
         }
+
+        // Lấy thông báo từ session (từ thao tác sửa / xóa)
+        if(empty($data['success']) && !empty($_SESSION['success'])) {
+            $data['success'] = $_SESSION['success'];
+        }
+        if(empty($data['error']) && !empty($_SESSION['error'])) {
+            $data['error'] = $_SESSION['error'];
+        }
         
         $this->view('admin/category/subcategories', $data);
+
+        unset($_SESSION['success'], $_SESSION['error']);
     }
     
     /**

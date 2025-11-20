@@ -31,11 +31,11 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                             <label for="color_ma" class="font-weight-bold">Mã màu (Color Picker)</label>
                             <div class="d-flex align-items-center" style="gap:12px;">
                                 <input type="color" id="color_hex_picker" 
-                                       value="<?= htmlspecialchars($color->color_ma ?: '#000000') ?>" 
+                                       value="<?= htmlspecialchars(strtoupper($color->color_ma ?: '#000000')) ?>" 
                                        style="width:48px; height:38px; padding:0; border:none; background:transparent;">
                                 <input type="text" class="form-control" id="color_ma" name="color_ma" 
-                                       value="<?= htmlspecialchars($color->color_ma ?: '#000000') ?>"
-                                       placeholder="#000000" maxlength="7" pattern="^#([A-Fa-f0-9]{6})$" title="Định dạng: #RRGGBB">
+                                       value="<?= htmlspecialchars(strtoupper($color->color_ma ?: '#000000')) ?>"
+                                       placeholder="#000000" maxlength="7" pattern="^#([A-Fa-f0-9]{6})$" title="Định dạng: #RRGGBB" required>
                             </div>
                             <small class="form-text text-muted">Chọn màu để lưu mã hex (ví dụ: #FF0000). Sẽ dùng để hiển thị swatch.</small>
                         </div>

@@ -1,6 +1,13 @@
 <?php
 require_once ROOT_PATH . 'app/views/shared/admin/header.php';
 require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
+
+$colorNameValue = htmlspecialchars($_POST['color_ten'] ?? '', ENT_QUOTES, 'UTF-8');
+$requestedHex = isset($_POST['color_ma']) ? strtoupper(trim($_POST['color_ma'])) : '#000000';
+if(!preg_match('/^#([A-Fa-f0-9]{6})$/', $requestedHex)) {
+    $requestedHex = '#000000';
+}
+$colorHexValue = htmlspecialchars($requestedHex, ENT_QUOTES, 'UTF-8');
 ?>
 
 <div class="admin-content-right">
@@ -23,13 +30,13 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                     <form action="" method="POST">
                         <div class="form-group">
                             <label for="color_ten" class="font-weight-bold">Tên màu</label>
-                            <input type="text" class="form-control" id="color_ten" name="color_ten" placeholder="Ví dụ: Đen, Trắng, Đỏ" required>
+                            <input type="text" class="form-control" id="color_ten" name="color_ten" placeholder="Ví dụ: Đen, Trắng, Đỏ" value="<?= $colorNameValue ?>" required>
                         </div>
                         <div class="form-group">
                             <label for="color_ma" class="font-weight-bold">Mã màu (Color Picker)</label>
                             <div class="d-flex align-items-center" style="gap:12px;">
-                                <input type="color" id="color_hex_picker" value="#000000" style="width:48px; height:38px; padding:0; border:none; background:transparent;">
-                                <input type="text" class="form-control" id="color_ma" name="color_ma" placeholder="#000000" value="#000000" maxlength="7" pattern="^#([A-Fa-f0-9]{6})$" title="Định dạng: #RRGGBB">
+                                <input type="color" id="color_hex_picker" value="<?= $colorHexValue ?>" style="width:48px; height:38px; padding:0; border:none; background:transparent;">
+                                <input type="text" class="form-control" id="color_ma" name="color_ma" placeholder="#000000" value="<?= $colorHexValue ?>" maxlength="7" pattern="^#([A-Fa-f0-9]{6})$" title="Định dạng: #RRGGBB" required>
                             </div>
                             <small class="form-text text-muted">Chọn màu để lưu mã hex (ví dụ: #FF0000). Sẽ dùng để hiển thị swatch.</small>
                         </div>
