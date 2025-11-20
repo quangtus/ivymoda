@@ -41,7 +41,7 @@ function getContrastColor($hexColor) {
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="<?= BASE_URL ?>home">Trang chủ</a></li>
                 <span class="">&#8594;</span>
-                <li class="breadcrumb-item" aria-current="page">Tất cả sản phẩm</li>
+                <li class="breadcrumb-item"><a href="<?= BASE_URL ?>product">Tất cả sản phẩm</a></li>
                 <span class="">&#8594;</span>
                 <li class="breadcrumb-item" aria-current="page">Chi tiết sản phẩm</li>
                 <!-- <li class="breadcrumb-item active" aria-current="page">Tất cả sản phẩm</li> -->

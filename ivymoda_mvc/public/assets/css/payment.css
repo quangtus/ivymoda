@@ -366,6 +366,7 @@
 
 .order-summary table tr td:last-child {
     text-align: right;
+    white-space: nowrap;
 }
 
 .order-summary table tr td:first-child {
@@ -375,4 +376,11 @@
 .order-summary .total-row {
     border-top: 2px solid #dddddd;
     font-weight: bold;
+}
+
+.order-summary table tr td:last-child strong {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
