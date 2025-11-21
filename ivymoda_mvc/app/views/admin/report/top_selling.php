@@ -12,29 +12,37 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                 <h1 class="h3 mb-0 text-gray-800">Sản phẩm bán chạy</h1>
             </div>
 
-            <form method="get" action="" class="report-filter-form">
+            <?php if (isset($_SESSION['report_error'])): ?>
+                <div class="alert alert-danger" style="padding: 10px; margin-bottom: 15px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px;">
+                    <?= htmlspecialchars($_SESSION['report_error']) ?>
+                    <?php unset($_SESSION['report_error']); ?>
+                </div>
+            <?php endif; ?>
+            
+            <form method="get" action="" class="report-filter-form" onsubmit="return validateReportDates(this);">
                 <input type="hidden" name="url" value="admin/report/topSelling" />
                 <div>
                     <label>Kiểu</label>
-                    <select name="type">
+                    <select name="type" id="report_type">
                         <option value="day" <?= $type==='day'?'selected':'' ?>>Ngày</option>
                         <option value="month" <?= $type==='month'?'selected':'' ?>>Tháng</option>
                         <option value="year" <?= $type==='year'?'selected':'' ?>>Năm</option>
                     </select>
                 </div>
-                <div <?= $type==='day'?'':'style=\"display:none\"' ?>>
+                <div id="date_from_div" <?= $type==='day'?'':'style="display:none"' ?>>
                     <label>Từ ngày</label>
-                    <input type="date" name="from" value="<?= htmlspecialchars($from) ?>" />
+                    <input type="date" name="from" id="date_from" value="<?= htmlspecialchars($from) ?>" />
+                    <small id="date_error" style="color: #dc3545; display: none;">Ngày bắt đầu không được lớn hơn ngày kết thúc</small>
                 </div>
-                <div <?= $type==='day'?'':'style=\"display:none\"' ?>>
+                <div id="date_to_div" <?= $type==='day'?'':'style="display:none"' ?>>
                     <label>Đến ngày</label>
-                    <input type="date" name="to" value="<?= htmlspecialchars($to) ?>" />
+                    <input type="date" name="to" id="date_to" value="<?= htmlspecialchars($to) ?>" />
                 </div>
-                <div <?= $type!=='day'?'':'style=\"display:none\"' ?>>
+                <div <?= $type!=='day'?'':'style="display:none"' ?>>
                     <label>Năm</label>
                     <input type="number" name="year" min="2000" max="2100" value="<?= (int)$year ?>" />
                 </div>
-                <div <?= $type==='month'?'':'style=\"display:none\"' ?>>
+                <div <?= $type==='month'?'':'style="display:none"' ?>>
                     <label>Tháng</label>
                     <input type="number" name="month" min="1" max="12" value="<?= (int)$month ?>" />
                 </div>
@@ -88,6 +96,72 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
         </div>
     </div>
 </div>
+
+<script>
+    // Validate report dates - from must be <= to
+    function validateReportDates(form) {
+        const type = document.getElementById('report_type').value;
+        
+        // Only validate when type is 'day'
+        if (type === 'day') {
+            const fromDate = document.getElementById('date_from').value;
+            const toDate = document.getElementById('date_to').value;
+            const errorMsg = document.getElementById('date_error');
+            
+            if (fromDate && toDate) {
+                if (new Date(fromDate) > new Date(toDate)) {
+                    errorMsg.style.display = 'block';
+                    document.getElementById('date_from').focus();
+                    return false;
+                } else {
+                    errorMsg.style.display = 'none';
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    // Real-time validation when dates change
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('report_type');
+        const fromInput = document.getElementById('date_from');
+        const toInput = document.getElementById('date_to');
+        const errorMsg = document.getElementById('date_error');
+        const dateFromDiv = document.getElementById('date_from_div');
+        const dateToDiv = document.getElementById('date_to_div');
+        
+        // Show/hide date inputs based on type
+        if (typeSelect) {
+            typeSelect.addEventListener('change', function() {
+                if (this.value === 'day') {
+                    dateFromDiv.style.display = '';
+                    dateToDiv.style.display = '';
+                } else {
+                    dateFromDiv.style.display = 'none';
+                    dateToDiv.style.display = 'none';
+                    errorMsg.style.display = 'none';
+                }
+            });
+        }
+        
+        // Real-time validation
+        if (fromInput && toInput) {
+            function checkDates() {
+                if (typeSelect.value === 'day' && fromInput.value && toInput.value) {
+                    if (new Date(fromInput.value) > new Date(toInput.value)) {
+                        errorMsg.style.display = 'block';
+                    } else {
+                        errorMsg.style.display = 'none';
+                    }
+                }
+            }
+            
+            fromInput.addEventListener('change', checkDates);
+            toInput.addEventListener('change', checkDates);
+        }
+    });
+</script>
 
 <?php require_once ROOT_PATH . 'app/views/shared/admin/footer.php'; ?>
 

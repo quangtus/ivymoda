@@ -26,6 +26,16 @@ class ReportController extends \Controller {
         $to = isset($_GET['to']) ? $_GET['to'] : $today;
         $year = isset($_GET['year']) ? (int)$_GET['year'] : (int)$currentYear;
         $month = isset($_GET['month']) ? (int)$_GET['month'] : (int)$currentMonth;
+        
+        // Validate: from date must be <= to date
+        if ($type === 'day' && !empty($from) && !empty($to)) {
+            if (strtotime($from) > strtotime($to)) {
+                $_SESSION['report_error'] = 'Ngày bắt đầu không được lớn hơn ngày kết thúc';
+                // Reset to today if invalid
+                $from = $today;
+                $to = $today;
+            }
+        }
 
         $summary = [
             'today' => $this->reportModel->getTotalRevenue($today, $today),
@@ -96,6 +106,16 @@ class ReportController extends \Controller {
         $year = isset($_GET['year']) ? (int)$_GET['year'] : (int)date('Y');
         $month = isset($_GET['month']) ? (int)$_GET['month'] : (int)date('m');
         $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+        
+        // Validate: from date must be <= to date
+        if ($type === 'day' && !empty($from) && !empty($to)) {
+            if (strtotime($from) > strtotime($to)) {
+                $_SESSION['report_error'] = 'Ngày bắt đầu không được lớn hơn ngày kết thúc';
+                // Reset to today if invalid
+                $from = $today;
+                $to = $today;
+            }
+        }
 
         if ($type === 'day') {
             $fromDate = $from;
