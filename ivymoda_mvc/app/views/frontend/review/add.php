@@ -12,6 +12,13 @@
             </p>
         </div>
 
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success">
+                <?= $_SESSION['success'] ?>
+                <?php unset($_SESSION['success']); ?>
+            </div>
+        <?php endif; ?>
+        
         <?php if (isset($_SESSION['error'])): ?>
             <div class="alert alert-danger">
                 <?= $_SESSION['error'] ?>
@@ -292,6 +299,12 @@
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
 }
 
 /* Image Upload Styles */

@@ -23,6 +23,20 @@
             <div class="summary-row"><span class="label">Địa chỉ giao hàng:</span><span class="value address"><?= nl2br(htmlspecialchars(is_object($order) ? $order->customer_address : $order['customer_address'])) ?></span></div>
         </div>
 
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success">
+                <?= $_SESSION['success'] ?>
+                <?php unset($_SESSION['success']); ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger">
+                <?= $_SESSION['error'] ?>
+                <?php unset($_SESSION['error']); ?>
+            </div>
+        <?php endif; ?>
+        
         <?php if (isset($_GET['success']) && $_GET['success'] === 'cancelled'): ?>
             <div class="alert alert-success">Đã hủy đơn hàng thành công.</div>
         <?php elseif (isset($_GET['error']) && $_GET['error'] === 'cannot_cancel'): ?>
