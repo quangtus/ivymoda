@@ -227,6 +227,11 @@ class CheckoutController extends Controller {
                     throw new Exception("Sản phẩm '{$item->sanpham_tieude}' ({$item->color_ten}, {$item->size_ten}) đã hết hàng");
                 }
                 
+                // Lấy ảnh theo màu đã chọn (ưu tiên ảnh theo màu, nếu không có thì dùng ảnh chính)
+                $productImage = isset($item->sanpham_anh_mau) && !empty($item->sanpham_anh_mau) 
+                    ? $item->sanpham_anh_mau 
+                    : $item->sanpham_anh;
+                
                 // Thêm order item với variant_id + snapshot
                 $addItemResult = $this->orderModel->addOrderItem([
                     'order_id' => $orderId,
@@ -237,7 +242,7 @@ class CheckoutController extends Controller {
                     'sanpham_soluong' => $item->quantity,
                     'sanpham_size' => $item->size_ten,
                     'sanpham_color' => $item->color_ten,
-                    'sanpham_anh' => $item->sanpham_anh
+                    'sanpham_anh' => $productImage
                 ]);
                 
                 if (!$addItemResult) {

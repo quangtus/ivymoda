@@ -113,12 +113,20 @@ class CartModel extends Model {
                         s.size_ten,
                         co.color_ten,
                         co.color_ma,
+                        co.color_id,
                         p.sanpham_id,
                         p.sanpham_tieude,
                         p.sanpham_gia,
                         p.sanpham_gia_goc,
                         p.sanpham_anh,
-                        COALESCE(v.gia_ban, p.sanpham_gia) as gia_hien_tai
+                        COALESCE(v.gia_ban, p.sanpham_gia) as gia_hien_tai,
+                        COALESCE(
+                            (SELECT ap.anh_path FROM tbl_anhsanpham ap 
+                             INNER JOIN tbl_sanpham_color sc ON ap.sanpham_color_id = sc.sanpham_color_id
+                             WHERE sc.sanpham_id = p.sanpham_id AND sc.color_id = co.color_id
+                             ORDER BY ap.is_primary DESC, ap.anh_id ASC LIMIT 1),
+                            p.sanpham_anh
+                        ) as sanpham_anh_mau
                     FROM tbl_cart c
                     JOIN tbl_product_variant v ON c.variant_id = v.variant_id
                     JOIN tbl_size s ON v.size_id = s.size_id
