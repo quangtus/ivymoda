@@ -19,7 +19,7 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
         </div>
         <?php elseif($validToken): ?>
         
-        <form action="<?= BASE_URL ?>auth/resetPassword" method="post">
+        <form action="<?= BASE_URL ?>auth/resetPassword" method="post" onsubmit="return validateResetPasswordForm(this);">
             <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
             
             <div style="margin-bottom: 15px;">
@@ -31,6 +31,7 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
             <div style="margin-bottom: 15px;">
                 <label for="confirm_password" style="display: block; margin-bottom: 5px;">Xác nhận mật khẩu <span style="color: red;">*</span></label>
                 <input type="password" id="confirm_password" name="confirm_password" minlength="8" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" required>
+                <small id="password_match_error_reset" style="color: #dc3545; font-size: 12px; display: none;">Mật khẩu xác nhận không khớp</small>
             </div>
             
             <button type="submit" style="background-color: #221f20; color: white; border: none; padding: 10px 15px; width: 100%; border-radius: 3px; cursor: pointer;">Đặt lại mật khẩu</button>
@@ -51,6 +52,50 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
     padding: 100px 0 0;
 }
 </style>
+
+<script>
+function validateResetPasswordForm(form) {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const passwordMatchError = document.getElementById('password_match_error_reset');
+    
+    // Validate password match
+    if (newPassword !== confirmPassword) {
+        passwordMatchError.style.display = 'block';
+        document.getElementById('confirm_password').focus();
+        return false;
+    } else {
+        passwordMatchError.style.display = 'none';
+    }
+    
+    return true;
+}
+
+// Real-time password match validation
+document.addEventListener('DOMContentLoaded', function() {
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const passwordMatchError = document.getElementById('password_match_error_reset');
+    
+    if (newPassword && confirmPassword) {
+        confirmPassword.addEventListener('input', function() {
+            if (this.value !== newPassword.value) {
+                passwordMatchError.style.display = 'block';
+            } else {
+                passwordMatchError.style.display = 'none';
+            }
+        });
+        
+        newPassword.addEventListener('input', function() {
+            if (confirmPassword.value !== '' && this.value !== confirmPassword.value) {
+                passwordMatchError.style.display = 'block';
+            } else {
+                passwordMatchError.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
 
 <?php 
 require_once ROOT_PATH . 'app/views/shared/frontend/footer.php'; 

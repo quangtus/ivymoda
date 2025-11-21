@@ -74,9 +74,9 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                     <button id="apply-filters" class="btn btn-primary">Áp dụng</button>
                 </div>
                 <div class="product-index-right-top-item">
-                    <form method="GET" action="<?= BASE_URL ?>product/search" class="d-flex">
+                    <form method="GET" action="<?= BASE_URL ?>product/search" class="d-flex" onsubmit="return validateSearch(this);">
                         <div class="search-input-wrapper" style="width:100%;">
-                            <input type="text" name="q" class="form-control" placeholder="Tìm kiếm" value="<?= htmlspecialchars($keyword ?? '') ?>">
+                            <input type="text" name="q" class="form-control" placeholder="Tìm kiếm" value="<?= htmlspecialchars($keyword ?? '') ?>" required minlength="1">
                             <button type="submit" class="search-btn" aria-label="Tìm kiếm">
                                 <i class="fas fa-search"></i>
                             </button>

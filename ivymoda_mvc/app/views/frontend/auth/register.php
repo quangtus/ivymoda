@@ -19,7 +19,7 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
         </div>
         <?php else: ?>
         
-        <form action="<?= BASE_URL ?>auth/register" method="post">
+        <form action="<?= BASE_URL ?>auth/register" method="post" onsubmit="return validateRegisterForm(this);">
             <div style="margin-bottom: 15px;">
                 <label for="username" style="display: block; margin-bottom: 5px;">Tên đăng nhập <span style="color: red;">*</span></label>
                 <input type="text" id="username" name="username" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" required>
@@ -34,6 +34,7 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
             <div style="margin-bottom: 15px;">
                 <label for="confirm_password" style="display: block; margin-bottom: 5px;">Xác nhận mật khẩu <span style="color: red;">*</span></label>
                 <input type="password" id="confirm_password" name="confirm_password" minlength="8" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" required>
+                <small id="password_match_error" style="color: #dc3545; font-size: 12px; display: none;">Mật khẩu xác nhận không khớp</small>
             </div>
             
             <div style="margin-bottom: 15px;">
@@ -48,7 +49,8 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
             
             <div style="margin-bottom: 15px;">
                 <label for="phone" style="display: block; margin-bottom: 5px;">Số điện thoại</label>
-                <input type="tel" id="phone" name="phone" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                <input type="tel" id="phone" name="phone" pattern="[0-9]{10,11}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" placeholder="Ví dụ: 0912345678">
+                <small style="color: #6c757d; font-size: 12px;">Số điện thoại phải có 10-11 chữ số</small>
             </div>
             
             <div style="margin-bottom: 15px;">
@@ -71,6 +73,61 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
     padding: 100px 0 0;
 }
 </style>
+
+<script>
+function validateRegisterForm(form) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const passwordMatchError = document.getElementById('password_match_error');
+    
+    // Validate password match
+    if (password !== confirmPassword) {
+        passwordMatchError.style.display = 'block';
+        document.getElementById('confirm_password').focus();
+        return false;
+    } else {
+        passwordMatchError.style.display = 'none';
+    }
+    
+    // Validate phone number if provided
+    const phone = document.getElementById('phone').value.trim();
+    if (phone !== '') {
+        const phonePattern = /^[0-9]{10,11}$/;
+        if (!phonePattern.test(phone)) {
+            alert('Số điện thoại phải có 10-11 chữ số');
+            document.getElementById('phone').focus();
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// Real-time password match validation
+document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const passwordMatchError = document.getElementById('password_match_error');
+    
+    if (password && confirmPassword) {
+        confirmPassword.addEventListener('input', function() {
+            if (this.value !== password.value) {
+                passwordMatchError.style.display = 'block';
+            } else {
+                passwordMatchError.style.display = 'none';
+            }
+        });
+        
+        password.addEventListener('input', function() {
+            if (confirmPassword.value !== '' && this.value !== confirmPassword.value) {
+                passwordMatchError.style.display = 'block';
+            } else {
+                passwordMatchError.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
 
 <?php 
 require_once ROOT_PATH . 'app/views/shared/frontend/footer.php'; 

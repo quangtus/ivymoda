@@ -40,8 +40,8 @@
                 </div>
                 <div class="news-update">
                 <p>Nhận thông tin các chương trình của IVY moda</p>
-                <form id="register-form">
-                    <input id="email-subscribe" type="text" placeholder="Nhập địa chỉ Email">
+                <form id="register-form" onsubmit="return validateEmailSubscribe(this);">
+                    <input id="email-subscribe" type="email" placeholder="Nhập địa chỉ Email" required>
                     <input id="btn-submit" type="submit" value="Đăng ký">
                 </form>
             </div>
@@ -75,6 +75,46 @@
             }
         });
     });
+    
+    // Validate search form - không cho phép tìm kiếm với từ khóa rỗng
+    function validateSearch(form) {
+        const searchInput = form.querySelector('input[name="q"]');
+        if (searchInput) {
+            const keyword = searchInput.value.trim();
+            if (keyword === '') {
+                alert('Vui lòng nhập từ khóa tìm kiếm');
+                searchInput.focus();
+                return false;
+            }
+            if (keyword.length < 1) {
+                alert('Từ khóa tìm kiếm phải có ít nhất 1 ký tự');
+                searchInput.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Validate email subscribe form
+    function validateEmailSubscribe(form) {
+        const emailInput = document.getElementById('email-subscribe');
+        if (emailInput) {
+            const email = emailInput.value.trim();
+            if (email === '') {
+                alert('Vui lòng nhập địa chỉ email');
+                emailInput.focus();
+                return false;
+            }
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Vui lòng nhập địa chỉ email hợp lệ');
+                emailInput.focus();
+                return false;
+            }
+        }
+        return true;
+    }
     </script>
 </body>
 </html>

@@ -44,7 +44,8 @@
                 
                 <div class="form-group">
                     <label for="phone">Số điện thoại</label>
-                    <input type="tel" id="phone" name="phone" value="<?php echo isset($user_info->phone) ? htmlspecialchars($user_info->phone) : ''; ?>">
+                    <input type="tel" id="phone" name="phone" pattern="[0-9]{10,11}" value="<?php echo isset($user_info->phone) ? htmlspecialchars($user_info->phone) : ''; ?>" placeholder="Ví dụ: 0912345678">
+                    <small style="color: #6c757d; font-size: 12px;">Số điện thoại phải có 10-11 chữ số</small>
                 </div>
                 
                 <div class="form-group">
@@ -57,7 +58,7 @@
         </div>
         
         <div id="password" class="tab-content">
-            <form action="<?= BASE_URL ?>user/profile" method="post">
+            <form action="<?= BASE_URL ?>user/profile" method="post" onsubmit="return validateChangePasswordForm(this);">
                 <input type="hidden" name="change_password" value="1">
                 <div class="form-group">
                     <label for="current_password">Mật khẩu hiện tại <span style="color: red;">*</span></label>
@@ -66,13 +67,14 @@
                 
                 <div class="form-group">
                     <label for="new_password">Mật khẩu mới <span style="color: red;">*</span></label>
-                    <input type="password" id="new_password" name="new_password" minlength="8" required>
+                    <input type="password" id="new_password_profile" name="new_password" minlength="8" required>
                     <small style="color: #6c757d; font-size: 12px;">Mật khẩu phải có ít nhất 8 ký tự</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="confirm_password">Xác nhận mật khẩu mới <span style="color: red;">*</span></label>
-                    <input type="password" id="confirm_password" name="confirm_password" minlength="8" required>
+                    <input type="password" id="confirm_password_profile" name="confirm_password" minlength="8" required>
+                    <small id="password_match_error_profile" style="color: #dc3545; font-size: 12px; display: none;">Mật khẩu xác nhận không khớp</small>
                 </div>
                 
                 <button type="submit" class="btn-submit">Đổi mật khẩu</button>
@@ -169,6 +171,23 @@
         </div>
         
         <script>
+            function validateChangePasswordForm(form) {
+                const newPassword = document.getElementById('new_password_profile').value;
+                const confirmPassword = document.getElementById('confirm_password_profile').value;
+                const passwordMatchError = document.getElementById('password_match_error_profile');
+                
+                // Validate password match
+                if (newPassword !== confirmPassword) {
+                    passwordMatchError.style.display = 'block';
+                    document.getElementById('confirm_password_profile').focus();
+                    return false;
+                } else {
+                    passwordMatchError.style.display = 'none';
+                }
+                
+                return true;
+            }
+            
             document.addEventListener('DOMContentLoaded', function() {
                 // Tab switching
                 const tabs = document.querySelectorAll('.profile-tab');
@@ -206,6 +225,29 @@
                         }
                     });
                 });
+                
+                // Real-time password match validation for profile
+                const newPasswordProfile = document.getElementById('new_password_profile');
+                const confirmPasswordProfile = document.getElementById('confirm_password_profile');
+                const passwordMatchErrorProfile = document.getElementById('password_match_error_profile');
+                
+                if (newPasswordProfile && confirmPasswordProfile) {
+                    confirmPasswordProfile.addEventListener('input', function() {
+                        if (this.value !== newPasswordProfile.value) {
+                            passwordMatchErrorProfile.style.display = 'block';
+                        } else {
+                            passwordMatchErrorProfile.style.display = 'none';
+                        }
+                    });
+                    
+                    newPasswordProfile.addEventListener('input', function() {
+                        if (confirmPasswordProfile.value !== '' && this.value !== confirmPasswordProfile.value) {
+                            passwordMatchErrorProfile.style.display = 'block';
+                        } else {
+                            passwordMatchErrorProfile.style.display = 'none';
+                        }
+                    });
+                }
             });
         </script>
     </div>

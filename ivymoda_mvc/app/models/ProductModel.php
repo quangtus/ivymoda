@@ -318,7 +318,7 @@ class ProductModel extends Model {
             $query .= " INNER JOIN tbl_product_variant pv ON pv.sanpham_id = p.sanpham_id AND pv.trang_thai = 1 AND pv.ton_kho > 0 AND pv.size_id = $sizeId";
         }
 
-        $query .= " WHERE p.danhmuc_id = $categoryId";
+        $query .= " WHERE p.danhmuc_id = $categoryId AND p.sanpham_status = 1";
 
         // Subcategory filter
         if (!empty($filters['subcategory_id'])) {
@@ -338,7 +338,29 @@ class ProductModel extends Model {
             }
         }
 
-        $query .= " ORDER BY p.sanpham_id DESC LIMIT $offset, $limit";
+        // Sorting
+        if (!empty($filters['sort'])) {
+            switch ($filters['sort']) {
+                case 'price_asc':
+                    $query .= " ORDER BY CAST(p.sanpham_gia AS DECIMAL(10,2)) ASC";
+                    break;
+                case 'price_desc':
+                    $query .= " ORDER BY CAST(p.sanpham_gia AS DECIMAL(10,2)) DESC";
+                    break;
+                case 'name_asc':
+                    $query .= " ORDER BY p.sanpham_tieude ASC";
+                    break;
+                case 'name_desc':
+                    $query .= " ORDER BY p.sanpham_tieude DESC";
+                    break;
+                default:
+                    $query .= " ORDER BY p.sanpham_id DESC";
+            }
+        } else {
+            $query .= " ORDER BY p.sanpham_id DESC";
+        }
+
+        $query .= " LIMIT $offset, $limit";
 
         return $this->getAll($query);
     }
@@ -360,7 +382,7 @@ class ProductModel extends Model {
             $query .= " INNER JOIN tbl_product_variant pv ON pv.sanpham_id = p.sanpham_id AND pv.trang_thai = 1 AND pv.ton_kho > 0 AND pv.size_id = $sizeId";
         }
 
-        $query .= " WHERE p.danhmuc_id = $categoryId";
+        $query .= " WHERE p.danhmuc_id = $categoryId AND p.sanpham_status = 1";
 
         if (!empty($filters['subcategory_id'])) {
             $subcategoryId = (int)$filters['subcategory_id'];
@@ -1247,11 +1269,12 @@ class ProductModel extends Model {
         // Filter by price range
         if (!empty($filters['price_range'])) {
             $priceRange = $this->escape($filters['price_range']);
-            if (strpos($priceRange, '-') !== false) {
-                list($minPrice, $maxPrice) = explode('-', $priceRange);
-                $minPrice = (float)$minPrice;
-                $maxPrice = (float)$maxPrice;
-                $whereConditions[] = "CAST(p.sanpham_gia AS DECIMAL) >= $minPrice AND CAST(p.sanpham_gia AS DECIMAL) <= $maxPrice";
+            if ($priceRange === 'lt500') {
+                $whereConditions[] = "CAST(p.sanpham_gia AS DECIMAL(10,2)) < 500000";
+            } elseif ($priceRange === '500-1000') {
+                $whereConditions[] = "CAST(p.sanpham_gia AS DECIMAL(10,2)) BETWEEN 500000 AND 1000000";
+            } elseif ($priceRange === 'gt1000') {
+                $whereConditions[] = "CAST(p.sanpham_gia AS DECIMAL(10,2)) > 1000000";
             }
         }
         
@@ -1289,6 +1312,57 @@ class ProductModel extends Model {
         $query .= " LIMIT $offset, $limit";
         
         return $this->getAll($query);
+    }
+    
+    /**
+     * Đếm tổng số sản phẩm với bộ lọc
+     */
+    public function countFilteredProducts($filters = []) {
+        $query = "SELECT COUNT(DISTINCT p.sanpham_id) as total
+                  FROM tbl_sanpham p
+                  LEFT JOIN tbl_danhmuc c ON p.danhmuc_id = c.danhmuc_id
+                  LEFT JOIN tbl_loaisanpham l ON p.loaisanpham_id = l.loaisanpham_id";
+        
+        $whereConditions = ["p.sanpham_status = 1"];
+        
+        // Filter by category
+        if (!empty($filters['category_id'])) {
+            $categoryId = (int)$filters['category_id'];
+            $whereConditions[] = "p.danhmuc_id = $categoryId";
+        }
+        
+        // Filter by product type
+        if (!empty($filters['product_type'])) {
+            $productType = (int)$filters['product_type'];
+            $whereConditions[] = "p.loaisanpham_id = $productType";
+        }
+        
+        // Filter by price range
+        if (!empty($filters['price_range'])) {
+            $priceRange = $this->escape($filters['price_range']);
+            if ($priceRange === 'lt500') {
+                $whereConditions[] = "CAST(p.sanpham_gia AS DECIMAL(10,2)) < 500000";
+            } elseif ($priceRange === '500-1000') {
+                $whereConditions[] = "CAST(p.sanpham_gia AS DECIMAL(10,2)) BETWEEN 500000 AND 1000000";
+            } elseif ($priceRange === 'gt1000') {
+                $whereConditions[] = "CAST(p.sanpham_gia AS DECIMAL(10,2)) > 1000000";
+            }
+        }
+        
+        // Filter by size - requires joining with product variants
+        if (!empty($filters['size'])) {
+            $sizeId = (int)$filters['size'];
+            $query .= " INNER JOIN tbl_product_variant pv ON p.sanpham_id = pv.sanpham_id";
+            $whereConditions[] = "pv.size_id = $sizeId AND pv.trang_thai = 1";
+        }
+        
+        $query .= " WHERE " . implode(' AND ', $whereConditions);
+        
+        $result = $this->getOne($query);
+        if ($result) {
+            return is_object($result) ? (int)$result->total : (int)$result['total'];
+        }
+        return 0;
     }
     
     /**

@@ -41,7 +41,9 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                                         <div class="form-group mb-3">
                                             <label for="phone">Số điện thoại *</label>
                                             <input type="tel" class="form-control" id="phone" name="phone" 
-                                                   value="<?= htmlspecialchars($user->user_sdt ?? '') ?>" required>
+                                                   value="<?= htmlspecialchars($user->user_sdt ?? '') ?>" 
+                                                   pattern="[0-9]{10,11}" required placeholder="Ví dụ: 0912345678">
+                                            <small class="form-text text-muted">Số điện thoại phải có 10-11 chữ số</small>
                                         </div>
                                     </div>
                                 </div>

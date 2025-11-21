@@ -82,6 +82,7 @@ class ProductController extends Controller {
             'subcategory_id' => isset($_GET['type']) ? (int)$_GET['type'] : null,
             'size_id' => isset($_GET['size']) ? (int)$_GET['size'] : null,
             'price_range' => isset($_GET['price']) ? $_GET['price'] : null,
+            'sort' => isset($_GET['sort']) ? $_GET['sort'] : null,
         ];
         
         $category = null;
@@ -185,15 +186,25 @@ class ProductController extends Controller {
                     'sort' => $sort
                 ], $limit, $offset);
                 
-                // Đếm tổng số sản phẩm
-                $allProducts = $this->productModel->getFilteredProducts([
-                    'category_id' => $category_id,
-                    'product_type' => $product_type,
-                    'price_range' => $price_range,
-                    'size' => $size,
-                    'sort' => $sort
-                ], 1000, 0);
-                $totalProducts = count($allProducts);
+                // Đếm tổng số sản phẩm (tối ưu)
+                if (method_exists($this->productModel, 'countFilteredProducts')) {
+                    $totalProducts = $this->productModel->countFilteredProducts([
+                        'category_id' => $category_id,
+                        'product_type' => $product_type,
+                        'price_range' => $price_range,
+                        'size' => $size
+                    ]);
+                } else {
+                    // Fallback: lấy tất cả rồi count (không hiệu quả)
+                    $allProducts = $this->productModel->getFilteredProducts([
+                        'category_id' => $category_id,
+                        'product_type' => $product_type,
+                        'price_range' => $price_range,
+                        'size' => $size,
+                        'sort' => $sort
+                    ], 1000, 0);
+                    $totalProducts = count($allProducts);
+                }
                 $totalPages = ceil($totalProducts / $limit);
             }
             
@@ -305,6 +316,13 @@ class ProductController extends Controller {
         $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
         $category_id = isset($_GET['category']) ? (int)$_GET['category'] : null;
         
+        // Validate: keyword không được rỗng
+        if (empty($keyword)) {
+            $_SESSION['error'] = 'Vui lòng nhập từ khóa tìm kiếm';
+            $this->redirect('product');
+            return;
+        }
+        
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = 12;
         $offset = ($page - 1) * $limit;
@@ -315,7 +333,7 @@ class ProductController extends Controller {
         $totalPages = 0;
         
         try {
-            if ($keyword && $this->productModel) {
+            if ($this->productModel) {
                 // Lấy sản phẩm với phân trang
                 $products = $this->productModel->searchProducts($keyword, $category_id, $limit, $offset);
                 

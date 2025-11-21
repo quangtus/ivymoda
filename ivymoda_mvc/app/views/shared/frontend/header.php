@@ -85,8 +85,8 @@ $isLoggedIn = isset($_SESSION['user_id']);
                 
                 <div class="header-actions">
                     <div class="search-box">
-                        <form action="<?= BASE_URL ?>product/search" method="GET">
-                            <input type="text" name="q" placeholder="Tìm kiếm sản phẩm..." class="search-input" value="<?= isset($_GET['q']) ? htmlspecialchars($_GET['q']) : '' ?>">
+                        <form action="<?= BASE_URL ?>product/search" method="GET" onsubmit="return validateSearch(this);">
+                            <input type="text" name="q" placeholder="Tìm kiếm sản phẩm..." class="search-input" value="<?= isset($_GET['q']) ? htmlspecialchars($_GET['q']) : '' ?>" required minlength="1">
                             <button type="submit" class="search-button">
                                 <i class="fas fa-search"></i>
                             </button>
