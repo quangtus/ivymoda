@@ -115,6 +115,11 @@
         }
         return true;
     }
+    
+    // Confirm before logging out
+    function confirmLogout() {
+        return confirm('Bạn có muốn đăng xuất không?');
+    }
     </script>
 </body>
 </html>

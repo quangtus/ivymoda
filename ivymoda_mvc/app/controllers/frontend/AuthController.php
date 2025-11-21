@@ -129,16 +129,23 @@ class AuthController extends Controller {
     
     // Đăng xuất
     public function logout() {
-        // Xóa session
+        $logoutMessage = 'Bạn đã đăng xuất thành công.';
+        
+        // Xóa thông tin đăng nhập
         unset($_SESSION['user_id']);
         unset($_SESSION['username']);
         unset($_SESSION['role_id']);
+        unset($_SESSION['cart_count']);
         
-        // Hủy session
+        // Hủy session cũ
         session_destroy();
-        // Tạo session mới để tránh tái sử dụng session_id cũ
+        
+        // Khởi tạo session mới để tránh tái sử dụng session_id cũ
         session_start();
         session_regenerate_id(true);
+        
+        // Lưu thông báo thành công cho phiên mới
+        $_SESSION['success'] = $logoutMessage;
         
         // Chuyển hướng về trang đăng nhập
         $this->redirect('auth/login');

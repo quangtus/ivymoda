@@ -5,6 +5,13 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
     <div class="login-container" style="max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
         <h1 style="text-align: center; margin-bottom: 20px;">Đăng nhập tài khoản</h1>
         
+        <?php if(isset($_SESSION['success'])): ?>
+        <div class="alert alert-success" style="color: #155724; background-color: #d4edda; padding: 10px; border-radius: 3px; margin-bottom: 15px;">
+            <?= $_SESSION['success'] ?>
+            <?php unset($_SESSION['success']); ?>
+        </div>
+        <?php endif; ?>
+        
         <?php if(!empty($error)): ?>
         <div class="alert alert-danger" style="color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 3px; margin-bottom: 15px;">
             <?php echo $error; ?>
