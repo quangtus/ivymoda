@@ -669,7 +669,7 @@ class ProductModel extends Model {
                   LEFT JOIN tbl_danhmuc c ON p.danhmuc_id = c.danhmuc_id
                   LEFT JOIN tbl_loaisanpham b ON p.loaisanpham_id = b.loaisanpham_id
                   WHERE p.sanpham_status = 1 
-                  AND (p.sanpham_tieude LIKE '%$keyword%' OR p.sanpham_chitiet LIKE '%$keyword%')";
+                  AND (p.sanpham_tieude LIKE '%$keyword%' OR p.sanpham_ma LIKE '%$keyword%')";
         
         if($category_id) {
             $category_id = (int)$category_id;
@@ -690,7 +690,7 @@ class ProductModel extends Model {
         $query = "SELECT COUNT(*) as total 
                   FROM {$this->table} p
                   WHERE p.sanpham_status = 1 
-                  AND (p.sanpham_tieude LIKE '%$keyword%' OR p.sanpham_chitiet LIKE '%$keyword%')";
+                  AND (p.sanpham_tieude LIKE '%$keyword%' OR p.sanpham_ma LIKE '%$keyword%')";
         
         if($category_id) {
             $category_id = (int)$category_id;

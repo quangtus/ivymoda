@@ -18,9 +18,6 @@
             <a href="<?php echo BASE_URL; ?>admin/chatbot/faq" class="btn btn-primary">
                 <i class="fas fa-question-circle"></i> Quản lý FAQ
             </a>
-            <a href="<?php echo BASE_URL; ?>admin/chatbot/config" class="btn btn-outline-secondary">
-                <i class="fas fa-cog"></i> Cấu hình
-            </a>
         </div>
     </div>
 
@@ -72,25 +69,19 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <a href="<?php echo BASE_URL; ?>admin/chatbot/faq" class="quick-action-btn">
                             <i class="fas fa-question-circle"></i>
                             <span>Quản lý FAQ</span>
                         </a>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <a href="<?php echo BASE_URL; ?>admin/chatbot/addFaq" class="quick-action-btn">
                             <i class="fas fa-plus"></i>
                             <span>Thêm FAQ mới</span>
                         </a>
                     </div>
-                    <div class="col-md-3">
-                        <a href="<?php echo BASE_URL; ?>admin/chatbot/config" class="quick-action-btn">
-                            <i class="fas fa-cog"></i>
-                            <span>Cấu hình Chatbot</span>
-                        </a>
-                    </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <a href="<?php echo BASE_URL; ?>admin/chatbot/conversations" class="quick-action-btn">
                             <i class="fas fa-history"></i>
                             <span>Lịch sử hội thoại</span>

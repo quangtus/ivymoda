@@ -227,6 +227,12 @@
     color: #dc3545;
 }
 
+.original-price {
+    font-size: 1rem;
+    color: #6c757d;
+    text-decoration: line-through;
+}
+
 .product-actions {
     margin-top: auto;
     padding-top: 1rem;

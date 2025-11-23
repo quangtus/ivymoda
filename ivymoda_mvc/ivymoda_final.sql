@@ -534,7 +534,7 @@ FROM tbl_sanpham p
 LEFT JOIN tbl_product_review r ON p.sanpham_id = r.sanpham_id AND r.status = 1
 GROUP BY p.sanpham_id;
 
--- View sản phẩm bán chạy (UC22) - Cho báo cáo và ChatBot
+-- View sản phẩm bán chạy (UC22) - Cho báo cáo và ChatBot - CHỈ tính đơn hàng đã hoàn thành
 CREATE OR REPLACE VIEW `view_popular_products` AS
 SELECT 
     p.sanpham_id,
@@ -550,6 +550,7 @@ SELECT
 FROM tbl_sanpham p
 INNER JOIN tbl_danhmuc d ON p.danhmuc_id = d.danhmuc_id
 LEFT JOIN tbl_order_items oi ON p.sanpham_id = oi.sanpham_id
+LEFT JOIN tbl_order o ON oi.order_id = o.order_id AND o.order_status = 2
 LEFT JOIN tbl_product_review r ON p.sanpham_id = r.sanpham_id AND r.status = 1
 WHERE p.sanpham_status = 1
 GROUP BY p.sanpham_id

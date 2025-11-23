@@ -64,38 +64,18 @@
 .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 5px;
-}
-
-.quantity-btn {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #ddd;
-    background: #f8f9fa;
-    cursor: pointer;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
 }
 
-.quantity-btn:hover {
-    background: #e9ecef;
-    border-color: #007bff;
-}
-
-.quantity-btn:active {
-    transform: scale(0.95);
-}
-
-/* Quantity Input - CRITICAL FIX */
+/* Quantity Input - Cho phép nhập trực tiếp */
 .quantity-input {
-    width: 60px;
+    width: 80px;
     text-align: center;
     border: 1px solid #ddd;
     border-radius: 4px;
-    padding: 5px;
+    padding: 8px;
+    font-size: 14px;
+    font-weight: 500;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -335,14 +315,9 @@
 
 @media (max-width: 576px) {
     .quantity-input {
-        width: 50px;
-        font-size: 12px;
-    }
-    
-    .quantity-btn {
-        width: 25px;
-        height: 25px;
-        font-size: 12px;
+        width: 70px;
+        font-size: 14px;
+        padding: 6px;
     }
     
     .product-name {

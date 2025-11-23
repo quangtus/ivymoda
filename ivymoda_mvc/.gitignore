@@ -1,0 +1,61 @@
+# ===== PERSONAL CONFIG =====
+# .env contains local configuration - NEVER commit real credentials
+.env
+.env.local
+.env.production
+
+# ===== TEMPORARY FILES =====
+*.txt
+*.log
+*.tmp
+
+# ===== DOCUMENTATION REPORTS (Auto-generated) =====
+*_REPORT.md
+*_FIX*.md
+DEBUG_*.md
+UNIFIED_*.md
+CART_SYNC_IMPLEMENTATION.md
+
+# ===== GITHUB INSTRUCTIONS FOLDER =====
+.github/instructions/
+
+# ===== MEDIA UPLOADS =====
+public/assets/uploads/*
+!public/assets/uploads/.gitkeep
+!public/assets/uploads/reviews/.gitkeep
+
+# ===== LOGS =====
+logs/*
+!logs/.gitkeep
+
+# ===== CACHE =====
+cache/*
+!cache/.gitkeep
+
+# ===== IDE & SYSTEM =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===== DEPENDENCIES (CRITICAL - DO NOT COMMIT) =====
+# These folders contain 3rd party code downloaded by Composer/NPM
+# Users must run: composer install / npm install
+vendor/
+node_modules/
+composer.lock
+package-lock.json
+
+# ===== BUILD & COMPILED =====
+*.min.js
+*.min.css
+dist/
+build/
+
+# ===== BACKUP FILES =====
+*.bak
+*.backup
+*.old

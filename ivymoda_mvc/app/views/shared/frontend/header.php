@@ -46,7 +46,18 @@ $isLoggedIn = isset($_SESSION['user_id']);
                         <li><a href="<?= BASE_URL ?>home">TRANG CHỦ</a></li>
                         <li><a href="<?= BASE_URL ?>product">TẤT CẢ SẢN PHẨM</a></li>
                         <?php if(isset($categories) && !empty($categories)): ?>
+                            <?php 
+                            // Ẩn "BỘ SƯU TẬP" ở trang user và cart
+                            $currentUrl = $_SERVER['REQUEST_URI'] ?? '';
+                            $hideCollection = (strpos($currentUrl, '/user/') !== false || strpos($currentUrl, '/cart') !== false);
+                            ?>
                             <?php foreach($categories as $menuCategory): ?>
+                                <?php 
+                                // Bỏ qua category "BỘ SƯU TẬP" nếu đang ở trang user hoặc cart
+                                if ($hideCollection && (stripos($menuCategory->danhmuc_ten, 'BỘ SƯU TẬP') !== false || stripos($menuCategory->danhmuc_ten, 'Bộ sưu tập') !== false)) {
+                                    continue;
+                                }
+                                ?>
                                 <li class="has-dropdown">
                                     <a href="<?= BASE_URL ?>product/category/<?= $menuCategory->danhmuc_id ?>">
                                         <?= htmlspecialchars($menuCategory->danhmuc_ten) ?>
@@ -78,7 +89,13 @@ $isLoggedIn = isset($_SESSION['user_id']);
                             <li><a href="<?= BASE_URL ?>product/category/1">NỮ</a></li>
                             <li><a href="<?= BASE_URL ?>product/category/2">NAM</a></li>
                             <li><a href="<?= BASE_URL ?>product/category/3">TRẺ EM</a></li>
-                            <li><a href="<?= BASE_URL ?>product/category/4">BỘ SƯU TẬP</a></li>
+                            <?php 
+                            // Ẩn "BỘ SƯU TẬP" ở trang user và cart
+                            $currentUrl = $_SERVER['REQUEST_URI'] ?? '';
+                            $hideCollection = (strpos($currentUrl, '/user/') !== false || strpos($currentUrl, '/cart') !== false);
+                            if (!$hideCollection): ?>
+                                <li><a href="<?= BASE_URL ?>product/category/4">BỘ SƯU TẬP</a></li>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </ul>
                 </nav>

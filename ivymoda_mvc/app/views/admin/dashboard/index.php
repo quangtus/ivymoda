@@ -27,7 +27,7 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Tổng người dùng</div>
+                                Tổng khách hàng</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $total_users ?></div>
                         </div>
                         <div class="col-auto">
@@ -77,15 +77,27 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
 
     <!-- Welcome Message -->
     <div class="row">
-        <div class="col-lg-12">
+        <!-- Welcome Message - Left Column -->
+        <div class="col-lg-6">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Chào mừng đến với IVY moda Admin</h6>
                 </div>
                 <div class="card-body">
                     <p>Chào mừng <strong><?= isset($_SESSION['username']) ? $_SESSION['username'] : $_SESSION['admin_name'] ?></strong> đến với khu vực quản trị hệ thống IVY moda.</p>
-                    <p>Bạn có thể quản lý:</p>
-                    <ul>
+                    <p>Hệ thống quản trị giúp bạn quản lý toàn bộ hoạt động của cửa hàng một cách hiệu quả và dễ dàng.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Management List - Right Column -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Bạn có thể quản lý:</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="management-list">
                         <li><a href="<?= ADMIN_URL ?>order"><i class="fas fa-clipboard-list text-primary"></i> Quản lý đơn hàng</a></li>
                         <li><a href="<?= ADMIN_URL ?>product"><i class="fas fa-box text-warning"></i> Quản lý sản phẩm</a></li>
                         <li><a href="<?= ADMIN_URL ?>category"><i class="fas fa-folder-open text-warning"></i> Quản lý danh mục & Phân loại</a></li>
@@ -107,6 +119,53 @@ require_once ROOT_PATH . 'app/views/shared/admin/sidebar.php';
         </div>
     </div>
 </div>
+
+<style>
+.management-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.management-list li {
+    margin-bottom: 6px;
+}
+
+.management-list li:last-child {
+    margin-bottom: 0;
+}
+
+.management-list li a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.management-list li a:hover {
+    background-color: #f8f9fa;
+    border-left-color: #007bff;
+    color: #007bff;
+    transform: translateX(5px);
+}
+
+.management-list li a i {
+    width: 24px;
+    margin-right: 12px;
+    font-size: 16px;
+    text-align: center;
+}
+
+@media (max-width: 992px) {
+    .col-lg-6 {
+        margin-bottom: 20px;
+    }
+}
+</style>
 
 <?php
 // Load footer

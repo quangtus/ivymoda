@@ -99,7 +99,6 @@
                 <ul>
                     <li><a href="<?= BASE_URL ?>admin/chatbot">Quản lý FAQ</a></li>
                     <li><a href="<?= BASE_URL ?>admin/chatbot/add">Thêm FAQ mới</a></li>
-                    <li><a href="<?= BASE_URL ?>admin/chatbot/config">Cấu hình Chatbot</a></li>
                 </ul>
             </li>
             <?php endif; ?>

@@ -99,19 +99,14 @@ require_once ROOT_PATH . 'app/views/shared/frontend/header.php';
                                 </td>
                                 <td>
                                     <div class="quantity-controls">
-                                        <form method="POST" action="<?= BASE_URL ?>cart/update" class="quantity-form">
-                                            <input type="hidden" name="cart_id" value="<?= $item->cart_id ?>">
-                                            <button type="button" class="quantity-btn decrease" data-cart-id="<?= $item->cart_id ?>">-</button>
-                                            <input type="number" 
-                                                   name="quantity" 
-                                                   value="<?= $item->quantity ?>" 
-                                                   min="1" 
-                                                   max="<?= $item->ton_kho ?>"
-                                                   class="quantity-input"
-                                                   data-cart-id="<?= $item->cart_id ?>"
-                                                   data-product-id="<?= $item->cart_id ?>">
-                                            <button type="button" class="quantity-btn increase" data-cart-id="<?= $item->cart_id ?>">+</button>
-                                        </form>
+                                        <input type="number" 
+                                               name="quantity" 
+                                               value="<?= $item->quantity ?>" 
+                                               min="1" 
+                                               max="<?= $item->ton_kho ?>"
+                                               class="quantity-input"
+                                               data-cart-id="<?= $item->cart_id ?>"
+                                               data-product-id="<?= $item->cart_id ?>">
                                     </div>
                                 </td>
                                 <td>
@@ -331,44 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Xử lý quantity controls
-    // Xử lý nút tăng/giảm số lượng
-    document.querySelectorAll('.quantity-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const cartId = this.dataset.cartId;
-            if (!cartId) {
-                console.error('Missing cart_id in button');
-                return;
-            }
-            
-            const input = document.querySelector(`input[data-cart-id="${cartId}"]`);
-            if (!input) {
-                console.error('Input not found for cart_id:', cartId);
-                return;
-            }
-            
-            let quantity = parseInt(input.value) || 1;
-            
-            if (this.classList.contains('increase')) {
-                quantity = Math.min(quantity + 1, parseInt(input.max) || 99);
-            } else if (this.classList.contains('decrease')) {
-                quantity = Math.max(quantity - 1, 1);
-            }
-            
-            input.value = quantity;
-            
-            // CHỈ sử dụng AJAX, KHÔNG dùng form submit
-            if (window.cartManager) {
-                window.cartManager.updateCartItem(cartId, quantity);
-            } else {
-                console.error('CartManager not available');
-            }
-        });
-    });
-    
     // Xử lý thay đổi số lượng trực tiếp
     document.querySelectorAll('.quantity-input').forEach(input => {
         input.addEventListener('change', function() {

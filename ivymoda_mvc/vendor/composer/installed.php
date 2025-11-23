@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'ivymoda/ecommerce',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'bad8bd26614db6a17cfa5625d937e5a4b6014ca2',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'ivymoda/ecommerce' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'bad8bd26614db6a17cfa5625d937e5a4b6014ca2',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

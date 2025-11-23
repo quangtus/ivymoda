@@ -238,13 +238,43 @@ header:hover {
 
 /* User menu: show dropdown on hover (desktop) */
 
+.user-actions .dropdown {
+    position: relative;
+}
+
 .user-actions .dropdown>.dropdown-menu {
     display: none;
     /* hidden by default for user icon */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease 0s, visibility 0.15s ease 0s;
+    pointer-events: none;
 }
 
-.user-actions .dropdown:hover>.dropdown-menu {
+.user-actions .dropdown:hover>.dropdown-menu,
+.user-actions .dropdown>.dropdown-menu:hover {
     display: block;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+}
+
+/* Delay hiding when mouse leaves - gives time to move to menu */
+.user-actions .dropdown:not(:hover)>.dropdown-menu {
+    transition-delay: 0.4s;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Bridge area - extend dropdown menu upward to catch mouse */
+.user-actions .dropdown>.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
 }
 
 .dropdown-menu {

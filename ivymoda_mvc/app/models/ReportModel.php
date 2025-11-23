@@ -40,22 +40,22 @@ class ReportModel extends Model {
     public function updateOrCreateStats($date) {
         $date = $this->escape($date);
         
-        // Tính toán doanh thu và số đơn hàng
+        // Tính toán doanh thu và số đơn hàng - CHỈ tính đơn hàng đã hoàn thành
         $orderQuery = "SELECT 
                        COUNT(*) as so_don_hang,
                        COALESCE(SUM(order_total), 0) as doanh_thu
                        FROM {$this->orderTable}
                        WHERE DATE(order_date) = '$date' 
-                       AND order_status != 3"; // Không tính đơn hàng bị hủy
+                       AND order_status = 2"; // Chỉ tính đơn hàng đã hoàn thành
         
         $orderStats = $this->getOne($orderQuery);
         
-        // Tính số sản phẩm bán ra
+        // Tính số sản phẩm bán ra - CHỈ tính đơn hàng đã hoàn thành
         $productQuery = "SELECT COALESCE(SUM(oi.sanpham_soluong), 0) as so_san_pham_ban
                         FROM {$this->orderItemTable} oi
                         INNER JOIN {$this->orderTable} o ON oi.order_id = o.order_id
                         WHERE DATE(o.order_date) = '$date'
-                        AND o.order_status != 3";
+                        AND o.order_status = 2"; // Chỉ tính đơn hàng đã hoàn thành
         
         $productStats = $this->getOne($productQuery);
         
@@ -84,10 +84,10 @@ class ReportModel extends Model {
     }
     
     /**
-     * Lấy tổng doanh thu theo khoảng thời gian
+     * Lấy tổng doanh thu theo khoảng thời gian - CHỈ tính đơn hàng đã hoàn thành
      */
     public function getTotalRevenue($fromDate = null, $toDate = null) {
-        $where = "order_status != 3"; // Không tính đơn hàng bị hủy
+        $where = "order_status = 2"; // Chỉ tính đơn hàng đã hoàn thành
         
         if ($fromDate && $toDate) {
             $fromDate = $this->escape($fromDate);
@@ -127,10 +127,10 @@ class ReportModel extends Model {
     }
     
     /**
-     * Lấy sản phẩm bán chạy nhất
+     * Lấy sản phẩm bán chạy nhất - CHỈ tính đơn hàng đã hoàn thành
      */
     public function getTopSellingProducts($limit = 10, $fromDate = null, $toDate = null) {
-        $where = "o.order_status != 3"; // Không tính đơn hàng bị hủy
+        $where = "o.order_status = 2"; // Chỉ tính đơn hàng đã hoàn thành
         
         if ($fromDate && $toDate) {
             $fromDate = $this->escape($fromDate);
@@ -159,7 +159,7 @@ class ReportModel extends Model {
     }
     
     /**
-     * Lấy doanh thu theo tháng trong năm
+     * Lấy doanh thu theo tháng trong năm - CHỈ tính đơn hàng đã hoàn thành
      */
     public function getMonthlyRevenue($year) {
         $year = (int)$year;
@@ -170,7 +170,7 @@ class ReportModel extends Model {
                   COUNT(*) as orders
                   FROM {$this->orderTable}
                   WHERE YEAR(order_date) = $year 
-                  AND order_status != 3
+                  AND order_status = 2
                   GROUP BY MONTH(order_date)
                   ORDER BY month ASC";
         
@@ -178,7 +178,7 @@ class ReportModel extends Model {
     }
     
     /**
-     * Doanh thu theo ngày trong khoảng from-to (YYYY-MM-DD)
+     * Doanh thu theo ngày trong khoảng from-to (YYYY-MM-DD) - CHỈ tính đơn hàng đã hoàn thành
      */
     public function getDailyRevenue($fromDate, $toDate) {
         $fromDate = $this->escape($fromDate);
@@ -189,14 +189,14 @@ class ReportModel extends Model {
                   COUNT(*) as orders
                   FROM {$this->orderTable}
                   WHERE DATE(order_date) BETWEEN '$fromDate' AND '$toDate'
-                  AND order_status != 3
+                  AND order_status = 2
                   GROUP BY DATE(order_date)
                   ORDER BY ngay ASC";
         return $this->getAll($query);
     }
 
     /**
-     * Doanh thu theo từng ngày trong một tháng cụ thể
+     * Doanh thu theo từng ngày trong một tháng cụ thể - CHỈ tính đơn hàng đã hoàn thành
      */
     public function getDailyRevenueForMonth($year, $month) {
         $year = (int)$year;
@@ -208,7 +208,7 @@ class ReportModel extends Model {
                   FROM {$this->orderTable}
                   WHERE YEAR(order_date) = $year
                   AND MONTH(order_date) = $month
-                  AND order_status != 3
+                  AND order_status = 2
                   GROUP BY DAY(order_date)
                   ORDER BY day ASC";
         return $this->getAll($query);
@@ -239,10 +239,10 @@ class ReportModel extends Model {
      * Lấy thống kê tổng quan
      */
     public function getDashboardStats() {
-        // Tổng doanh thu
+        // Tổng doanh thu - CHỈ tính đơn hàng đã hoàn thành
         $revenueQuery = "SELECT COALESCE(SUM(order_total), 0) as total 
                         FROM {$this->orderTable} 
-                        WHERE order_status != 3";
+                        WHERE order_status = 2";
         $revenue = $this->getOne($revenueQuery);
         $totalRevenue = is_object($revenue) ? $revenue->total : ($revenue['total'] ?? 0);
         
@@ -258,11 +258,11 @@ class ReportModel extends Model {
         $pending = $this->getOne($pendingQuery);
         $pendingOrders = is_object($pending) ? $pending->total : ($pending['total'] ?? 0);
         
-        // Sản phẩm đã bán
+        // Sản phẩm đã bán - CHỈ tính đơn hàng đã hoàn thành
         $productQuery = "SELECT COALESCE(SUM(oi.sanpham_soluong), 0) as total
                         FROM {$this->orderItemTable} oi
                         INNER JOIN {$this->orderTable} o ON oi.order_id = o.order_id
-                        WHERE o.order_status != 3";
+                        WHERE o.order_status = 2";
         $products = $this->getOne($productQuery);
         $totalProducts = is_object($products) ? $products->total : ($products['total'] ?? 0);
         

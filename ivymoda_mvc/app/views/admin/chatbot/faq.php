@@ -18,9 +18,6 @@
             <a href="<?php echo BASE_URL; ?>admin/chatbot/addFaq" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Thêm FAQ mới
             </a>
-            <a href="<?php echo BASE_URL; ?>admin/chatbot/config" class="btn btn-outline-secondary">
-                <i class="fas fa-cog"></i> Cấu hình
-            </a>
         </div>
     </div>
 

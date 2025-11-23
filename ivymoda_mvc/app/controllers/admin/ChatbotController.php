@@ -171,60 +171,6 @@ class ChatbotController extends \Controller {
     }
     
     /**
-     * Quản lý cấu hình chatbot
-     */
-    public function config() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Cập nhật các cấu hình
-            $configs = [
-                'gemini_api_key' => $_POST['gemini_api_key'] ?? '',
-                'max_products_suggest' => $_POST['max_products_suggest'] ?? '5',
-                'context_max_length' => $_POST['context_max_length'] ?? '2000',
-                'response_timeout' => $_POST['response_timeout'] ?? '3000',
-                'chatbot_welcome_message' => $_POST['chatbot_welcome_message'] ?? '',
-                'enable_faq_mode' => $_POST['enable_faq_mode'] ?? '1',
-                'enable_gemini_mode' => $_POST['enable_gemini_mode'] ?? '1',
-                'chatbot_position' => $_POST['chatbot_position'] ?? 'bottom-right'
-            ];
-            
-            $success = true;
-            foreach ($configs as $key => $value) {
-                if (!$this->chatbotModel->updateConfig($key, $value)) {
-                    $success = false;
-                }
-            }
-            
-            if ($success) {
-                $_SESSION['success'] = 'Cập nhật cấu hình thành công';
-            } else {
-                $_SESSION['error'] = 'Lỗi khi cập nhật cấu hình';
-            }
-            
-            header('Location: /ivymoda/ivymoda_mvc/public/admin/chatbot/config');
-            exit;
-        }
-        
-        // Lấy các cấu hình hiện tại
-        $configs = [
-            'gemini_api_key' => $this->chatbotModel->getConfig('gemini_api_key'),
-            'max_products_suggest' => $this->chatbotModel->getConfig('max_products_suggest'),
-            'context_max_length' => $this->chatbotModel->getConfig('context_max_length'),
-            'response_timeout' => $this->chatbotModel->getConfig('response_timeout'),
-            'chatbot_welcome_message' => $this->chatbotModel->getConfig('chatbot_welcome_message'),
-            'enable_faq_mode' => $this->chatbotModel->getConfig('enable_faq_mode'),
-            'enable_gemini_mode' => $this->chatbotModel->getConfig('enable_gemini_mode'),
-            'chatbot_position' => $this->chatbotModel->getConfig('chatbot_position')
-        ];
-        
-        $data = [
-            'title' => 'Cấu hình Chatbot',
-            'configs' => $configs
-        ];
-        
-        $this->view('admin/chatbot/config', $data);
-    }
-    
-    /**
      * Lịch sử hội thoại
      */
     public function conversations() {
